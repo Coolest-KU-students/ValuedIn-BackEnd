@@ -1,6 +1,6 @@
 ﻿using ValuedInBE.DataControls.Paging;
-using ValuedInBE.Models.DTOs.Requests;
-using ValuedInBE.Models.DTOs.Responses;
+using ValuedInBE.Models.DTOs.Requests.Users;
+using ValuedInBE.Models.DTOs.Responses.Users;
 using ValuedInBE.Models.Users;
 using ValuedInBE.Repositories;
 using ValuedInBE.Security.Users;
@@ -21,13 +21,17 @@ namespace ValuedInBE.Services.Users.Implementations
         public async Task<List<UserSystemInfo>> GetAllUsers()
         {
             List<UserCredentials> credentials = await _userCredentialRepository.GetAllUsers();
-            return credentials.Select(mapCredentialsToUser).ToList();
+            return credentials.Select(MapSystemInfoFromCredentials).ToList();
         }
 
         public async Task<Page<UserSystemInfo>> GetUserPage(PageConfig config)
         {
-            Page<UserCredentials> credentialPage = await _userCredentialRepository.GetUserPage(config);
-            return new Page<UserSystemInfo>(credentialPage.Results.Select(mapCredentialsToUser).ToList(), credentialPage.Total, credentialPage.PageNo);
+            Page<UserCredentials> credentialPage = await _userCredentialRepository.GetUserPageWithDetails(config);
+            return new Page<UserSystemInfo>(
+                credentialPage.Results
+                    .Select(MapSystemInfoFromCredentials).ToList(),
+                credentialPage.Total,
+                credentialPage.PageNo);
         }
 
         public async Task CreateNewUser(NewUser newUser)
@@ -49,16 +53,52 @@ namespace ValuedInBE.Services.Users.Implementations
             return await _userCredentialRepository.GetByLogin(login);
         }
 
-        private Func<UserCredentials, UserSystemInfo> mapCredentialsToUser => (credentials) =>
-            new UserSystemInfo(credentials.Login,
-                        credentials.IsExpired,
-                        credentials.LastActive,
-                        credentials.Role ,
-                        credentials.UserDetails.FirstName,
-                        credentials.UserDetails.LastName,
-                        credentials.UserDetails.Email,
-                        credentials.UserDetails.Telephone
-                    );
-    
+        public async Task<UserSystemInfo> GetUserSystemInfoByLogin(string login)
+        {
+            UserCredentials credentials = await _userCredentialRepository.GetByLoginWithDetails(login);
+            return credentials != null ? MapSystemInfoFromCredentials(credentials) : null;
+        }
+
+
+        private static UserSystemInfo MapSystemInfoFromCredentials(UserCredentials credentials) =>
+            new()
+            {
+                Login = credentials.Login,
+                IsExpired = credentials.IsExpired,
+                LastActive = credentials.LastActive,
+                Role = credentials.Role,
+                FirstName = credentials.UserDetails.FirstName,
+                LastName = credentials.UserDetails.LastName,
+                Email = credentials.UserDetails.Email,
+                Telephone = credentials.UserDetails.Telephone
+
+            };
+
+        public async Task ExpireUser(string login)
+        {
+            UserCredentials credentials = await _userCredentialRepository.GetByLogin(login);
+            if (credentials == null)
+                throw new KeyNotFoundException("Login does not exist");
+
+            credentials.IsExpired = true;
+            await _userCredentialRepository.Update(credentials);
+        }
+
+        public async Task UpdateUser(UpdatedUser updatedUser)
+        {
+            UserCredentials credentials = await _userCredentialRepository.GetByLoginWithDetails(updatedUser.Login);
+            if (credentials == null)
+                throw new KeyNotFoundException("Login does not exist");
+
+            credentials.Role = updatedUser.Role;
+            credentials.UserDetails.FirstName = updatedUser.FirstName;
+            credentials.UserDetails.LastName = updatedUser.LastName;
+            credentials.UserDetails.Email = updatedUser.Email;
+            credentials.UserDetails.Telephone = updatedUser.Telephone;
+            await _userCredentialRepository.Update(credentials);
+        }
+
+
+
     }
 }

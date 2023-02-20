@@ -3,7 +3,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ValuedInBE.AutoMapperProfiles;
@@ -13,6 +12,7 @@ using ValuedInBE.Repositories;
 using ValuedInBE.Repositories.Database;
 using ValuedInBE.Services.Users;
 using ValuedInBE.Services.Users.Implementations;
+using ValuedInBE.System;
 
 namespace ValuedInBE
 {
@@ -20,7 +20,7 @@ namespace ValuedInBE
     {
         public static async Task Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
 
@@ -40,29 +40,35 @@ namespace ValuedInBE
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new()
+#if DEBUG
+            if (!TestRecognizer.IsTestingEnvironment)
+            {  //Will add it's own Authentication layer
+#endif
+                builder.Services.AddAuthentication(options =>
                 {
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = false, //TODO: investigate
-                    ValidateIssuerSigningKey = false
-                };
-            });
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                }).AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new()
+                    {
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = false, //TODO: investigate
+                        ValidateIssuerSigningKey = false
+                    };
+                });
 
 
-            builder.Services.AddAuthorization();
-
-            var app = builder.Build();
+                builder.Services.AddAuthorization();
+#if DEBUG
+            }
+#endif
+            WebApplication app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -70,7 +76,7 @@ namespace ValuedInBE
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            using (var scope = app.Services.CreateScope())
+            using (IServiceScope scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
 

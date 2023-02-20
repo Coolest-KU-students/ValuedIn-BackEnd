@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using ValuedInBE.Models.DTOs.Requests;
+﻿using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Security.Users;
 using ValuedInBE.Services.Users;
 
@@ -7,7 +6,7 @@ namespace ValuedInBE.Contexts
 {
     public class DataInitializer
     {
-        public static async Task Initialize(ValuedInContext context, IAuthenticationService authenticationService) 
+        public static async Task Initialize(ValuedInContext context, IAuthenticationService authenticationService)
         {
             if (context.UserCredentials.Any())
             {
@@ -19,7 +18,16 @@ namespace ValuedInBE.Contexts
 
         private static async Task CreateDefaultUser(IAuthenticationService authenticationService)
         {
-            NewUser newUser = new("SetupUser", UserRole.SYS_ADMIN, "Setup", "User", "Password1", "", "");
+            NewUser newUser = new()
+            {
+                Login = "SetupUser",
+                Role = UserRole.SYS_ADMIN,
+                FirstName = "Setup",
+                LastName = "User",
+                Password = "Password1",
+                Telephone = "",
+                Email = ""
+            };
             await authenticationService.RegisterNewUser(newUser);
         }
 

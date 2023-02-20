@@ -1,19 +1,18 @@
 ﻿
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using ValuedInBE.Models;
-using ValuedInBE.Models.DTOs.Requests;
+using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.Users;
 using ValuedInBE.Security.Users;
 
 namespace ValuedInBE.Services.Users.Implementations
 {
-    public class AuthenticationService : IAuthenticationService 
+    public class AuthenticationService : IAuthenticationService
     {
         private readonly IUserService _userService;
         private readonly IConfigurationSection _configuration;
@@ -33,7 +32,7 @@ namespace ValuedInBE.Services.Users.Implementations
         public async Task<string> AuthenticateUser(AuthRequest auth)
         {
             UserCredentials credentials = await _userService.GetUserCredentialsByLogin(auth.Login);
-            if(credentials == null)
+            if (credentials == null)
             {
                 throw new Exception("Incorrect credentials");
             }
@@ -48,7 +47,7 @@ namespace ValuedInBE.Services.Users.Implementations
                 case PasswordVerificationResult.SuccessRehashNeeded:
                     //TODO: implement
                     _logger.LogError("Password for user {auth.Login} needs to be rehashed", auth.Login);
-                    break;   
+                    break;
             }
 
             return GenerateJWT(user);
@@ -56,13 +55,12 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task RegisterNewUser(NewUser newUser)
         {
-            //TODO: check perms
             await HashPasswordAndSave(newUser);
         }
 
         public async Task SelfRegister(NewUser newUser)
         {
-            if(newUser.Role != UserRole.DEFAULT)
+            if (newUser.Role != UserRole.DEFAULT)
             {
                 throw new Exception("Unallowed User role");
             }
@@ -85,14 +83,15 @@ namespace ValuedInBE.Services.Users.Implementations
         private string GenerateJWT(User user)
         {
             SigningCredentials signingCredentials = GetSigningCredentials();
-            List<Claim> claims = new List<Claim> {
+            List<Claim> claims = new()
+            {
                 new Claim(ClaimTypes.Name, user.Login),
             };
 
-           foreach(UserRoleExtended role in UserRoleExtended.GetExtended(user.Role).FlattenRoleHierarchy())
-           {
-                claims.Add(new Claim(ClaimTypes.Role, (string) role));
-           }
+            foreach (UserRoleExtended role in UserRoleExtended.GetExtended(user.Role).FlattenRoleHierarchy())
+            {
+                claims.Add(new Claim(ClaimTypes.Role, (string)role));
+            }
 
             JwtSecurityToken tokenOptions = GenerateTokenOptions(signingCredentials, claims);
             string token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
@@ -116,6 +115,6 @@ namespace ValuedInBE.Services.Users.Implementations
             );
             return tokenOptions;
         }
-       
+
     }
 }

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using ValuedInBE.Models;
-using ValuedInBE.Models.DTOs.Requests;
+using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.Users;
 
 namespace ValuedInBE.AutoMapperProfiles
@@ -11,6 +11,7 @@ namespace ValuedInBE.AutoMapperProfiles
         {
             CreateMap<UserCredentials, User>();
             CreateMap<NewUser, User>();
+
         }
     }
 }

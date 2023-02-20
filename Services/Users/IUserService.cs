@@ -1,6 +1,6 @@
 ﻿using ValuedInBE.DataControls.Paging;
-using ValuedInBE.Models.DTOs.Requests;
-using ValuedInBE.Models.DTOs.Responses;
+using ValuedInBE.Models.DTOs.Requests.Users;
+using ValuedInBE.Models.DTOs.Responses.Users;
 using ValuedInBE.Models.Users;
 
 namespace ValuedInBE.Services.Users
@@ -13,6 +13,10 @@ namespace ValuedInBE.Services.Users
 
         public Task CreateNewUser(NewUser newUser);
 
-        public Task<UserCredentials> GetUserCredentialsByLogin(string Login);
+        public Task<UserCredentials> GetUserCredentialsByLogin(string login);
+
+        public Task<UserSystemInfo> GetUserSystemInfoByLogin(string login);
+        Task ExpireUser(string login);
+        Task UpdateUser(UpdatedUser updatedUser);
     }
 }

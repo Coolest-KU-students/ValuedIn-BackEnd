@@ -1,4 +1,4 @@
-﻿using ValuedInBE.Models.DTOs.Requests;
+﻿using ValuedInBE.Models.DTOs.Requests.Users;
 
 namespace ValuedInBE.Services.Users
 {

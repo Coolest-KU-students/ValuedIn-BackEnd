@@ -6,16 +6,20 @@ namespace ValuedInBE.Security.Users
 {
     public class UserRoleExtended
     {
-        private static readonly ImmutableList<UserRoleExtended> _userRoleExtensions = ImmutableList.Create(
-            new UserRoleExtended(UserRole.DEFAULT, 0),
-            new UserRoleExtended(UserRole.HR, 1),
-            new UserRoleExtended(UserRole.ORG_ADMIN, 2),
-            new UserRoleExtended(UserRole.SYS_ADMIN, 3)
+        public static readonly UserRoleExtended DEFAULT = new(UserRole.DEFAULT, 0);
+        public static readonly UserRoleExtended HR = new(UserRole.HR, 1);
+        public static readonly UserRoleExtended ORG_ADMIN = new(UserRole.ORG_ADMIN, 2);
+        public static readonly UserRoleExtended SYS_ADMIN = new(UserRole.SYS_ADMIN, 3);
+        public static readonly ImmutableList<UserRoleExtended> ExtendedRoles = ImmutableList.Create(
+            DEFAULT,
+            HR,
+            ORG_ADMIN,
+            SYS_ADMIN
         );
 
         public static UserRoleExtended GetExtended(UserRole userRole)
         {
-            UserRoleExtended? correspondingExtension = _userRoleExtensions.Find(extended => extended.UserRole.Equals(userRole));
+            UserRoleExtended correspondingExtension = ExtendedRoles.Find(extended => extended.UserRole.Equals(userRole));
             if (correspondingExtension != null) return correspondingExtension;
 
             throw new NotImplementedException($"No extended user role defined for enum {userRole.GetDisplayName()}");
@@ -37,7 +41,7 @@ namespace ValuedInBE.Security.Users
             Index = index;
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             return obj is UserRoleExtended extended &&
                    UserRole == extended.UserRole &&
@@ -47,7 +51,8 @@ namespace ValuedInBE.Security.Users
                    ;
         }
 
-        public HashSet<UserRole> FlattenRoleHierarchy() {
+        public HashSet<UserRole> FlattenRoleHierarchy()
+        {
             HashSet<UserRoleExtended> checkedRoles = new()
             {
                 this
@@ -58,7 +63,7 @@ namespace ValuedInBE.Security.Users
             while (includedRoles.Except(checkedRoles).Any())
             {
                 HashSet<UserRoleExtended> nextLayerRoles = new();
-                foreach(UserRoleExtended extended in includedRoles.Except(checkedRoles))
+                foreach (UserRoleExtended extended in includedRoles.Except(checkedRoles))
                 {
                     nextLayerRoles.AddRange(extended.GetIncludedRoles());
                 }
@@ -70,6 +75,11 @@ namespace ValuedInBE.Security.Users
             return checkedRoles.Select(extended => extended.UserRole).ToHashSet();
         }
 
-        public override string? ToString() => this;
+        public override string ToString() => this;
+
+        public override int GetHashCode()
+        {
+            return UserRole.GetHashCode();
+        }
     }
 }

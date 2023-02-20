@@ -1,4 +1,4 @@
-﻿namespace ValuedInBE.Models.DTOs.Requests
+﻿namespace ValuedInBE.Models.DTOs.Requests.Users
 {
     public class AuthRequest
     {

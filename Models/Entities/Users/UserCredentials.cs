@@ -5,7 +5,7 @@ using ValuedInBE.Security.Users;
 namespace ValuedInBE.Models.Users
 {
     public class UserCredentials
-    { 
+    {
         public UserCredentials() { }
 
         public UserCredentials(string login, string password, bool isExpired, DateTime? lastActive, UserRole role, UserDetails userDetails)
@@ -19,6 +19,7 @@ namespace ValuedInBE.Models.Users
         }
 
         [Key]
+        [MaxLength(128)]
         public string Login { get; set; }
         public string Password { get; set; }
         public bool IsExpired { get; set; }

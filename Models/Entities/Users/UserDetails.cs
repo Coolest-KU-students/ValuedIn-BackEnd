@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ValuedInBE.Models.Entities.Messaging;
 
 namespace ValuedInBE.Models.Users
 {
@@ -15,10 +16,14 @@ namespace ValuedInBE.Models.Users
         }
 
         [Key]
+        [MaxLength(128)]
         public string Login { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
         public string Telephone { get; set; }
+
+        public ICollection<ChatParticipant> ChatParticipants { get; set; }
+
     }
 }

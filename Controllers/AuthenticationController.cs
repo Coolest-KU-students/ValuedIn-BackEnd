@@ -1,11 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Extensions;
-using ValuedInBE.Models.DTOs.Requests;
-using ValuedInBE.Models.Users;
-using ValuedInBE.Repositories;
-using ValuedInBE.Security.Users;
+using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Services.Users;
 
 namespace ValuedInBE.Controllers
@@ -14,12 +9,10 @@ namespace ValuedInBE.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly IUserService _userService;
         private readonly IAuthenticationService _authenticationService;
 
-        public AuthenticationController(IUserService userService, IAuthenticationService authenticationService)
+        public AuthenticationController(IAuthenticationService authenticationService)
         {
-            _userService = userService;
             _authenticationService = authenticationService;
         }
 
@@ -36,7 +29,7 @@ namespace ValuedInBE.Controllers
         [HttpPost("register")]
         public async Task<ActionResult> SelfRegisterUser(NewUser newUser) //TODO: need a differentiation
         {
-            await _userService.CreateNewUser(newUser);
+            await _authenticationService.SelfRegister(newUser);
             return Ok();
         }
 

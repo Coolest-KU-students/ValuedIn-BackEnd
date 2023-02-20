@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ValuedInBE.Contexts;
-using ValuedInBE.DataControls;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.Users;
 
@@ -20,26 +18,32 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task<List<UserCredentials>> GetAllUsers()
         {
-            var credentialQuery = from c in _context.UserCredentials.Include(a=>a.UserDetails) select c;
+            var credentialQuery = from c in _context.UserCredentials.Include(a => a.UserDetails) select c;
             return await credentialQuery.ToListAsync();
         }
 
-        public  async Task<UserCredentials> GetByLogin(string login)
+        public async Task<UserCredentials> GetByLogin(string login)
         {
             var credentialQuery = from c in _context.UserCredentials
-                    where c.Login == login
-                    select c;
-            return await credentialQuery.FirstAsync();
-
+                                  where c.Login == login
+                                  select c;
+            return await credentialQuery.FirstOrDefaultAsync();
+        }
+        public async Task<UserCredentials> GetByLoginWithDetails(string login)
+        {
+            var credentialQuery = from c in _context.UserCredentials.Include(creds => creds.UserDetails)
+                                  where c.Login == login
+                                  select c;
+            return await credentialQuery.FirstOrDefaultAsync();
         }
 
-        public async Task<Page<UserCredentials>> GetUserPage(PageConfig config)
+        public async Task<Page<UserCredentials>> GetUserPageWithDetails(PageConfig config)
         {
             string compiledOrderBy = string.Join(", ", config.OrderByColumns.Select(order => $"{order.Column} {(order.Ascending ? "ASC" : "DESC")}"));
 
             var credentialQuery = from c in _context.UserCredentials.Include(a => a.UserDetails)
-                    orderby compiledOrderBy
-                    select c;
+                                  orderby compiledOrderBy
+                                  select c;
 
             int total = credentialQuery.Count();
 
@@ -55,7 +59,7 @@ namespace ValuedInBE.Repositories.Database
         {
             _context.UserCredentials.Add(userCredentials);
             await _context.SaveChangesAsync();
-            
+
         }
 
         public async Task<bool> LoginExists(string login)

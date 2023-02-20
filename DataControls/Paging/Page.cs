@@ -2,6 +2,7 @@
 {
     public class Page<TEntity>
     {
+        public static Page<TEntity> Empty() => new(new(), 0, 0);
         public List<TEntity> Results { get; set; }
         public int Total { get; set; }
         public int PageNo { get; set; }

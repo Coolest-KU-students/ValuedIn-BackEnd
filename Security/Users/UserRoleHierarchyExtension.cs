@@ -13,7 +13,7 @@
         {
             return new(hierarchy[userRole]);
         }
-    
+
         static UserRoleHierarchyExtension() //TODO: need a test that verifies this setup is not self looping.
         {
             Includes(UserRole.DEFAULT); //UserRole.DEFAULT does not inherit anything
