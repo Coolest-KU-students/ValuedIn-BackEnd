@@ -5,10 +5,8 @@ using ValuedInBE.Models.Users;
 
 namespace ValuedInBE.Repositories.Database
 {
-
     public class UserCredentialRepository : IUserCredentialRepository
     {
-
         private readonly ValuedInContext _context;
 
         public UserCredentialRepository(ValuedInContext context)
@@ -18,7 +16,9 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task<List<UserCredentials>> GetAllUsers()
         {
-            var credentialQuery = from c in _context.UserCredentials.Include(a => a.UserDetails) select c;
+            var credentialQuery = from c in _context.UserCredentials
+                                            .Include(a => a.UserDetails) 
+                                  select c;
             return await credentialQuery.ToListAsync();
         }
 
@@ -31,7 +31,8 @@ namespace ValuedInBE.Repositories.Database
         }
         public async Task<UserCredentials> GetByLoginWithDetails(string login)
         {
-            var credentialQuery = from c in _context.UserCredentials.Include(creds => creds.UserDetails)
+            var credentialQuery = from c in _context.UserCredentials
+                                            .Include(creds => creds.UserDetails)
                                   where c.Login == login
                                   select c;
             return await credentialQuery.FirstOrDefaultAsync();
@@ -39,7 +40,7 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task<Page<UserCredentials>> GetUserPageWithDetails(PageConfig config)
         {
-            string compiledOrderBy = string.Join(", ", config.OrderByColumns.Select(order => $"{order.Column} {(order.Ascending ? "ASC" : "DESC")}"));
+            string compiledOrderBy = string.Join(", ", config.OrderByColumns.AsLinqOrderBy());
 
             var credentialQuery = from c in _context.UserCredentials.Include(a => a.UserDetails)
                                   orderby compiledOrderBy

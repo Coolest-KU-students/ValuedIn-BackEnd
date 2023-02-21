@@ -26,7 +26,9 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task<Page<UserSystemInfo>> GetUserPage(PageConfig config)
         {
-            Page<UserCredentials> credentialPage = await _userCredentialRepository.GetUserPageWithDetails(config);
+            Page<UserCredentials> credentialPage =
+                await _userCredentialRepository.GetUserPageWithDetails(config);
+
             return new Page<UserSystemInfo>(
                 credentialPage.Results
                     .Select(MapSystemInfoFromCredentials).ToList(),
@@ -36,14 +38,29 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task CreateNewUser(NewUser newUser)
         {
-
             if (await _userCredentialRepository.LoginExists(newUser.Login))
             {
                 throw new Exception("Login already exists");
             }
 
-            UserDetails userDetails = new(newUser.Login, newUser.FirstName, newUser.LastName, newUser.Email, newUser.Telephone);
-            UserCredentials userCredentials = new(newUser.Login, newUser.Password, false, null, newUser.Role ?? UserRole.DEFAULT, userDetails);
+            UserDetails userDetails = new()
+            {
+                Login = newUser.Login,
+                FirstName = newUser.FirstName,
+                LastName = newUser.LastName,
+                Email = newUser.Email,
+                Telephone = newUser.Telephone
+            };
+            
+            UserCredentials userCredentials = new()
+            {
+                Login = newUser.Login,
+                Password = newUser.Password,
+                IsExpired = false,
+                LastActive = null,
+                Role = newUser.Role ?? UserRole.DEFAULT,
+                UserDetails = userDetails
+            };
 
             await _userCredentialRepository.Insert(userCredentials);
         }
@@ -58,7 +75,6 @@ namespace ValuedInBE.Services.Users.Implementations
             UserCredentials credentials = await _userCredentialRepository.GetByLoginWithDetails(login);
             return credentials != null ? MapSystemInfoFromCredentials(credentials) : null;
         }
-
 
         private static UserSystemInfo MapSystemInfoFromCredentials(UserCredentials credentials) =>
             new()
@@ -97,8 +113,5 @@ namespace ValuedInBE.Services.Users.Implementations
             credentials.UserDetails.Telephone = updatedUser.Telephone;
             await _userCredentialRepository.Update(credentials);
         }
-
-
-
     }
 }

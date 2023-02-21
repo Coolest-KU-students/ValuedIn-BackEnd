@@ -11,6 +11,5 @@ namespace ValuedInBE.Models.DTOs.Requests.Users
         public string Password { get; set; }
         public string Email { get; set; }
         public string Telephone { get; set; }
-
     }
 }

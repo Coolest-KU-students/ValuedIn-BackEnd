@@ -8,11 +8,8 @@ namespace ValuedInBE.Models.Entities.Messaging
 
         [MaxLength(128)]
         public string Login { get; set; }
-
         public long ChatID { get; set; }
-
         public UserDetails User { get; set; }
-
         public Chat Chat { get; set; }
     }
 }

@@ -6,7 +6,6 @@ namespace ValuedInBE.Models.Entities.Messaging
     {
         [Key]
         public long ID { get; set; }
-
         public List<ChatMessage> Messages { get; set; }
         public List<ChatParticipant> Participants { get; set; }
     }

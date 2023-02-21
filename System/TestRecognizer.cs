@@ -4,7 +4,6 @@
     {
         private const string testAssemblyName = "xunit.runner";
         private static readonly bool _isTestingEnvironment;
-
         public static bool IsTestingEnvironment => _isTestingEnvironment;
 
         static TestRecognizer()

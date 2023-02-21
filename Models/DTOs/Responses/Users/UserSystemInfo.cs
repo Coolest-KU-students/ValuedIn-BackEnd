@@ -2,7 +2,6 @@
 
 namespace ValuedInBE.Models.DTOs.Responses.Users
 {
-
     public class UserSystemInfo
     {
         public string Login { get; set; }

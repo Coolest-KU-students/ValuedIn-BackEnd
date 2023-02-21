@@ -29,20 +29,17 @@ namespace ValuedInBE
 
             //Adding Repositories
             builder.Services.AddScoped<IUserCredentialRepository, UserCredentialRepository>();
-
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
-            builder.Services.AddSingleton((new MapperConfiguration(c => c.AddProfile(new MappingProfile())).CreateMapper()));
+            builder.Services.AddSingleton(new MapperConfiguration(c => c.AddProfile(new MappingProfile())).CreateMapper());
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
 #if DEBUG
             if (!TestRecognizer.IsTestingEnvironment)
-            {  //Will add it's own Authentication layer
+            {  //Testing will add its own Authentication layer
 #endif
                 builder.Services.AddAuthentication(options =>
                 {
@@ -69,35 +66,28 @@ namespace ValuedInBE
             }
 #endif
             WebApplication app = builder.Build();
-
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
             using (IServiceScope scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-
                 ValuedInContext context = services.GetRequiredService<ValuedInContext>();
                 IAuthenticationService authenticationService = services.GetRequiredService<IAuthenticationService>();
 
                 context.Database.EnsureCreated();
-
                 await DataInitializer.Initialize(context, authenticationService);
             }
+
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseRouting();
             app.UseAuthorization();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
-
+            app.UseEndpoints(endpoints=>endpoints.MapControllers());
             app.MapControllers();
-
             app.Run();
         }
     }

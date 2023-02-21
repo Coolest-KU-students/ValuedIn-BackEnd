@@ -10,16 +10,18 @@ namespace ValuedInBE.Security.Users
         public static readonly UserRoleExtended HR = new(UserRole.HR, 1);
         public static readonly UserRoleExtended ORG_ADMIN = new(UserRole.ORG_ADMIN, 2);
         public static readonly UserRoleExtended SYS_ADMIN = new(UserRole.SYS_ADMIN, 3);
-        public static readonly ImmutableList<UserRoleExtended> ExtendedRoles = ImmutableList.Create(
-            DEFAULT,
-            HR,
-            ORG_ADMIN,
-            SYS_ADMIN
-        );
+        public static readonly ImmutableList<UserRoleExtended> ExtendedRoles = 
+            ImmutableList.Create(
+                DEFAULT,
+                HR,
+                ORG_ADMIN,
+                SYS_ADMIN
+            );
 
         public static UserRoleExtended GetExtended(UserRole userRole)
         {
-            UserRoleExtended correspondingExtension = ExtendedRoles.Find(extended => extended.UserRole.Equals(userRole));
+            UserRoleExtended correspondingExtension = 
+                ExtendedRoles.Find(extended => extended.UserRole.Equals(userRole));
             if (correspondingExtension != null) return correspondingExtension;
 
             throw new NotImplementedException($"No extended user role defined for enum {userRole.GetDisplayName()}");

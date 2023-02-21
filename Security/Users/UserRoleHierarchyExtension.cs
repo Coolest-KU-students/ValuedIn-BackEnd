@@ -1,6 +1,6 @@
 ﻿namespace ValuedInBE.Security.Users
 {
-    public static class UserRoleHierarchyExtension
+    internal static class UserRoleHierarchyExtension
     {
         private static readonly Dictionary<UserRoleExtended, HashSet<UserRoleExtended>> hierarchy = new();
 

@@ -90,7 +90,7 @@ namespace ValuedInBE.Services.Users.Implementations
 
             foreach (UserRoleExtended role in UserRoleExtended.GetExtended(user.Role).FlattenRoleHierarchy())
             {
-                claims.Add(new Claim(ClaimTypes.Role, (string)role));
+                claims.Add(new Claim(ClaimTypes.Role, (string) role));
             }
 
             JwtSecurityToken tokenOptions = GenerateTokenOptions(signingCredentials, claims);
@@ -106,13 +106,14 @@ namespace ValuedInBE.Services.Users.Implementations
         }
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
-            var tokenOptions = new JwtSecurityToken(
-                issuer: _configuration.GetSection("Issuer").Value,
-                audience: _configuration.GetSection("Audience").Value,
-                claims: claims,
-                expires: DateTime.Now.AddHours(Convert.ToDouble(_configuration.GetSection("ExpirationInHours").Value)),
-                signingCredentials: signingCredentials
-            );
+            var tokenOptions = 
+                new JwtSecurityToken(
+                    issuer: _configuration.GetSection("Issuer").Value,
+                    audience: _configuration.GetSection("Audience").Value,
+                    claims: claims,
+                    expires: DateTime.Now.AddHours(Convert.ToDouble(_configuration.GetSection("ExpirationInHours").Value)),
+                    signingCredentials: signingCredentials
+                );
             return tokenOptions;
         }
 

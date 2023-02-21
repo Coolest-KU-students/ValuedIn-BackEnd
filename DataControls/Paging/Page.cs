@@ -14,6 +14,5 @@
             Total = total;
             PageNo = pageNo;
         }
-
     }
 }

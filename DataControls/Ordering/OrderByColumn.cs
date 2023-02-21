@@ -1,4 +1,4 @@
-﻿namespace ValuedInBE.DataControls
+﻿namespace ValuedInBE.DataControls.Ordering
 {
     public class OrderByColumn
     {
@@ -11,7 +11,5 @@
             Column = column;
             Ascending = ascending;
         }
-
-
     }
 }
