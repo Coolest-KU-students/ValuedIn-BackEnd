@@ -13,38 +13,35 @@ namespace ValuedInBE.Controllers
     {
         private readonly IUserService _userService;
 
-
         public UserCredentialsController(IUserService userCredentialsService)
         {
             _userService = userCredentialsService;
         }
 
-
         [Authorize(Roles = "SYS_ADMIN")]
-        [HttpPost("/page")]
+        [HttpPost("page")]
         public async Task<ActionResult<Page<UserSystemInfo>>> GetUserPage(PageConfig pageConfig)
         {
             return await _userService.GetUserPage(pageConfig);
         }
 
         [Authorize(Roles = "SYS_ADMIN")]
-        [HttpGet("/{login}")]
+        [HttpGet("{login}")]
         public async Task<ActionResult<UserSystemInfo>> GetUserSystemInfo(string login)
         {
             UserSystemInfo user = await _userService.GetUserSystemInfoByLogin(login);
             return user != null ? user : NoContent();
         }
 
-
         [Authorize(Roles = "SYS_ADMIN")]
-        [HttpPut("/")]
+        [HttpPut]
         public async Task UpdateUser(UpdatedUser updatedUser)
         {
             await _userService.UpdateUser(updatedUser);
         }
 
         [Authorize(Roles = "SYS_ADMIN")]
-        [HttpDelete("/expire/{login}")]
+        [HttpDelete("expire/{login}")]
         public async Task ExpireUser(string login)
         {
             await _userService.ExpireUser(login);
