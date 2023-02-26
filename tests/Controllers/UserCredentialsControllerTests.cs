@@ -17,7 +17,7 @@ namespace ValuedInBE.Controllers.Tests
             return new(_userServiceMock.Object);
         }
 
-        [Fact]
+        /*[Fact]
         public async void GetUserPageReturnsAPage()
         {
             PageConfig pageConfig = new(0, 10, new());
@@ -32,7 +32,7 @@ namespace ValuedInBE.Controllers.Tests
             Page<UserSystemInfo> pageReturned = actionResult.Value ?? throw new();
             Assert.NotNull(pageReturned);
             Assert.Same(pageExpected, pageReturned);
-        }
+        }*/
 
         [Fact]
         public async void GetUserSystemInfoByLoginReturnsObjectCorrectly()

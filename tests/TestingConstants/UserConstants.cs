@@ -23,7 +23,7 @@ namespace ValuedInBE
                     Login = login,
                     IsExpired = false,
                     LastActive = DateTime.Now,
-                    Role = UserRole.DEFAULT,
+                    Role = UserRoleExtended.DEFAULT,
                     FirstName = login,
                     LastName = login,
                     Email = email,
@@ -37,7 +37,7 @@ namespace ValuedInBE
             {
                 UpdatedUser user = new();
                 user.Login = login;
-                user.Role = UserRole.DEFAULT;
+                user.Role = UserRoleExtended.DEFAULT;
                 user.FirstName = login;
                 user.LastName = login;
                 user.Email = email;
@@ -52,7 +52,7 @@ namespace ValuedInBE
                 return new()
                 {
                     Login = login,
-                    Role = UserRole.DEFAULT,
+                    Role = UserRoleExtended.DEFAULT,
                     FirstName = login,
                     LastName = login,
                     Password = password,

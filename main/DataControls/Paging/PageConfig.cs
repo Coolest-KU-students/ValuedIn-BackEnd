@@ -4,13 +4,13 @@ namespace ValuedInBE.DataControls.Paging
 {
     public class PageConfig
     {
-        public int Skip { get; set; }
+        public int Page { get; set; }
         public int Size { get; set; }
         public OrderByColumnList OrderByColumns { get; set; }
 
-        public PageConfig(int skip, int size, OrderByColumnList orderByColumns)
+        public PageConfig(int page, int size, OrderByColumnList orderByColumns)
         {
-            Skip = skip;
+            Page = page;
             Size = size;
             OrderByColumns = orderByColumns;
         }

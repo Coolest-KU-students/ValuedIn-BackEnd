@@ -33,12 +33,12 @@ namespace ValuedInBETests.IntegrationTests.Data
                     Telephone = "",
                     FirstName = "FirstName",
                     LastName = "LastName",
-                    Role = UserRole.DEFAULT
+                    Role = UserRoleExtended.DEFAULT
                 },
                 new()
                 {
                     Login = "SetupUser",
-                    Role = UserRole.SYS_ADMIN,
+                    Role = UserRoleExtended.SYS_ADMIN,
                     FirstName = "Setup",
                     LastName = "User",
                     Password = "Password1",

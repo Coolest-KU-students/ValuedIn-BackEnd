@@ -1,5 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NuGet.Configuration;
+using System.Linq.Expressions;
 using ValuedInBE.Contexts;
+using ValuedInBE.DataControls.Ordering;
+using ValuedInBE.DataControls.Ordering.Internal;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.Users;
 
@@ -7,6 +11,12 @@ namespace ValuedInBE.Repositories.Database
 {
     public class UserCredentialRepository : IUserCredentialRepository
     {
+        private readonly CustomColumnMapping<UserCredentials> _customColumnMapping = new()
+        {
+            {"LastName",  new OrderingExpression<UserCredentials>(creds => creds.UserDetails.LastName + creds.UserDetails.FirstName) }
+        };
+
+
         private readonly ValuedInContext _context;
 
         public UserCredentialRepository(ValuedInContext context)
@@ -33,6 +43,7 @@ namespace ValuedInBE.Repositories.Database
         {
             var credentialQuery = from c in _context.UserCredentials
                                             .Include(creds => creds.UserDetails)
+                                           
                                   where c.Login == login
                                   select c;
             return await credentialQuery.FirstOrDefaultAsync();
@@ -40,20 +51,21 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task<Page<UserCredentials>> GetUserPageWithDetails(PageConfig config)
         {
-            string compiledOrderBy = string.Join(", ", config.OrderByColumns.AsLinqOrderBy());
+           
 
-            var credentialQuery = from c in _context.UserCredentials.Include(a => a.UserDetails)
-                                  orderby compiledOrderBy
+            var credentialQuery = from c in _context.UserCredentials
+                                            .Include(a => a.UserDetails)
+                                            .ApplyOrderingInLinq(config.OrderByColumns, _customColumnMapping)
                                   select c;
 
             int total = credentialQuery.Count();
-
-            credentialQuery.Skip(config.Skip);
+                
+            credentialQuery.Skip(config.Page * config.Size);
             credentialQuery.Take(config.Size);
 
             List<UserCredentials> credentials = await credentialQuery.ToListAsync();
 
-            return new Page<UserCredentials>(credentials, total, config.Skip + 1);
+            return new Page<UserCredentials>(credentials, total, config.Page + 1);
         }
 
         public async Task Insert(UserCredentials userCredentials)

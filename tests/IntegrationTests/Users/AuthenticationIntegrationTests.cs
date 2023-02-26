@@ -1,7 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Security.Principal;
 using ValuedInBE;
+using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.DTOs.Requests.Users;
+using ValuedInBE.Models.DTOs.Responses.Authentication;
+using ValuedInBE.Models.DTOs.Responses.Users;
 using ValuedInBE.Security.Users;
 using ValuedInBETests.IntegrationTests.Config;
 using Xunit;
@@ -17,9 +23,10 @@ namespace ValuedInBETests.IntegrationTests.Users
             .Where(role => role != UserRoleExtended.SYS_ADMIN)
             .Select(role => role.ToString()).ToArray();
 
-        private const string registerUserRoute = "/api/registerUser";
-        private const string selfRegisterRoute = "/api/register";
-        private const string logInRoute = "/api/login";
+        private const string registerUserRoute = "/api/auth/registerUser";
+        private const string selfRegisterRoute = "/api/auth/register";
+        private const string logInRoute = "/api/auth/login";
+        private const string reAuthRoute = "/api/auth";
 
         public AuthenticationIntegrationTests(IntegrationTestWebApplicationFactory<Program> factory) : base(factory)
         {
@@ -62,7 +69,7 @@ namespace ValuedInBETests.IntegrationTests.Users
         }
 
         [Fact]
-        public async Task LoggingInReturnsJwtOnSuccess()
+        public async Task LoggingInReturnsJwtOnSuccessAndThenUseItToReauthenticate()
         {
             AuthRequest incorrectCredentials = new() { Login = "Fake", Password = "Fake", RememberMe = false };
             StringContent requestContent = SerializeIntoJsonHttpContent(incorrectCredentials);
@@ -75,11 +82,23 @@ namespace ValuedInBETests.IntegrationTests.Users
             HttpResponseMessage response = await _client.PostAsync(logInRoute, requestContent);
             Assert.True(response.IsSuccessStatusCode);
             Assert.NotNull(response.Content);
-            string responceContent = await response.Content.ReadAsStringAsync();
-            Assert.True(tokenHandler.CanReadToken(responceContent)); //unit tests check if the token has correct metadata
+            string responseContent = await response.Content.ReadAsStringAsync();
+            TokenAndRole? tokenAndRole = JsonConvert.DeserializeObject<TokenAndRole>(responseContent);
+            Assert.NotNull(tokenAndRole);
+            Assert.Equal(tokenAndRole!.Role, UserRoleExtended.DEFAULT);
+            Assert.NotNull(tokenAndRole.Token);
+
+            await Task.Delay(1000); //delaying so the expiration date is changed
+
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenAndRole.Token);
+            response = await _client.GetAsync(reAuthRoute);
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.NotNull(response.Content);
+            responseContent = await response.Content.ReadAsStringAsync();
+            TokenAndRole? reAuthTokenAndRole = JsonConvert.DeserializeObject<TokenAndRole>(responseContent);
+            Assert.NotNull(reAuthTokenAndRole);
+            Assert.Equal(tokenAndRole.Role, reAuthTokenAndRole!.Role);
+            Assert.NotEqual(tokenAndRole.Token, reAuthTokenAndRole.Token);
         }
-
-
-
     }
 }

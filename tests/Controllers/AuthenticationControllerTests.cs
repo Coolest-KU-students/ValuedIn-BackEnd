@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ValuedInBE.Controllers;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using ValuedInBE.Models.DTOs.Requests.Users;
+using ValuedInBE.Models.DTOs.Responses.Authentication;
+using ValuedInBE.Security.Users;
 using ValuedInBE.Services.Users;
 using Xunit;
 
@@ -9,6 +12,8 @@ namespace ValuedInBE.Controllers.Tests
     public class AuthenticationControllerTests
     {
         private readonly Mock<IAuthenticationService> _mockAuthenticationService = new();
+        private const string fakeToken = "Fake token indeed";
+
 
         private AuthenticationController MockAuthenticationController()
         {
@@ -42,15 +47,21 @@ namespace ValuedInBE.Controllers.Tests
         [Fact()]
         public async Task LogInShouldReturnJwtToken()
         {
-            string fakeToken = "Fake token indeed";
+            TokenAndRole tokenAndRole = new()
+            {
+                Token = fakeToken,
+                Role = UserRoleExtended.DEFAULT
+            };
             AuthRequest authRequest = UserConstants.AuthRequestInstance;
             _mockAuthenticationService.Setup(service => service.AuthenticateUser(authRequest))
-                .ReturnsAsync(fakeToken);
+                .ReturnsAsync(tokenAndRole);
             AuthenticationController controller = MockAuthenticationController();
 
-            ActionResult<string> actionResult = await controller.LogIn(authRequest);
+            ActionResult<TokenAndRole> actionResult = await controller.LogIn(authRequest);
             Assert.NotNull(actionResult.Value);
-            Assert.Equal(fakeToken, actionResult.Value);
+            Assert.Equal(fakeToken, actionResult.Value!.Token);
+            Assert.Equal(UserRoleExtended.DEFAULT, actionResult.Value.Role);
         }
+
     }
 }

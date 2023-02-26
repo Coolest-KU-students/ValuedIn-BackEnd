@@ -1,4 +1,5 @@
-﻿using ValuedInBE.DataControls.Paging;
+﻿using Microsoft.OpenApi.Extensions;
+using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.DTOs.Responses.Users;
 using ValuedInBE.Models.Users;
@@ -58,7 +59,7 @@ namespace ValuedInBE.Services.Users.Implementations
                 Password = newUser.Password,
                 IsExpired = false,
                 LastActive = null,
-                Role = newUser.Role ?? UserRole.DEFAULT,
+                Role = newUser.Role?.GetEnumFromDisplayName<UserRole>() ?? UserRole.DEFAULT,
                 UserDetails = userDetails
             };
 
@@ -82,7 +83,7 @@ namespace ValuedInBE.Services.Users.Implementations
                 Login = credentials.Login,
                 IsExpired = credentials.IsExpired,
                 LastActive = credentials.LastActive,
-                Role = credentials.Role,
+                Role = credentials.Role.GetDisplayName(),
                 FirstName = credentials.UserDetails.FirstName,
                 LastName = credentials.UserDetails.LastName,
                 Email = credentials.UserDetails.Email,
@@ -106,7 +107,7 @@ namespace ValuedInBE.Services.Users.Implementations
             if (credentials == null)
                 throw new KeyNotFoundException("Login does not exist");
 
-            credentials.Role = updatedUser.Role;
+            credentials.Role = updatedUser.Role.GetEnumFromDisplayName<UserRole>();
             credentials.UserDetails.FirstName = updatedUser.FirstName;
             credentials.UserDetails.LastName = updatedUser.LastName;
             credentials.UserDetails.Email = updatedUser.Email;

@@ -21,7 +21,7 @@ namespace ValuedInBE.Contexts
             NewUser newUser = new()
             {
                 Login = "SetupUser",
-                Role = UserRole.SYS_ADMIN,
+                Role = UserRoleExtended.SYS_ADMIN,
                 FirstName = "Setup",
                 LastName = "User",
                 Password = "Password1",

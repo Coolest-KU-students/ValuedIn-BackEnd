@@ -23,12 +23,12 @@ namespace ValuedInBETests.IntegrationTests.Config
                 var dbContextDescriptor =
                     services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<ValuedInContext>));
 
-                services.Remove(dbContextDescriptor);
+                services.Remove(dbContextDescriptor!);
 
                 var dbConnectionDescriptor =
                     services.SingleOrDefault(d => d.ServiceType == typeof(DbConnection));
 
-                services.Remove(dbConnectionDescriptor);
+                services.Remove(dbConnectionDescriptor!);
 
                 var connection = new SqliteConnection("DataSource=myshareddb;mode=memory;");
                 connection.Open();

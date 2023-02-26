@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ValuedInBE.AutoMapperProfiles;
 using ValuedInBE.Contexts;
+using ValuedInBE.DataControls.Memory;
 using ValuedInBE.Models;
 using ValuedInBE.Repositories;
 using ValuedInBE.Repositories.Database;
@@ -18,10 +19,15 @@ namespace ValuedInBE
 {
     public class Program
     {
+
         public static async Task Main(string[] args)
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             // Add services to the container.
+
+            CorsConfig corsConfig = CorsConfig.LocalHostConfig;
+
+            builder.Services.AddCors(corsConfig.Configure());
 
             builder.Services.AddControllers();
             builder.Services.AddDbContext<ValuedInContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ValuedIn")));
@@ -33,6 +39,8 @@ namespace ValuedInBE
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             builder.Services.AddSingleton(new MapperConfiguration(c => c.AddProfile(new MappingProfile())).CreateMapper());
+
+            builder.Services.AddSingleton<IMemoizationEngine, MemoizationEngine>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -82,6 +90,7 @@ namespace ValuedInBE
             }
 
             app.UseHttpsRedirection();
+            app.UseCors(corsConfig.CorsConfigName);
             app.UseAuthentication();
             app.UseRouting();
             app.UseAuthorization();

@@ -79,7 +79,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             string getUserResponseContent = await getUserResponse.Content.ReadAsStringAsync();
             UserSystemInfo? user = JsonConvert.DeserializeObject<UserSystemInfo>(getUserResponseContent);
             Assert.NotNull(user);
-            Assert.Equal(user.Login, targetLogin);
+            Assert.Equal(user!.Login, targetLogin);
             Assert.False(user.IsExpired);
 
             RemoveUserIdFromClient(); ; //reset

@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ValuedInBE.Models.DTOs.Requests.Users;
+using ValuedInBE.Models.DTOs.Responses.Authentication;
 using ValuedInBE.Services.Users;
 
 namespace ValuedInBE.Controllers
 {
-    [Route("api/")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
@@ -15,7 +16,6 @@ namespace ValuedInBE.Controllers
         {
             _authenticationService = authenticationService;
         }
-
 
         [Authorize(Roles = "SYS_ADMIN")]
         [HttpPost("registerUser")]
@@ -35,10 +35,16 @@ namespace ValuedInBE.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<ActionResult<string>> LogIn(AuthRequest authRequest)
+        public async Task<ActionResult<TokenAndRole>> LogIn(AuthRequest authRequest)
         {
-            string token = await _authenticationService.AuthenticateUser(authRequest);
-            return token;
+            return await _authenticationService.AuthenticateUser(authRequest);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<TokenAndRole>> CheckAuthentication()
+        {
+            string jwtToken = HttpContext.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+            return await _authenticationService.VerifyToken(jwtToken);
         }
     }
 }

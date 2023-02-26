@@ -20,9 +20,9 @@ namespace ValuedInBE.Controllers
 
         [Authorize(Roles = "SYS_ADMIN")]
         [HttpPost("page")]
-        public async Task<ActionResult<Page<UserSystemInfo>>> GetUserPage(PageConfig pageConfig)
+        public async Task<ActionResult<Page<UserSystemInfo>>> GetUserPage(UserPageRequest pageRequest)
         {
-            return await _userService.GetUserPage(pageConfig);
+            return await _userService.GetUserPage(pageRequest);
         }
 
         [Authorize(Roles = "SYS_ADMIN")]
