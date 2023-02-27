@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NuGet.Configuration;
+using NuGet.Protocol.Plugins;
 using System.Linq.Expressions;
 using ValuedInBE.Contexts;
 using ValuedInBE.DataControls.Ordering;
 using ValuedInBE.DataControls.Ordering.Internal;
 using ValuedInBE.DataControls.Paging;
+using ValuedInBE.Models;
 using ValuedInBE.Models.Users;
 
 namespace ValuedInBE.Repositories.Database
@@ -18,19 +20,23 @@ namespace ValuedInBE.Repositories.Database
         };
 
         private readonly ValuedInContext _context;
+        private readonly ILogger<UserCredentialRepository> _logger;
 
-        public UserCredentialRepository(ValuedInContext context)
+        public UserCredentialRepository(ValuedInContext context, ILogger<UserCredentialRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
-        public async Task<int> CountWithSameName(string firstName, string lastName)
+        public async Task<int> CountWithNames(string firstName, string lastName)
         {
+            _logger.LogTrace("Requested user with First Name '{firstName}', Last Name '{lastName}'", firstName, lastName);
             return await _context.UserDetails.CountAsync(a => a.FirstName == firstName && a.LastName == lastName);
         }
 
         public async Task<List<UserCredentials>> GetAllUsers()
         {
+            _logger.LogTrace("All User List Requested");
             var credentialQuery = from c in _context.UserCredentials
                                             .Include(a => a.UserDetails) 
                                   select c;
@@ -39,6 +45,7 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task<UserCredentials> GetByLogin(string login)
         {
+            _logger.LogTrace("Request user credentials with login {login}", login);
             var credentialQuery = from c in _context.UserCredentials
                                   where c.Login == login
                                   select c;
@@ -46,6 +53,7 @@ namespace ValuedInBE.Repositories.Database
         }
         public async Task<UserCredentials> GetByLoginWithDetails(string login)
         {
+            _logger.LogTrace("Request user credentials and details with login {login}", login);
             var credentialQuery = from c in _context.UserCredentials
                                             .Include(creds => creds.UserDetails)
                                            
@@ -56,6 +64,7 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task<UserCredentials> GetByUserIdWithDetails(string userID)
         {
+            _logger.LogTrace("Request user credentials and details with user ID {userId}", userID);
             var credentialQuery = from c in _context.UserCredentials
                                             .Include(creds => creds.UserDetails)
 
@@ -67,6 +76,8 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task<Page<UserCredentials>> GetUserPageWithDetails(PageConfig config)
         {
+            _logger.LogTrace("Request Requested {size} User Page {page}", config.Size, config.Page);
+
             var credentialQuery = from c in _context.UserCredentials
                                             .Include(a => a.UserDetails)
                                             .ApplyOrderingInLinq(config.OrderByColumns, _customColumnMapping)
@@ -83,6 +94,7 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task Insert(UserCredentials userCredentials)
         {
+            _logger.LogTrace("Inserting user with login {login}", userCredentials.Login);
             _context.UserCredentials.Add(userCredentials);
             await _context.SaveChangesAsync();
 
@@ -90,11 +102,13 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task<bool> LoginExists(string login)
         {
+            _logger.LogTrace("Inserting user with login {login}", login);
             return await _context.UserCredentials.AnyAsync(c => c.Login == login);
         }
 
         public async Task Update(UserCredentials userCredentials)
         {
+            _logger.LogTrace("Updating user with login {login}", userCredentials.Login);
             _context.UserCredentials.Update(userCredentials);
             await _context.SaveChangesAsync();
 

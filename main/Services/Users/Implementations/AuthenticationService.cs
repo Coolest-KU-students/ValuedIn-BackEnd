@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Extensions;
+using NuGet.Protocol.Plugins;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -45,6 +46,7 @@ namespace ValuedInBE.Services.Users.Implementations
             UserCredentials credentials = await _userService.GetUserCredentialsByLogin(auth.Login);
             if (credentials == null)
             {
+                _logger.LogError("Did not find any credentials with login {login} when trying to authenticate", auth.Login);
                 throw new Exception("Incorrect credentials");
             }
 
@@ -54,6 +56,7 @@ namespace ValuedInBE.Services.Users.Implementations
             switch (passwordVerification)
             {
                 case PasswordVerificationResult.Failed:
+                    _logger.LogError("Incorrect password provided for {login}", auth.Login);
                     throw new Exception("Incorrect credentials");
                 case PasswordVerificationResult.SuccessRehashNeeded:
                     //TODO: implement
@@ -77,6 +80,7 @@ namespace ValuedInBE.Services.Users.Implementations
         {
             if (newUser.Role != UserRoleExtended.DEFAULT)
             {
+                _logger.LogError("Attempter to Self Register a user with {login}, but role {Role} was not allowed", newUser.Login, newUser.Role);
                 throw new Exception("Unallowed User role");
             }
             await HashPasswordAndSave(newUser);
@@ -84,6 +88,8 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task<TokenAndRole> VerifyToken(string token)
         {
+            _logger.LogTrace("Attempting to verify token {token}", token);
+
             TokenValidationParameters tokenValidationParameters = new()
             {
                 ValidIssuer = Issuer,
@@ -95,6 +101,7 @@ namespace ValuedInBE.Services.Users.Implementations
             };
             ClaimsPrincipal claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(token, tokenValidationParameters, out SecurityToken _);
             string login = claimsPrincipal.FindFirstValue(ClaimTypes.Name);
+            _logger.LogTrace("Extracted login {login} during verification", login);
             UserCredentials credentials = await _userService.GetUserCredentialsByLogin(login);
             if (credentials.IsExpired) throw new Exception("User is expired");
             credentials.LastActive = DateTime.UtcNow;
@@ -109,6 +116,7 @@ namespace ValuedInBE.Services.Users.Implementations
         {
             User user = _mapper.Map<User>(newUser);
             newUser.Password = HashPassword(user, newUser.Password);
+            _logger.LogTrace("Hashing a password for login {login}", newUser.Login);
             await _userService.CreateNewUser(newUser);
         }
 

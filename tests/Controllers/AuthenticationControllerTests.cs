@@ -6,18 +6,21 @@ using ValuedInBE.Models.DTOs.Responses.Authentication;
 using ValuedInBE.Security.Users;
 using ValuedInBE.Services.Users;
 using Xunit;
+using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace ValuedInBE.Controllers.Tests
 {
     public class AuthenticationControllerTests
     {
         private readonly Mock<IAuthenticationService> _mockAuthenticationService = new();
+        private readonly Mock<ILogger<AuthenticationController>> _mockLogger = new();
         private const string fakeToken = "Fake token indeed";
 
 
         private AuthenticationController MockAuthenticationController()
         {
-            return new(_mockAuthenticationService.Object);
+            return new(_mockAuthenticationService.Object, _mockLogger.Object);
         }
 
         [Fact()]

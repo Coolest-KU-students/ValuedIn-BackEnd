@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Extensions;
+using NuGet.Protocol.Plugins;
 using System.Text;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.DTOs.Requests.Users;
@@ -22,14 +23,9 @@ namespace ValuedInBE.Services.Users.Implementations
             _userIDGeneration = userIDGeneration;
         }
 
-        public async Task<List<UserSystemInfo>> GetAllUsers()
-        {
-            List<UserCredentials> credentials = await _userCredentialRepository.GetAllUsers();
-            return credentials.Select(MapSystemInfoFromCredentials).ToList();
-        }
-
         public async Task<Page<UserSystemInfo>> GetUserPage(PageConfig config)
         {
+            _logger.LogDebug("Fetcing User Page {pageNo} with size {size}", config.Page, config.Size);
             Page<UserCredentials> credentialPage =
                 await _userCredentialRepository.GetUserPageWithDetails(config);
 
@@ -42,12 +38,14 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task CreateNewUser(NewUser newUser)
         {
+            _logger.LogDebug("Creating new user with login {login}", newUser.Login);
             if (await _userCredentialRepository.LoginExists(newUser.Login))
             {
+                _logger.LogTrace("Tried to create a new user, but {login} was already taken", newUser.Login);
                 throw new Exception("Login already exists");
             }
 
-            int sameNameUserCount = await _userCredentialRepository.CountWithSameName(newUser.FirstName, newUser.LastName);
+            int sameNameUserCount = await _userCredentialRepository.CountWithNames(newUser.FirstName, newUser.LastName);
             string generatedUserID = await _userIDGeneration.GenerateUserIDForNewUser(newUser, sameNameUserCount);
 
             UserDetails userDetails = new()
@@ -75,11 +73,13 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task<UserCredentials> GetUserCredentialsByLogin(string login)
         {
+            _logger.LogDebug("Fetching user credentials for login {login} ", login);
             return await _userCredentialRepository.GetByLogin(login);
         }
 
         public async Task<UserSystemInfo> GetUserSystemInfoByLogin(string login)
         {
+            _logger.LogDebug("Fetching user system info for login {login} ", login);
             UserCredentials credentials = await _userCredentialRepository.GetByLoginWithDetails(login);
             return credentials != null ? MapSystemInfoFromCredentials(credentials) : null;
         }
@@ -100,9 +100,13 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task ExpireUser(string login)
         {
+            _logger.LogDebug("Tying to expired user with {login} ", login);
             UserCredentials credentials = await _userCredentialRepository.GetByLogin(login);
             if (credentials == null)
+            {
+                _logger.LogTrace("Did not find a user wiht login {login}", login);
                 throw new KeyNotFoundException("Login does not exist");
+            }
 
             credentials.IsExpired = true;
             await _userCredentialRepository.Update(credentials);
@@ -110,9 +114,13 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task UpdateUser(UpdatedUser updatedUser)
         {
-            UserCredentials credentials = await _userCredentialRepository.GetByUserIdWithDetails(updatedUser.UserID); //TODO: remap
+            _logger.LogDebug("Tying to update user with userId {userId} ", updatedUser.UserID);
+            UserCredentials credentials = await _userCredentialRepository.GetByUserIdWithDetails(updatedUser.UserID);
             if (credentials == null)
+            {
+                _logger.LogTrace("Did not find a user with userId {login}", updatedUser.UserID);
                 throw new KeyNotFoundException("Login does not exist");
+            }
 
             credentials.Role = updatedUser.Role.GetEnumFromDisplayName<UserRole>();
             credentials.UserDetails.FirstName = updatedUser.FirstName;
@@ -121,7 +129,5 @@ namespace ValuedInBE.Services.Users.Implementations
             credentials.UserDetails.Telephone = updatedUser.Telephone;
             await _userCredentialRepository.Update(credentials);
         }
-
-
     }
 }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Castle.Core.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.DTOs.Requests.Users;
@@ -11,28 +13,29 @@ namespace ValuedInBE.Controllers.Tests
     public class UserCredentialsControllerTests
     {
         private readonly Mock<IUserService> _userServiceMock = new();
+        private readonly Mock<ILogger<UserCredentialsController>> _logger = new();
 
         private UserCredentialsController MockUserCredentialsController()
         {
-            return new(_userServiceMock.Object);
+            return new(_userServiceMock.Object, _logger.Object);
         }
 
-        /*[Fact]
+        [Fact]
         public async void GetUserPageReturnsAPage()
-        {
-            PageConfig pageConfig = new(0, 10, new());
+        { 
+            UserPageRequest userPageRequest = new(0, 10, new(), true);
             Page<UserSystemInfo> pageExpected = Page<UserSystemInfo>.Empty();
             _userServiceMock
-                .Setup(mock => mock.GetUserPage(pageConfig))
+                .Setup(mock => mock.GetUserPage(userPageRequest))
                 .ReturnsAsync(pageExpected);
 
             UserCredentialsController controller = MockUserCredentialsController();
-            var actionResult = await controller.GetUserPage(pageConfig);
+            var actionResult = await controller.GetUserPage(userPageRequest);
             Assert.NotNull(actionResult);
             Page<UserSystemInfo> pageReturned = actionResult.Value ?? throw new();
             Assert.NotNull(pageReturned);
             Assert.Same(pageExpected, pageReturned);
-        }*/
+        }
 
         [Fact]
         public async void GetUserSystemInfoByLoginReturnsObjectCorrectly()

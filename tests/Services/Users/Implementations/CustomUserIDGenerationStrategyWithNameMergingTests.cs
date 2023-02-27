@@ -5,11 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Moq;
+using ValuedInBE.Controllers;
 
 namespace ValuedInBE.Services.Users.Implementations.Tests
 {
     public class CustomUserIDGenerationStrategyWithNameMergingTests
     {
+
+        private readonly Mock<ILogger<CustomUserIDGenerationStrategyWithNameMerging>> _mockLogger = new();
+
         [Fact()]
         public void GenerateUserIDTest()
         {
@@ -17,7 +23,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
             string lastName = "LastName";
             int sameNameCount = 10;
             int expectedGeneratedPartLength = 8;
-            CustomUserIDGenerationStrategyWithNameMerging strategy = new CustomUserIDGenerationStrategyWithNameMerging();
+            CustomUserIDGenerationStrategyWithNameMerging strategy = new(_mockLogger.Object);
             string generatedId = strategy.GenerateUserIDForNewUser(firstName, lastName, sameNameCount);
             Assert.NotNull(generatedId);
             Assert.NotEmpty(generatedId);

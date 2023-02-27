@@ -8,7 +8,6 @@ namespace ValuedInBE.Services.Users
     public interface IUserService
     {
         public Task<Page<UserSystemInfo>> GetUserPage(PageConfig config);
-        public Task<List<UserSystemInfo>> GetAllUsers();
         public Task CreateNewUser(NewUser newUser);
         public Task<UserCredentials> GetUserCredentialsByLogin(string login);
         public Task<UserSystemInfo> GetUserSystemInfoByLogin(string login);

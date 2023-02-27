@@ -6,13 +6,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
+using Castle.Core.Logging;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace ValuedInBE.DataControls.Memory.Tests
 {
     public class MemoizationEngineTests
     {
         private readonly MemoizationEngine _memoizationEngine;
-
+        private readonly Mock<ILogger<MemoizationEngine>> _logger = new();
         private readonly List<string> _listAsKey = new();
         private readonly Func<string, string> _functionThatReturnsTheInput = something => something;
         private const string testingValue = "test";
@@ -23,9 +26,8 @@ namespace ValuedInBE.DataControls.Memory.Tests
 
         public MemoizationEngineTests()
         {
-            _memoizationEngine = new();
+            _memoizationEngine = new(_logger.Object);
         }
-
 
         [Fact]
         public async Task AddWithTimeOutAndThenRetrieveAndThenCheckIfDeletedAfterTimeOut()
