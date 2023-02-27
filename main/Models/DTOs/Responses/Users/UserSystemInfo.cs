@@ -1,10 +1,11 @@
-﻿using ValuedInBE.Security.Users;
+﻿
 
 namespace ValuedInBE.Models.DTOs.Responses.Users
 {
     public class UserSystemInfo
     {
         public string Login { get; set; }
+        public string UserID { get; set; }
         public bool IsExpired { get; set; }
         public DateTime? LastActive { get; set; }
         public string Role { get; set; }

@@ -13,6 +13,7 @@ namespace ValuedInBE
         public const string telephone = "9945123-5554";
         public const string password = "Password";
         public const string hashedPassword = "This is Hashed";
+        public const string userId = "This is faked";
 
         public static UserSystemInfo UserSystemInfoInstance
         {
@@ -21,6 +22,7 @@ namespace ValuedInBE
                 return new()
                 {
                     Login = login,
+                    UserID = userId,
                     IsExpired = false,
                     LastActive = DateTime.Now,
                     Role = UserRoleExtended.DEFAULT,
@@ -35,13 +37,15 @@ namespace ValuedInBE
         {
             get
             {
-                UpdatedUser user = new();
-                user.Login = login;
-                user.Role = UserRoleExtended.DEFAULT;
-                user.FirstName = login;
-                user.LastName = login;
-                user.Email = email;
-                user.Telephone = telephone;
+                UpdatedUser user = new()
+                {
+                    UserID = userId,
+                    Role = UserRoleExtended.DEFAULT,
+                    FirstName = login,
+                    LastName = login,
+                    Email = email,
+                    Telephone = telephone
+                };
                 return user;
             }
         }
@@ -65,10 +69,12 @@ namespace ValuedInBE
         {
             get
             {
-                User user = new();
-                user.Login = login;
-                user.Role = UserRole.DEFAULT;
-                user.Password = password;
+                User user = new()
+                {
+                    Login = login,
+                    Role = UserRole.DEFAULT,
+                    Password = password
+                };
                 return user;
             }
         }
@@ -76,10 +82,12 @@ namespace ValuedInBE
         {
             get
             {
-                AuthRequest request = new();
-                request.Login = login;
-                request.Password = password;
-                request.RememberMe = false;
+                AuthRequest request = new()
+                {
+                    Login = login,
+                    Password = password,
+                    RememberMe = false
+                };
                 return request;
             }
         }
@@ -87,8 +95,8 @@ namespace ValuedInBE
         {
             get
             {
-                return new UserDetails() { 
-                    Login = login, 
+                return new UserDetails() {
+                    UserID = userId,
                     FirstName = login, 
                     LastName = login, 
                     Email = email, 

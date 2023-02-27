@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Extensions;
+using System.Text;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.DTOs.Responses.Users;
@@ -10,13 +11,15 @@ namespace ValuedInBE.Services.Users.Implementations
 {
     public class UserService : IUserService
     {
-        private ILogger<UserService> _logger;
-        private IUserCredentialRepository _userCredentialRepository;
+        private readonly ILogger<UserService> _logger;
+        private readonly IUserCredentialRepository _userCredentialRepository;
+        private readonly IUserIDGenerationStrategy _userIDGeneration;
 
-        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository)
+        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository, IUserIDGenerationStrategy userIDGeneration)
         {
             _logger = logger;
             _userCredentialRepository = userCredentialRepository;
+            _userIDGeneration = userIDGeneration;
         }
 
         public async Task<List<UserSystemInfo>> GetAllUsers()
@@ -44,9 +47,12 @@ namespace ValuedInBE.Services.Users.Implementations
                 throw new Exception("Login already exists");
             }
 
+            int sameNameUserCount = await _userCredentialRepository.CountWithSameName(newUser.FirstName, newUser.LastName);
+            string generatedUserID = await _userIDGeneration.GenerateUserIDForNewUser(newUser, sameNameUserCount);
+
             UserDetails userDetails = new()
             {
-                Login = newUser.Login,
+                UserID = generatedUserID,
                 FirstName = newUser.FirstName,
                 LastName = newUser.LastName,
                 Email = newUser.Email,
@@ -55,6 +61,7 @@ namespace ValuedInBE.Services.Users.Implementations
             
             UserCredentials userCredentials = new()
             {
+                UserID = generatedUserID,
                 Login = newUser.Login,
                 Password = newUser.Password,
                 IsExpired = false,
@@ -81,6 +88,7 @@ namespace ValuedInBE.Services.Users.Implementations
             new()
             {
                 Login = credentials.Login,
+                UserID = credentials.UserID,
                 IsExpired = credentials.IsExpired,
                 LastActive = credentials.LastActive,
                 Role = credentials.Role.GetDisplayName(),
@@ -88,7 +96,6 @@ namespace ValuedInBE.Services.Users.Implementations
                 LastName = credentials.UserDetails.LastName,
                 Email = credentials.UserDetails.Email,
                 Telephone = credentials.UserDetails.Telephone
-
             };
 
         public async Task ExpireUser(string login)
@@ -103,7 +110,7 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task UpdateUser(UpdatedUser updatedUser)
         {
-            UserCredentials credentials = await _userCredentialRepository.GetByLoginWithDetails(updatedUser.Login);
+            UserCredentials credentials = await _userCredentialRepository.GetByUserIdWithDetails(updatedUser.UserID); //TODO: remap
             if (credentials == null)
                 throw new KeyNotFoundException("Login does not exist");
 
@@ -114,5 +121,7 @@ namespace ValuedInBE.Services.Users.Implementations
             credentials.UserDetails.Telephone = updatedUser.Telephone;
             await _userCredentialRepository.Update(credentials);
         }
+
+
     }
 }

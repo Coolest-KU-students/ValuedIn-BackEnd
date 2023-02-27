@@ -12,5 +12,7 @@ namespace ValuedInBE.Repositories
         Task Insert(UserCredentials userCredentials);
         Task<bool> LoginExists(string login);
         Task<UserCredentials> GetByLoginWithDetails(string login);
+        Task<int> CountWithSameName(string firstName, string lastName);
+        Task<UserCredentials> GetByUserIdWithDetails(string userID);
     }
 }

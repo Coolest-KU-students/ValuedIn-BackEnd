@@ -7,6 +7,7 @@ using Moq;
 using System.IdentityModel.Tokens.Jwt;
 using ValuedInBE.Models;
 using ValuedInBE.Models.DTOs.Requests.Users;
+using ValuedInBE.Models.DTOs.Responses.Authentication;
 using ValuedInBE.Models.Users;
 using ValuedInBE.Security.Users;
 using Xunit;
@@ -45,7 +46,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 _mapperMock.Object
                 );
         }
-        /*
+        
         [Fact()]
         public async void AuthenticateUserTest()
         {
@@ -66,14 +67,14 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
 
             AuthenticationService service = MockAuthenticationService();
 
-            string tokenReturned = await service.AuthenticateUser(auth);
-            Assert.True(tokenHandler.CanReadToken(tokenReturned));
+            TokenAndRole tokenReturned = await service.AuthenticateUser(auth);
+            Assert.True(tokenHandler.CanReadToken(tokenReturned.Token));
             Assert.Equal(tokenHandler.TokenLifetimeInMinutes / 60, jwtExpirationInHours);
 
-            JwtSecurityToken jwt = tokenHandler.ReadJwtToken(tokenReturned);
+            JwtSecurityToken jwt = tokenHandler.ReadJwtToken(tokenReturned.Token);
             Assert.Equal(jwt.Issuer, jwtIssuer);
             Assert.Contains(jwtAudience, jwt.Audiences);
-        }*/
+        }
 
         [Fact()]
         public async Task RegisterNewUserTestAsync()

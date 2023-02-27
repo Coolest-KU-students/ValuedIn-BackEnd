@@ -85,7 +85,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             RemoveUserIdFromClient(); ; //reset
             UpdatedUser updatedUser = new()
             {
-                Login = user.Login,
+                UserID = user.UserID,
                 Email = user.Email,
                 Role = user.Role,
                 Telephone = user.Telephone,
@@ -107,7 +107,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             Assert.True(updateUserResponse.IsSuccessStatusCode);
             Assert.True(
                 _valuedInContext.UserDetails
-                    .Where(details => details.Login == updatedUser.Login //The same login has the updated lastName
+                    .Where(details => details.UserID == updatedUser.UserID //The same login has the updated lastName
                                 && details.LastName == updatedUser.LastName)
                     .Any()
                 );

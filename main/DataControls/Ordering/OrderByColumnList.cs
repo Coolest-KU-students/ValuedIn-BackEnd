@@ -22,6 +22,8 @@ namespace ValuedInBE.DataControls.Ordering
 
         public IQueryable<TEntity> ApplyOrderingInLinq<TEntity>(IQueryable<TEntity> query, CustomColumnMapping<TEntity> customColumnMapping)
         {
+            if (Count == 0) return query;
+
             Enumerator enumerate = this.GetEnumerator();
             OrderByColumn orderBy = enumerate.Current;
             IOrderedQueryable<TEntity> orderedQuery;

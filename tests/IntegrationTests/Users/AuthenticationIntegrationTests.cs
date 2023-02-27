@@ -48,10 +48,8 @@ namespace ValuedInBETests.IntegrationTests.Users
             AddUserIdToClient(_sysAdmin);
             HttpResponseMessage response = await _client.PostAsync(registerUserRoute, requestContent);
             Assert.True(response.IsSuccessStatusCode);
-            Task<bool> credentialsExistTask = _valuedInContext.UserCredentials.AnyAsync(creds => creds.Login == newUser.Login);
-            Task<bool> detailsExistTask = _valuedInContext.UserDetails.AnyAsync(details => details.Login == newUser.Login);
+            Task<bool> credentialsExistTask = _valuedInContext.UserCredentials.AnyAsync(creds => creds.Login == newUser.Login && creds.UserDetails != null);
             Assert.True(await credentialsExistTask);
-            Assert.True(await detailsExistTask);
         }
 
         [Fact]
@@ -62,10 +60,8 @@ namespace ValuedInBETests.IntegrationTests.Users
             StringContent content = SerializeIntoJsonHttpContent(newUser);
             HttpResponseMessage response = await _client.PostAsync(selfRegisterRoute, content);
             Assert.True(response.IsSuccessStatusCode, $"Status code should be ok, but is: {response.StatusCode}");
-            Task<bool> credentialsExistTask = _valuedInContext.UserCredentials.AnyAsync(creds => creds.Login == newUser.Login);
-            Task<bool> detailsExistTask = _valuedInContext.UserDetails.AnyAsync(details => details.Login == newUser.Login);
+            Task<bool> credentialsExistTask = _valuedInContext.UserCredentials.AnyAsync(creds => creds.Login == newUser.Login && creds.UserDetails != null);
             Assert.True(await credentialsExistTask);
-            Assert.True(await detailsExistTask);
         }
 
         [Fact]

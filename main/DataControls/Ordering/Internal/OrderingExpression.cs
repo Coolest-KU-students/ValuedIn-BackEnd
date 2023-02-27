@@ -2,15 +2,8 @@
 
 namespace ValuedInBE.DataControls.Ordering.Internal
 {
-    public interface IOrderingExpression<TEntity> {
 
-        Type GetKeyType();
-
-        Expression<Func<TEntity, object>> GetKeySelectorFunction();
-    
-    }
-
-    public class OrderingExpression<TEntity> : IOrderingExpression<TEntity>
+    public class OrderingExpression<TEntity>
     {
         private readonly Expression<Func<TEntity, object>> _func;
 
@@ -23,12 +16,5 @@ namespace ValuedInBE.DataControls.Ordering.Internal
         {
             return _func;
         }
-
-        public Type GetKeyType()
-        {
-            return typeof(object);
-        }
-
-
     }
 }

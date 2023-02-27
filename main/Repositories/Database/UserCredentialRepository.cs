@@ -9,6 +9,7 @@ using ValuedInBE.Models.Users;
 
 namespace ValuedInBE.Repositories.Database
 {
+
     public class UserCredentialRepository : IUserCredentialRepository
     {
         private readonly CustomColumnMapping<UserCredentials> _customColumnMapping = new()
@@ -16,12 +17,16 @@ namespace ValuedInBE.Repositories.Database
             {"LastName",  new OrderingExpression<UserCredentials>(creds => creds.UserDetails.LastName + creds.UserDetails.FirstName) }
         };
 
-
         private readonly ValuedInContext _context;
 
         public UserCredentialRepository(ValuedInContext context)
         {
             _context = context;
+        }
+
+        public async Task<int> CountWithSameName(string firstName, string lastName)
+        {
+            return await _context.UserDetails.CountAsync(a => a.FirstName == firstName && a.LastName == lastName);
         }
 
         public async Task<List<UserCredentials>> GetAllUsers()
@@ -49,17 +54,25 @@ namespace ValuedInBE.Repositories.Database
             return await credentialQuery.FirstOrDefaultAsync();
         }
 
+        public async Task<UserCredentials> GetByUserIdWithDetails(string userID)
+        {
+            var credentialQuery = from c in _context.UserCredentials
+                                            .Include(creds => creds.UserDetails)
+
+                                  where c.UserID == userID
+                                  select c;
+            return await credentialQuery.FirstOrDefaultAsync();
+        }
+
+
         public async Task<Page<UserCredentials>> GetUserPageWithDetails(PageConfig config)
         {
-           
-
             var credentialQuery = from c in _context.UserCredentials
                                             .Include(a => a.UserDetails)
                                             .ApplyOrderingInLinq(config.OrderByColumns, _customColumnMapping)
                                   select c;
 
             int total = credentialQuery.Count();
-                
             credentialQuery.Skip(config.Page * config.Size);
             credentialQuery.Take(config.Size);
 

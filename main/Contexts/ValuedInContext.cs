@@ -34,8 +34,11 @@ namespace ValuedInBE.Contexts
 
             modelBuilder.Entity<UserCredentials>()
             .HasOne(a => a.UserDetails).WithOne()
-            .HasForeignKey<UserDetails>(e => e.Login).IsRequired();
+            .HasForeignKey<UserDetails>(e => e.UserID).IsRequired();
 
+            modelBuilder.Entity<UserCredentials>()
+                .HasIndex(a => a.Login)
+                .IsUnique();
         }
 
         private void MapMessagingModels(ModelBuilder modelBuilder)
@@ -46,7 +49,7 @@ namespace ValuedInBE.Contexts
             .HasForeignKey(e => e.ChatID).IsRequired();
 
             modelBuilder.Entity<ChatParticipant>()
-                .HasKey(e => new { e.Login, e.ChatID });
+                .HasKey(e => new {e.UserID , e.ChatID });
 
         }
 

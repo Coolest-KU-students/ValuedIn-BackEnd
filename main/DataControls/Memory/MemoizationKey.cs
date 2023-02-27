@@ -2,7 +2,6 @@
 {
     public abstract class MemoizationKey
     {
-
     }
 
     public class MemoizationKey<TKey> : MemoizationKey

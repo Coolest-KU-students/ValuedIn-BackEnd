@@ -80,7 +80,6 @@ namespace ValuedInBE.Services.Users.Implementations
                 throw new Exception("Unallowed User role");
             }
             await HashPasswordAndSave(newUser);
-            
         }
 
         public async Task<TokenAndRole> VerifyToken(string token)
@@ -104,10 +103,8 @@ namespace ValuedInBE.Services.Users.Implementations
                 Token = GenerateJWT(_mapper.Map<User>(credentials)),
                 Role = credentials.Role.GetDisplayName()
             };
-
         }
         
-
         private async Task HashPasswordAndSave(NewUser newUser)
         {
             User user = _mapper.Map<User>(newUser);
@@ -157,6 +154,5 @@ namespace ValuedInBE.Services.Users.Implementations
                 );
             return tokenOptions;
         }
-
     }
 }

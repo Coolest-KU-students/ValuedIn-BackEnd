@@ -15,7 +15,7 @@ namespace ValuedInBE.DataControls.Memory
         public void Memoize<TKey, TValue>(TKey key, TValue value, TimeSpan lifeTime)
         {
             Memoize(key, value);
-            _ = RemoveKeyAfterSpecifiedTime(key, lifeTime);
+            _ = RemoveKeyAfterSpecifiedTime(key, lifeTime); //discard so it does not wait till task executes
         }
 
         public TValue TryGetValue<TKey, TValue>(TKey key)
@@ -27,20 +27,18 @@ namespace ValuedInBE.DataControls.Memory
                 throw new KeyNotFoundException();
             }
 
-            MemoizedValue<TValue> specifiedTypeValue = (MemoizedValue<TValue>)memoizedValue;
+            MemoizedValue<TValue> specifiedTypeValue = (MemoizedValue<TValue>) memoizedValue;
             return specifiedTypeValue.Value;
         }
 
         public void RemoveByKey<TKey>(TKey key)
         {
             TryRemove(new MemoizationKey<TKey>() { Key = key }, out _);
-            
         }
 
         private async Task RemoveKeyAfterSpecifiedTime<TKey>(TKey key, TimeSpan lifeTime)
         {
             await Task.Delay(lifeTime);
-            int a = this.Count;
             this.RemoveByKey(key);
         }
     }

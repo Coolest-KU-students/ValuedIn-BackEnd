@@ -7,7 +7,6 @@ namespace ValuedInBE.DataControls.Ordering
     {
         public string Column { get; set; }
         public bool Ascending { get; set; }
-        //public string ExpressInString() => $"{Column} {(Ascending ? "ASC" : "DESC")}";
 
         public OrderByColumn(string column, bool ascending)
         {
@@ -25,7 +24,6 @@ namespace ValuedInBE.DataControls.Ordering
 
         public IOrderedQueryable<TEntity> ApplyOrderBy<TEntity>(IOrderedQueryable<TEntity> query)
         {
-
             return Ascending
                     ? query.ThenBy(GetProperty<TEntity>())
                     : query.ThenByDescending(GetProperty<TEntity>());
