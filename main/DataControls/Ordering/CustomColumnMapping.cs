@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
-using ValuedInBE.DataControls.Ordering.Internal;
+﻿using ValuedInBE.DataControls.Ordering.Internal;
 
 namespace ValuedInBE.DataControls.Ordering
 {

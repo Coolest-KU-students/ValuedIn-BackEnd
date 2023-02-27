@@ -23,6 +23,6 @@ namespace ValuedInBE.System
                                     .AllowCredentials()
                                     .AllowAnyMethod()
                 );
-        
+
     }
 }

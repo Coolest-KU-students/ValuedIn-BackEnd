@@ -1,12 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NuGet.Configuration;
-using NuGet.Protocol.Plugins;
-using System.Linq.Expressions;
 using ValuedInBE.Contexts;
 using ValuedInBE.DataControls.Ordering;
 using ValuedInBE.DataControls.Ordering.Internal;
 using ValuedInBE.DataControls.Paging;
-using ValuedInBE.Models;
 using ValuedInBE.Models.Users;
 
 namespace ValuedInBE.Repositories.Database
@@ -38,7 +34,7 @@ namespace ValuedInBE.Repositories.Database
         {
             _logger.LogTrace("All User List Requested");
             var credentialQuery = from c in _context.UserCredentials
-                                            .Include(a => a.UserDetails) 
+                                            .Include(a => a.UserDetails)
                                   select c;
             return await credentialQuery.ToListAsync();
         }
@@ -56,7 +52,7 @@ namespace ValuedInBE.Repositories.Database
             _logger.LogTrace("Request user credentials and details with login {login}", login);
             var credentialQuery = from c in _context.UserCredentials
                                             .Include(creds => creds.UserDetails)
-                                           
+
                                   where c.Login == login
                                   select c;
             return await credentialQuery.FirstOrDefaultAsync();

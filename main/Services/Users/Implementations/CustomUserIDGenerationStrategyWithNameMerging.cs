@@ -23,7 +23,7 @@ namespace ValuedInBE.Services.Users.Implementations
         {
             int firstNameIndex = 0;
             int lastNameIndex = 0;
-            int offsetBy = (int) (DateTime.Now.Ticks % (sameNameUserCount+1)) % userIDCalculatedSegmentLength;
+            int offsetBy = (int)(DateTime.Now.Ticks % (sameNameUserCount + 1)) % userIDCalculatedSegmentLength;
             int longestWordCount = Math.Max(Math.Max(firstName.Length, lastName.Length), userIDCalculatedSegmentLength);
             StringBuilder calculatedSymbols = new();
             for (int i = 0; i < longestWordCount; i++)
@@ -43,6 +43,6 @@ namespace ValuedInBE.Services.Users.Implementations
             return $"{firstName}.{lastName}.{sameNameUserCount}-{calculatedSegment}";
         }
 
-        private static char GetAverageAndOffset(char a, char b, int offset) => (char)((a + b) / 2 + offset); 
+        private static char GetAverageAndOffset(char a, char b, int offset) => (char)((a + b) / 2 + offset);
     }
 }

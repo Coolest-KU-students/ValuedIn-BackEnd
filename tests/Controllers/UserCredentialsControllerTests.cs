@@ -1,5 +1,4 @@
-﻿using Castle.Core.Logging;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using ValuedInBE.DataControls.Paging;
@@ -22,7 +21,7 @@ namespace ValuedInBE.Controllers.Tests
 
         [Fact]
         public async void GetUserPageReturnsAPage()
-        { 
+        {
             UserPageRequest userPageRequest = new(0, 10, new(), true);
             Page<UserSystemInfo> pageExpected = Page<UserSystemInfo>.Empty();
             _userServiceMock

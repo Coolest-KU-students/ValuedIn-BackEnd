@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace ValuedInBE.DataControls.Memory
 {
@@ -40,7 +39,7 @@ namespace ValuedInBE.DataControls.Memory
                 throw new KeyNotFoundException();
             }
             _logger.LogTrace("Found memoized value with Key({key}) which will is being cast to {TValue} type", key, typeof(TValue));
-            MemoizedValue<TValue> specifiedTypeValue = (MemoizedValue<TValue>) memoizedValue;
+            MemoizedValue<TValue> specifiedTypeValue = (MemoizedValue<TValue>)memoizedValue;
             return specifiedTypeValue.Value;
         }
 
@@ -58,5 +57,5 @@ namespace ValuedInBE.DataControls.Memory
         }
     }
 
-    
+
 }

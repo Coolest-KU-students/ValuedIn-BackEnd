@@ -1,6 +1,4 @@
-﻿using ValuedInBE.Security.Users;
-
-namespace ValuedInBE.Models.DTOs.Requests.Users
+﻿namespace ValuedInBE.Models.DTOs.Requests.Users
 {
     public class NewUser
     {

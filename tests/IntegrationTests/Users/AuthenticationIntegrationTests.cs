@@ -2,12 +2,9 @@
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
-using System.Security.Principal;
 using ValuedInBE;
-using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.DTOs.Responses.Authentication;
-using ValuedInBE.Models.DTOs.Responses.Users;
 using ValuedInBE.Security.Users;
 using ValuedInBETests.IntegrationTests.Config;
 using Xunit;

@@ -10,7 +10,7 @@ namespace ValuedInBE.Security.Users
         public static readonly UserRoleExtended HR = new(UserRole.HR, 1);
         public static readonly UserRoleExtended ORG_ADMIN = new(UserRole.ORG_ADMIN, 2);
         public static readonly UserRoleExtended SYS_ADMIN = new(UserRole.SYS_ADMIN, 3);
-        public static readonly ImmutableList<UserRoleExtended> ExtendedRoles = 
+        public static readonly ImmutableList<UserRoleExtended> ExtendedRoles =
             ImmutableList.Create(
                 DEFAULT,
                 HR,
@@ -20,7 +20,7 @@ namespace ValuedInBE.Security.Users
 
         public static UserRoleExtended GetExtended(UserRole userRole)
         {
-            UserRoleExtended correspondingExtension = 
+            UserRoleExtended correspondingExtension =
                 ExtendedRoles.Find(extended => extended.UserRole.Equals(userRole));
             if (correspondingExtension != null) return correspondingExtension;
 

@@ -1,13 +1,11 @@
-﻿using ValuedInBE.Controllers;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.DTOs.Responses.Authentication;
 using ValuedInBE.Security.Users;
 using ValuedInBE.Services.Users;
 using Xunit;
-using Castle.Core.Logging;
-using Microsoft.Extensions.Logging;
 
 namespace ValuedInBE.Controllers.Tests
 {

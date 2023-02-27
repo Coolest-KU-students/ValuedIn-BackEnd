@@ -49,7 +49,7 @@ namespace ValuedInBE.Contexts
             .HasForeignKey(e => e.ChatID).IsRequired();
 
             modelBuilder.Entity<ChatParticipant>()
-                .HasKey(e => new {e.UserID , e.ChatID });
+                .HasKey(e => new { e.UserID, e.ChatID });
 
         }
 

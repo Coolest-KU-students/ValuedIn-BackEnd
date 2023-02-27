@@ -1,6 +1,4 @@
 ﻿using Microsoft.OpenApi.Extensions;
-using NuGet.Protocol.Plugins;
-using System.Text;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.DTOs.Responses.Users;
@@ -56,7 +54,7 @@ namespace ValuedInBE.Services.Users.Implementations
                 Email = newUser.Email,
                 Telephone = newUser.Telephone
             };
-            
+
             UserCredentials userCredentials = new()
             {
                 UserID = generatedUserID,

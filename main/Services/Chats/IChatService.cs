@@ -18,6 +18,6 @@ namespace ValuedInBE.Services.Chats
 
         MessageDTO CreateNewMessage(NewMessage newMessage);
 
-        
+
     }
 }

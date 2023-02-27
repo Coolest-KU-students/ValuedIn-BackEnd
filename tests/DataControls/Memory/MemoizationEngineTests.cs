@@ -1,14 +1,6 @@
-﻿using Xunit;
-using ValuedInBE.DataControls.Memory;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Configuration;
-using Castle.Core.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Moq;
-using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace ValuedInBE.DataControls.Memory.Tests
 {
@@ -20,7 +12,7 @@ namespace ValuedInBE.DataControls.Memory.Tests
         private readonly Func<string, string> _functionThatReturnsTheInput = something => something;
         private const string testingValue = "test";
         private const int stressTestAmount = 50000;
-        private const int stressTestAsyncTimePillow = 100; 
+        private const int stressTestAsyncTimePillow = 100;
         private readonly TimeSpan _timeout = TimeSpan.FromMilliseconds(5000);
 
 
@@ -35,7 +27,7 @@ namespace ValuedInBE.DataControls.Memory.Tests
             _memoizationEngine.Memoize(_listAsKey, _functionThatReturnsTheInput, _timeout);
 
             Assert.Single(_memoizationEngine);
-            Func<string, string> retrieved = 
+            Func<string, string> retrieved =
                 _memoizationEngine.TryGetValue<List<string>, Func<string, string>>(_listAsKey);
 
             Assert.Equal(testingValue, retrieved.Invoke(testingValue));
@@ -65,7 +57,7 @@ namespace ValuedInBE.DataControls.Memory.Tests
         [Fact]
         public async Task StressTestingRemovalOperationsAsync()
         {
-            foreach(int number in Enumerable.Range(0, stressTestAmount))
+            foreach (int number in Enumerable.Range(0, stressTestAmount))
             {
                 _memoizationEngine.Memoize(number, testingValue, _timeout);
             }

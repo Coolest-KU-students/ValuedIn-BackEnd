@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
+﻿using System.Linq.Expressions;
 
 namespace ValuedInBE.DataControls.Ordering
 {
@@ -28,7 +25,8 @@ namespace ValuedInBE.DataControls.Ordering
             OrderByColumn orderBy = enumerate.Current;
             IOrderedQueryable<TEntity> orderedQuery;
 
-            if (customColumnMapping.TryGetValue(orderBy.Column, out var expression)) {
+            if (customColumnMapping.TryGetValue(orderBy.Column, out var expression))
+            {
                 Expression<Func<TEntity, object>> func = expression.GetKeySelectorFunction();
                 orderedQuery = orderBy.Ascending ? query.OrderBy(func) : query.OrderByDescending(func);
             }

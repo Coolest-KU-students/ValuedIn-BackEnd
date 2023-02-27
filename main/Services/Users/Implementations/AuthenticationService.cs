@@ -1,10 +1,8 @@
 ﻿
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Extensions;
-using NuGet.Protocol.Plugins;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -111,7 +109,7 @@ namespace ValuedInBE.Services.Users.Implementations
                 Role = credentials.Role.GetDisplayName()
             };
         }
-        
+
         private async Task HashPasswordAndSave(NewUser newUser)
         {
             User user = _mapper.Map<User>(newUser);
@@ -136,7 +134,7 @@ namespace ValuedInBE.Services.Users.Implementations
 
             foreach (UserRoleExtended role in UserRoleExtended.GetExtended(user.Role).FlattenRoleHierarchy())
             {
-                claims.Add(new Claim(ClaimTypes.Role, (string) role));
+                claims.Add(new Claim(ClaimTypes.Role, (string)role));
             }
 
             JwtSecurityToken tokenOptions = GenerateTokenOptions(signingCredentials, claims);
@@ -152,7 +150,7 @@ namespace ValuedInBE.Services.Users.Implementations
         }
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
-            var tokenOptions = 
+            var tokenOptions =
                 new JwtSecurityToken(
                     issuer: Issuer,
                     audience: Audience,

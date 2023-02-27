@@ -95,12 +95,13 @@ namespace ValuedInBE
         {
             get
             {
-                return new UserDetails() {
+                return new UserDetails()
+                {
                     UserID = userId,
-                    FirstName = login, 
-                    LastName = login, 
-                    Email = email, 
-                    Telephone = telephone 
+                    FirstName = login,
+                    LastName = login,
+                    Email = email,
+                    Telephone = telephone
                 };
             }
         }
@@ -108,14 +109,15 @@ namespace ValuedInBE
         {
             get
             {
-                return new UserCredentials() {
+                return new UserCredentials()
+                {
                     Login = login,
                     Password = hashedPassword,
                     IsExpired = false,
                     LastActive = DateTime.Now,
                     Role = UserRole.DEFAULT,
                     UserDetails = UserDetailsInstance
-                    };
+                };
             }
         }
         public static AuthRequest SysAdminAuthRequestInstance

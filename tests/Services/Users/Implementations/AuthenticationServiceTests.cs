@@ -22,7 +22,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
         private const string jwtAudience = "Audience";
         private const int jwtExpirationInHours = 1;
 
-        private static readonly Dictionary<string, string> InMemoryJWTConfig = new()
+        private static readonly Dictionary<string, string> _inMemoryJWTConfig = new()
         {
             {"Jwt:Key", jwtKey },
             {"Jwt:Issuer", jwtIssuer },
@@ -34,7 +34,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
         private readonly Mock<IUserService> _userServiceMock = new();
         private readonly Mock<IPasswordHasher<User>> _hasherMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
-        private readonly IConfiguration _fakedConfiguration = new ConfigurationBuilder().AddInMemoryCollection(InMemoryJWTConfig).Build();
+        private readonly IConfiguration _fakedConfiguration = new ConfigurationBuilder().AddInMemoryCollection(_inMemoryJWTConfig).Build();
 
         private AuthenticationService MockAuthenticationService()
         {
@@ -46,7 +46,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 _mapperMock.Object
                 );
         }
-        
+
         [Fact()]
         public async void AuthenticateUserTest()
         {
