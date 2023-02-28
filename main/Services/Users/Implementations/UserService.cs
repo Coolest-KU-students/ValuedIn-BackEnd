@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Extensions;
+using NuGet.Protocol.Plugins;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.DTOs.Responses.Users;
@@ -21,7 +22,7 @@ namespace ValuedInBE.Services.Users.Implementations
             _userIDGeneration = userIDGeneration;
         }
 
-        public async Task<Page<UserSystemInfo>> GetUserPage(PageConfig config)
+        public async Task<Page<UserSystemInfo>> GetUserPage(UserPageRequest config)
         {
             _logger.LogDebug("Fetcing User Page {pageNo} with size {size}", config.Page, config.Size);
             Page<UserCredentials> credentialPage =
@@ -62,7 +63,7 @@ namespace ValuedInBE.Services.Users.Implementations
                 Password = newUser.Password,
                 IsExpired = false,
                 LastActive = null,
-                Role = newUser.Role?.GetEnumFromDisplayName<UserRole>() ?? UserRole.DEFAULT,
+                Role = UserRoleExtended.FromString(newUser.Role) ?? UserRole.DEFAULT,
                 UserDetails = userDetails
             };
 
@@ -125,6 +126,20 @@ namespace ValuedInBE.Services.Users.Implementations
             credentials.UserDetails.LastName = updatedUser.LastName;
             credentials.UserDetails.Email = updatedUser.Email;
             credentials.UserDetails.Telephone = updatedUser.Telephone;
+            await _userCredentialRepository.Update(credentials);
+        }
+
+        public async Task UpdateLastActiveByLogin(string login)
+        {
+            UserCredentials credentials = await _userCredentialRepository.GetByLogin(login);
+            credentials.LastActive = DateTime.Now;
+            await _userCredentialRepository.Update(credentials);
+        }
+
+        public async Task UpdateLastActiveByUserID(string userID)
+        {
+            UserCredentials credentials = await _userCredentialRepository.GetByUserID(userID);
+            credentials.LastActive = DateTime.Now;
             await _userCredentialRepository.Update(credentials);
         }
     }

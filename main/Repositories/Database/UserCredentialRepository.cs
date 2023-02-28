@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol.Plugins;
 using ValuedInBE.Contexts;
 using ValuedInBE.DataControls.Ordering;
 using ValuedInBE.DataControls.Ordering.Internal;
 using ValuedInBE.DataControls.Paging;
+using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.Users;
 
 namespace ValuedInBE.Repositories.Database
@@ -47,6 +49,16 @@ namespace ValuedInBE.Repositories.Database
                                   select c;
             return await credentialQuery.FirstOrDefaultAsync();
         }
+        public async Task<UserCredentials> GetByUserID(string userID)
+        {
+            _logger.LogTrace("Request user credentials with userID {userID}", userID);
+            var credentialQuery = from c in _context.UserCredentials
+                                  where c.UserID == userID
+                                  select c;
+            return await credentialQuery.FirstOrDefaultAsync();
+
+        }
+
         public async Task<UserCredentials> GetByLoginWithDetails(string login)
         {
             _logger.LogTrace("Request user credentials and details with login {login}", login);
@@ -70,13 +82,14 @@ namespace ValuedInBE.Repositories.Database
         }
 
 
-        public async Task<Page<UserCredentials>> GetUserPageWithDetails(PageConfig config)
+        public async Task<Page<UserCredentials>> GetUserPageWithDetails(UserPageRequest config)
         {
             _logger.LogTrace("Request Requested {size} User Page {page}", config.Size, config.Page);
 
             var credentialQuery = from c in _context.UserCredentials
                                             .Include(a => a.UserDetails)
                                             .ApplyOrderingInLinq(config.OrderByColumns, _customColumnMapping)
+                                            .Where(a => a.IsExpired == config.ShowExpired)
                                   select c;
 
             int total = credentialQuery.Count();

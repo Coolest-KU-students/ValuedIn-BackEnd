@@ -7,6 +7,7 @@ namespace ValuedInBE.DataControls.Ordering
         public IQueryable<TEntity> ApplyOrderingInLinq<TEntity>(IQueryable<TEntity> query)
         {
             Enumerator enumerate = this.GetEnumerator();
+            enumerate.MoveNext();
             IOrderedQueryable<TEntity> orderedQuery = enumerate.Current.ApplyOrderBy(query); //First one is against the query, then you stack the others on top
 
             while (enumerate.MoveNext())
@@ -22,6 +23,7 @@ namespace ValuedInBE.DataControls.Ordering
             if (Count == 0) return query;
 
             Enumerator enumerate = this.GetEnumerator();
+            enumerate.MoveNext();
             OrderByColumn orderBy = enumerate.Current;
             IOrderedQueryable<TEntity> orderedQuery;
 

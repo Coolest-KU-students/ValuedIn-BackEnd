@@ -17,6 +17,20 @@ namespace ValuedInBE.Security.Users
                 ORG_ADMIN,
                 SYS_ADMIN
             );
+        private static readonly ImmutableDictionary<string, UserRoleExtended> _nameMapping =
+            ImmutableDictionary.CreateRange(
+                new Dictionary<string, UserRoleExtended>()
+                {
+                    { DEFAULT, DEFAULT },
+                    { HR, HR },
+                    { ORG_ADMIN, ORG_ADMIN },
+                    { SYS_ADMIN, SYS_ADMIN }
+                }
+             );
+
+        private UserRole UserRole { get; init; }
+        private int Index { get; init; }
+
 
         public static UserRoleExtended GetExtended(UserRole userRole)
         {
@@ -27,14 +41,12 @@ namespace ValuedInBE.Security.Users
             throw new NotImplementedException($"No extended user role defined for enum {userRole.GetDisplayName()}");
         }
 
-
         public static implicit operator string(UserRoleExtended userRole) => userRole.UserRole.GetDisplayName();
         public static implicit operator int(UserRoleExtended userRole) => userRole.Index;
         public static implicit operator UserRoleExtended(UserRole role) => GetExtended(role);
-        public static explicit operator UserRole(UserRoleExtended extended) => extended.UserRole;
+        public static implicit operator UserRole(UserRoleExtended extended) => extended.UserRole;
 
-        private UserRole UserRole { get; init; }
-        private int Index { get; init; }
+        public static UserRoleExtended FromString(string role) => _nameMapping[role];
 
 
         private UserRoleExtended(UserRole userRole, int index)
@@ -76,6 +88,7 @@ namespace ValuedInBE.Security.Users
 
             return checkedRoles.Select(extended => extended.UserRole).ToHashSet();
         }
+
 
         public override string ToString() => this;
 

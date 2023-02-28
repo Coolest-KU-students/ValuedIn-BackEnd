@@ -11,6 +11,7 @@ namespace ValuedInBE.AutoMapperProfiles
         {
             CreateMap<UserCredentials, User>();
             CreateMap<NewUser, User>();
+            CreateMap<UserCredentials, UserContext>();
         }
     }
 }

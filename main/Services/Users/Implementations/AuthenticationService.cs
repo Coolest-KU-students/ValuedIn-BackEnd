@@ -62,6 +62,8 @@ namespace ValuedInBE.Services.Users.Implementations
                     break;
             }
 
+            await _userService.UpdateLastActiveByLogin(credentials.Login);
+
             return new()
             {
                 Token = GenerateJWT(user),
@@ -84,10 +86,9 @@ namespace ValuedInBE.Services.Users.Implementations
             await HashPasswordAndSave(newUser);
         }
 
-        public async Task<TokenAndRole> VerifyToken(string token)
+        public async Task<UserCredentials> GetUserFromToken(string token)
         {
-            _logger.LogTrace("Attempting to verify token {token}", token);
-
+            _logger.LogTrace("Attempting to fetch UserCredentials from token {token}", token);
             TokenValidationParameters tokenValidationParameters = new()
             {
                 ValidIssuer = Issuer,
@@ -99,10 +100,14 @@ namespace ValuedInBE.Services.Users.Implementations
             };
             ClaimsPrincipal claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(token, tokenValidationParameters, out SecurityToken _);
             string login = claimsPrincipal.FindFirstValue(ClaimTypes.Name);
-            _logger.LogTrace("Extracted login {login} during verification", login);
-            UserCredentials credentials = await _userService.GetUserCredentialsByLogin(login);
+            _logger.LogDebug("Extracted login {login} from token ", login);
+            return await _userService.GetUserCredentialsByLogin(login);
+        }
+        public async Task<TokenAndRole> VerifyToken(string token)
+        {
+            UserCredentials credentials = await GetUserFromToken(token);
             if (credentials.IsExpired) throw new Exception("User is expired");
-            credentials.LastActive = DateTime.UtcNow;
+            await _userService.UpdateLastActiveByLogin(credentials.Login);
             return new()
             {
                 Token = GenerateJWT(_mapper.Map<User>(credentials)),
@@ -130,6 +135,7 @@ namespace ValuedInBE.Services.Users.Implementations
             List<Claim> claims = new()
             {
                 new Claim(ClaimTypes.Name, user.Login),
+                new Claim(ClaimTypes.NameIdentifier, user.UserID)
             };
 
             foreach (UserRoleExtended role in UserRoleExtended.GetExtended(user.Role).FlattenRoleHierarchy())
@@ -149,7 +155,7 @@ namespace ValuedInBE.Services.Users.Implementations
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha512Signature);
         }
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
-        {
+        { 
             var tokenOptions =
                 new JwtSecurityToken(
                     issuer: Issuer,
@@ -160,5 +166,6 @@ namespace ValuedInBE.Services.Users.Implementations
                 );
             return tokenOptions;
         }
+
     }
 }
