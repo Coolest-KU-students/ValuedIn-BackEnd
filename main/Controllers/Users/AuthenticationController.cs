@@ -4,7 +4,7 @@ using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.DTOs.Responses.Authentication;
 using ValuedInBE.Services.Users;
 
-namespace ValuedInBE.Controllers
+namespace ValuedInBE.Controllers.Users
 {
     [Route("api/auth")]
     [ApiController]

@@ -33,7 +33,7 @@ namespace ValuedInBE.System
 
     public static class UserContextMiddlewareExtensions
     {
-        public static UserContext GetUserFromRequestContext(this HttpContext context)
+        public static UserContext GetUserContext(this HttpContext context)
         {
             return (UserContext)context.Items[UserContextMiddleware.userContextItemName];
         }

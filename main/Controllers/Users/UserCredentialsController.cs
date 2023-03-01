@@ -5,7 +5,7 @@ using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.DTOs.Responses.Users;
 using ValuedInBE.Services.Users;
 
-namespace ValuedInBE.Controllers
+namespace ValuedInBE.Controllers.Users
 {
     [Route("api/users")]
     [ApiController]
