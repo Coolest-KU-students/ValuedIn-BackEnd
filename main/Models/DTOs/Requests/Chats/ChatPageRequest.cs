@@ -2,9 +2,8 @@
 
 namespace ValuedInBE.Models.DTOs.Requests.Chats
 {
-    public class ChatPageRequest
+    public class ChatPageRequest : OffsetPageConfig<DateTime>
     {
-        public PageConfig PageConfig { get; set; }
 
     }
 }

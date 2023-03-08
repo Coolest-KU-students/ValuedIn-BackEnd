@@ -5,13 +5,14 @@ using ValuedInBE.Models.DTOs.Requests.Chats;
 using ValuedInBE.Models.DTOs.Responses.Chats;
 using ValuedInBE.Services.Chats;
 using ValuedInBE.System;
+using ValuedInBE.System.Middleware;
 
 namespace ValuedInBE.Controllers.Chats
 {
     [Route("api/chats")]
     [ApiController]
     public class ChatController : ControllerBase
-    {/*
+    {
         private readonly IChatService _chatService;
 
         public ChatController(IChatService chatService)
@@ -19,40 +20,33 @@ namespace ValuedInBE.Controllers.Chats
             _chatService = chatService;
         }
 
-        [HttpPost("page")]
-        public async Task<ActionResult<Page<ChatLatestInfo>>> GetChatPages(ChatPageRequest chatPageRequest)
+        [HttpGet]
+        public async Task<ActionResult<OffsetPage<ChatInfo, DateTime>>> GetChatPages([FromQuery] ChatPageRequest chatPageRequest)
         {
             UserContext userContext = HttpContext.GetUserContext();
-            return await _chatService.GetLatestChats(chatPageRequest, userContext);
+            return await _chatService.GetChatsAsync(chatPageRequest, userContext);
         }
 
-        [HttpPost("new")]
-        public async Task<ActionResult<ChatLatestInfo>> CreateNewChat(NewChatRequest newChatRequest)
+        [HttpPost]
+        public async Task<ActionResult<ChatInfo>> CreateNewChat(NewChatRequest newChatRequest)
         {
             UserContext userContext = HttpContext.GetUserContext();
-            return await _chatService.FetchOrCreateAChat(newChatRequest, userContext);
+            return await _chatService.FetchOrCreateChatAsync(newChatRequest, userContext);
+        }
+
+        [HttpGet("{chatId}")]
+        public async Task<ActionResult<OffsetPage<MessageDTO, DateTime>>> GetMessages(long chatId, [FromQuery] MessagePageRequest messagePageRequest)
+        {
+            UserContext userContext = HttpContext.GetUserContext();
+            return await _chatService.GetMessagesAsync(messagePageRequest, chatId, userContext);
         }
 
         [HttpPost("{chatId}")]
-        public async Task<ActionResult<List<MessageDTO>>> GetMessages(long chatId, MessagePageRequest messagePageRequest)
-        {
-            UserContext userContext = HttpContext.GetUserContext();
-            return await _chatService.GetMessages(messagePageRequest, chatId, userContext);
-        }
-
-        [HttpPost("{chatId}/new")]
         public async Task<ActionResult<MessageDTO>> SendNewMessage(long chatId, NewMessage newMessage)
         {
             UserContext userContext = HttpContext.GetUserContext();
-            return await _chatService.CreateNewMessage(chatId, newMessage, userContext);
+            return await _chatService.CreateNewMessageAsync(chatId, newMessage, userContext);
         }
 
-        [HttpPost("checkin")]
-        public async Task<ActionResult<List<ChatLatestInfo>>> CheckInForAnythingNew()
-        {
-            UserContext userContext = HttpContext.GetUserContext();
-            return await _chatService.CheckIn();
-        }
-        */
     }
 }
