@@ -5,7 +5,6 @@ namespace ValuedInBE.Models.Entities.Messaging
 {
     public class ChatParticipant : AuditCreatedUpdateBase
     {
-
         [MaxLength(128)]
         public string UserID { get; set; }
         public long ChatID { get; set; }

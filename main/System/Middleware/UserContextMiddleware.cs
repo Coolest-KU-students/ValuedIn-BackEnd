@@ -5,7 +5,7 @@ using ValuedInBE.Models.Users;
 using ValuedInBE.Repositories.Database;
 using ValuedInBE.Services.Users;
 
-namespace ValuedInBE.System
+namespace ValuedInBE.System.Middleware
 {
     public class UserContextMiddleware : IMiddleware
     {
@@ -36,5 +36,5 @@ namespace ValuedInBE.System
             return (UserContext)context.Items[UserContextMiddleware.userContextItemName];
         }
     }
-    
+
 }

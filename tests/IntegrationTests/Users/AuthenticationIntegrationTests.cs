@@ -70,7 +70,6 @@ namespace ValuedInBETests.IntegrationTests.Users
             Assert.False(badResponse.IsSuccessStatusCode);
 
             AuthRequest sysAdmin = UserConstants.SysAdminAuthRequestInstance;
-            JwtSecurityTokenHandler tokenHandler = new();
             requestContent = SerializeIntoJsonHttpContent(sysAdmin);
             HttpResponseMessage response = await _client.PostAsync(logInRoute, requestContent);
             Assert.True(response.IsSuccessStatusCode);

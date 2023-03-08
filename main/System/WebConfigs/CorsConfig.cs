@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Cors.Infrastructure;
 
-namespace ValuedInBE.System
+namespace ValuedInBE.System.WebConfigs
 {
     public class CorsConfig
     {

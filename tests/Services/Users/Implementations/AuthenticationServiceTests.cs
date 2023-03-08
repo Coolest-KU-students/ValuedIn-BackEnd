@@ -48,7 +48,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
         }
 
         [Fact()]
-        public async void AuthenticateUserTest()
+        public async Task AuthenticateUserTest()
         {
             AuthRequest auth = UserConstants.AuthRequestInstance;
             UserCredentials userCredentials = UserConstants.UserCredentialsInstance;

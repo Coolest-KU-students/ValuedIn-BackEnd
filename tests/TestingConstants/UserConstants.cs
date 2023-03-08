@@ -74,7 +74,8 @@ namespace ValuedInBE
                     UserID = userId,
                     Login = login,
                     Role = UserRole.DEFAULT,
-                    Password = password
+                    Password = password,
+                    UserID = userId
                 };
                 return user;
             }
@@ -131,6 +132,19 @@ namespace ValuedInBE
                     Login = "SetupUser",
                     Password = "Password1",
                     RememberMe = false
+                };
+            }
+        }
+
+        public static UserContext UserContextInstance
+        {
+            get
+            {
+                return new UserContext()
+                {
+                    Login = login,
+                    Role = UserRole.DEFAULT,
+                    UserID = userId
                 };
             }
         }

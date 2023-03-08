@@ -95,7 +95,6 @@ namespace ValuedInBE.Repositories.Database
             int total = credentialQuery.Count();
             credentialQuery.Skip(config.Page * config.Size);
             credentialQuery.Take(config.Size);
-
             List<UserCredentials> credentials = await credentialQuery.ToListAsync();
 
             return new Page<UserCredentials>(credentials, total, config.Page + 1);
