@@ -1,10 +1,11 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
+using ValuedInBE.Models.Entities;
 using ValuedInBE.Security.Users;
 
 namespace ValuedInBE.Models.Users
 {
-    public class UserCredentials
+    public class UserCredentials : AuditCreatedUpdateBase
     {
         public UserCredentials() { }
 

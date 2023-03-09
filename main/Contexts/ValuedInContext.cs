@@ -12,7 +12,6 @@ namespace ValuedInBE.Contexts
 
         public ValuedInContext(DbContextOptions<ValuedInContext> options) : base(options)
         {
-
         }
 
         public DbSet<UserCredentials> UserCredentials { get; set; }
