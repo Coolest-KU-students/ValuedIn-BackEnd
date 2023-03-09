@@ -19,9 +19,8 @@ namespace ValuedInBE.System.Extensions
                     );
             if(!entities.Any() ) { return; }
 
-            foreach ( EntityEntry entity in entities )
+            foreach (EntityEntry entity in entities )
             {
-
                 if(entity is IAuditCreatedBase entityCreateBase && entity.State == EntityState.Added)
                 {
                     entityCreateBase.CreatedOn = DateTimeOffset.UtcNow;
@@ -33,7 +32,6 @@ namespace ValuedInBE.System.Extensions
                     entityUpdateBase.UpdatedBy = userContext.UserID;
                 }
             }
-
         }
     }
 }
