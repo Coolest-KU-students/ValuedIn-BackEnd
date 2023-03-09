@@ -20,15 +20,17 @@ namespace ValuedInBE.Services.Users.Implementations
         private readonly IUserIDGenerationStrategy _userIDGeneration;
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly IMemoizationEngine _memoizationEngine;
+        private readonly IMapper _mapper;
 
 
-        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository, IUserIDGenerationStrategy userIDGeneration, IMemoizationEngine memoizationEngine, IHttpContextAccessor contextAccessor)
+        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository, IUserIDGenerationStrategy userIDGeneration, IMemoizationEngine memoizationEngine, IHttpContextAccessor contextAccessor, IMapper mapper)
         {
             _logger = logger;
             _userCredentialRepository = userCredentialRepository;
             _userIDGeneration = userIDGeneration;
             _memoizationEngine = memoizationEngine;
             _contextAccessor = contextAccessor;
+            _mapper = mapper;
         }
 
         public async Task<Page<UserSystemInfo>> GetUserPage(UserPageRequest config)
@@ -80,7 +82,7 @@ namespace ValuedInBE.Services.Users.Implementations
             if (userContext == null)
             {
                 //TODO: I question this security myself, should throw an error, but then initial Seed will break
-                _logger.LogCritical("User is being created with Login {login}, ID {userId} and Role {role}, but there is no User Context present. ", newUser.Login, generatedUserID, role);
+                _logger.LogWarning("User is being created with Login {login}, ID {userId} and Role {role}, but there is no User Context present. ", newUser.Login, generatedUserID, role);
                 userContext = new()
                 {
                     Login = "Unknown",
@@ -156,16 +158,16 @@ namespace ValuedInBE.Services.Users.Implementations
 
         public async Task UpdateLastActiveByLogin(string login)
         {
-            UserContext userContext = GetUserContextFromHttpOrThrowException();
             UserCredentials credentials = await _userCredentialRepository.GetByLogin(login);
+            UserContext userContext = _mapper.Map<UserContext>(credentials);
             credentials.LastActive = DateTime.Now;
             await _userCredentialRepository.Update(credentials, userContext);
         }
 
         public async Task UpdateLastActiveByUserID(string userID)
         {
-            UserContext userContext = GetUserContextFromHttpOrThrowException();
             UserCredentials credentials = await _userCredentialRepository.GetByUserID(userID);
+            UserContext userContext = _mapper.Map<UserContext>(credentials);
             credentials.LastActive = DateTime.Now;
             await _userCredentialRepository.Update(credentials, userContext);
         }

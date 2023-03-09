@@ -78,7 +78,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             string responseContent = await response.Content.ReadAsStringAsync();
             TokenAndRole? tokenAndRole = JsonConvert.DeserializeObject<TokenAndRole>(responseContent);
             Assert.NotNull(tokenAndRole);
-            Assert.Equal(tokenAndRole!.Role, UserRoleExtended.DEFAULT);
+            Assert.Equal(UserRoleExtended.SYS_ADMIN, tokenAndRole!.Role);
             Assert.NotNull(tokenAndRole.Token);
 
             await Task.Delay(1000); //delaying so the expiration date is changed

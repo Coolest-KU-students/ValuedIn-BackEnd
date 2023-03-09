@@ -4,7 +4,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Extensions;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using ValuedInBE.Models;
 using ValuedInBE.Security.Users;
+using ValuedInBE.System;
 
 namespace ValuedInBETests.IntegrationTests.Config
 {
@@ -15,9 +17,8 @@ namespace ValuedInBETests.IntegrationTests.Config
 
     public class TestAuthHandler : AuthenticationHandler<TestAuthHandlerOptions>
     {
-        public const string UserId = "UserId";
-
-        public const string AuthenticationScheme = "Test";
+        public const string userId = "UserId";
+        public const string authenticationScheme = "Test";
         private readonly string _defaultUserId;
 
         public TestAuthHandler(
@@ -34,20 +35,20 @@ namespace ValuedInBETests.IntegrationTests.Config
             string userId = _defaultUserId;
             // Extract User ID from the request headers if it exists,
             // otherwise use the default User ID from the options.
-            if (Context.Request.Headers.TryGetValue(UserId, out var userIdValues))
+            if (Context.Request.Headers.TryGetValue(TestAuthHandler.userId, out var userIdValues))
             {
                 userId = userIdValues[0];
             }
-
+            AddUserContextIfMissing(userId);
             List<Claim> claims = new() { new Claim(ClaimTypes.Name, userId) };
             foreach (string role in GetRoleNamesBasedOnUser(userId))
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            var identity = new ClaimsIdentity(claims, AuthenticationScheme);
+            var identity = new ClaimsIdentity(claims, authenticationScheme);
             var principal = new ClaimsPrincipal(identity);
-            var ticket = new AuthenticationTicket(principal, AuthenticationScheme);
+            var ticket = new AuthenticationTicket(principal, authenticationScheme);
 
             var result = AuthenticateResult.Success(ticket);
 
@@ -69,6 +70,17 @@ namespace ValuedInBETests.IntegrationTests.Config
                            .Select(role => role.GetDisplayName())
                            .ToList();
 
+        }
+
+        private void AddUserContextIfMissing(string user)
+        {
+            Context.Items[UserContextMiddleware.userContextItemName] ??=
+                new UserContext()
+                {
+                    UserID = user,
+                    Login = user,
+                    Role = UserRoleExtended.FromString(user) ?? UserRole.DEFAULT,
+                };
         }
     }
 }
