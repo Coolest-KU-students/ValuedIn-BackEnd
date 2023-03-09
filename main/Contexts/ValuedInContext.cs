@@ -49,9 +49,8 @@ namespace ValuedInBE.Contexts
                 .HasKey(e => new { e.UserID, e.ChatID });
         }
 
-        private void MapModelsToTables(ModelBuilder modelBuilder)
+        private static void MapModelsToTables(ModelBuilder modelBuilder)
         {
-
             modelBuilder.Entity<UserCredentials>().ToTable("UserCredentials");
             modelBuilder.Entity<UserDetails>().ToTable("UserDetails");
             modelBuilder.Entity<Chat>().ToTable("Chats");

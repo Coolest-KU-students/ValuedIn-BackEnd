@@ -44,9 +44,11 @@ namespace ValuedInBE.Services.Users.Implementations
                 credentialPage.PageNo);
         }
 
-        public async Task CreateNewUser(NewUser newUser)
+        public async Task CreateNewUser(NewUser newUser, UserContext userContext = null)
         {
             _logger.LogDebug("Creating new user with login {login}", newUser.Login);
+            userContext ??= _contextAccessor.HttpContext?.GetUserContext();
+            
             if (await _userCredentialRepository.LoginExists(newUser.Login))
             {
                 _logger.LogTrace("Tried to create a new user, but {login} was already taken", newUser.Login);
@@ -75,9 +77,7 @@ namespace ValuedInBE.Services.Users.Implementations
                 Role = role,
                 UserDetails = userDetails
             };
-
-            UserContext userContext = _contextAccessor.HttpContext?.GetUserContext();
-            if(userContext == null)
+            if (userContext == null)
             {
                 //TODO: I question this security myself, should throw an error, but then initial Seed will break
                 _logger.LogCritical("User is being created with Login {login}, ID {userId} and Role {role}, but there is no User Context present. ", newUser.Login, generatedUserID, role);
