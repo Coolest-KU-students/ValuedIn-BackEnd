@@ -16,7 +16,6 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
 {
     public class AuthenticationServiceTests
     {
-
         private const string jwtKey = "VeryLongKeyThatIsVerySecret";
         private const string jwtIssuer = "Issuer";
         private const string jwtAudience = "Audience";
