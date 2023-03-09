@@ -71,6 +71,7 @@ namespace ValuedInBE
             {
                 User user = new()
                 {
+                    UserID = userId,
                     Login = login,
                     Role = UserRole.DEFAULT,
                     Password = password
@@ -111,6 +112,7 @@ namespace ValuedInBE
             {
                 return new UserCredentials()
                 {
+                    UserID = userId,
                     Login = login,
                     Password = hashedPassword,
                     IsExpired = false,

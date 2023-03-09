@@ -3,7 +3,7 @@ using ValuedInBE.Models.Users;
 
 namespace ValuedInBE.Models.Entities.Messaging
 {
-    public class ChatParticipant
+    public class ChatParticipant : AuditCreatedUpdateBase
     {
 
         [MaxLength(128)]

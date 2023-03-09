@@ -2,7 +2,7 @@
 
 namespace ValuedInBE.Models.Entities.Messaging
 {
-    public class Chat
+    public class Chat : AuditCreatedBase
     {
         [Key]
         public long ID { get; set; }

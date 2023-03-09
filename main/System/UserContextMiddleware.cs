@@ -10,13 +10,11 @@ namespace ValuedInBE.System
     public class UserContextMiddleware : IMiddleware
     {
         public const string userContextItemName = "UserContext";
-        private readonly IUserService _userService;
         private readonly IAuthenticationService _authenticationService;
         private readonly IMapper _mapper;
 
-        public UserContextMiddleware(IUserService userService, IAuthenticationService authenticationService, IMapper mapper)
+        public UserContextMiddleware(IAuthenticationService authenticationService, IMapper mapper)
         {
-            _userService = userService;
             _authenticationService = authenticationService;
             _mapper = mapper;
         }

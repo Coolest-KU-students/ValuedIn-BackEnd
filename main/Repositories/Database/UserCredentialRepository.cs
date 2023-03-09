@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NuGet.Protocol.Plugins;
 using ValuedInBE.Contexts;
 using ValuedInBE.DataControls.Ordering;
 using ValuedInBE.DataControls.Ordering.Internal;
 using ValuedInBE.DataControls.Paging;
+using ValuedInBE.Models;
 using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.Users;
+using ValuedInBE.System.Extensions;
 
 namespace ValuedInBE.Repositories.Database
 {
@@ -56,7 +57,6 @@ namespace ValuedInBE.Repositories.Database
                                   where c.UserID == userID
                                   select c;
             return await credentialQuery.FirstOrDefaultAsync();
-
         }
 
         public async Task<UserCredentials> GetByLoginWithDetails(string login)
@@ -101,12 +101,12 @@ namespace ValuedInBE.Repositories.Database
             return new Page<UserCredentials>(credentials, total, config.Page + 1);
         }
 
-        public async Task Insert(UserCredentials userCredentials)
+        public async Task Insert(UserCredentials userCredentials, UserContext createdBy)
         {
             _logger.LogTrace("Inserting user with login {login}", userCredentials.Login);
             _context.UserCredentials.Add(userCredentials);
+            _context.ChangeTracker.CheckAuditing(createdBy);
             await _context.SaveChangesAsync();
-
         }
 
         public async Task<bool> LoginExists(string login)
@@ -115,12 +115,12 @@ namespace ValuedInBE.Repositories.Database
             return await _context.UserCredentials.AnyAsync(c => c.Login == login);
         }
 
-        public async Task Update(UserCredentials userCredentials)
+        public async Task Update(UserCredentials userCredentials, UserContext updatedBy)
         {
             _logger.LogTrace("Updating user with login {login}", userCredentials.Login);
             _context.UserCredentials.Update(userCredentials);
+            _context.ChangeTracker.CheckAuditing(updatedBy);
             await _context.SaveChangesAsync();
-
         }
     }
 }

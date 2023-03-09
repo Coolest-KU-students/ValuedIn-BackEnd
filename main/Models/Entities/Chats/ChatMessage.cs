@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ValuedInBE.Models.Entities.Messaging
 {
-    public class ChatMessage
+    public class ChatMessage : AuditCreatedBase
     {
         public ChatMessage()
         {

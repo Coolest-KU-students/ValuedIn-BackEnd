@@ -17,19 +17,19 @@ namespace ValuedInBETests.IntegrationTests
         public IntegrationTestBase(IntegrationTestWebApplicationFactory<Program> factory)
         {
             _client = factory.CreateClient();
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(TestAuthHandler.AuthenticationScheme);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(TestAuthHandler.authenticationScheme);
             IServiceScopeFactory scopeFactory = factory.Services.GetRequiredService<IServiceScopeFactory>();
             _valuedInContext = scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ValuedInContext>();
         }
 
         protected void AddUserIdToClient(string user)
         {
-            _client.DefaultRequestHeaders.Add(TestAuthHandler.UserId, user);
+            _client.DefaultRequestHeaders.Add(TestAuthHandler.userId, user);
         }
 
         protected void RemoveUserIdFromClient()
         {
-            _client.DefaultRequestHeaders.Remove(TestAuthHandler.UserId);
+            _client.DefaultRequestHeaders.Remove(TestAuthHandler.userId);
         }
 
         protected static StringContent SerializeIntoJsonHttpContent<T>(T target)

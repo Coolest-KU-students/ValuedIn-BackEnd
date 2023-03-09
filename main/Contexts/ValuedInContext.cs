@@ -12,7 +12,6 @@ namespace ValuedInBE.Contexts
 
         public ValuedInContext(DbContextOptions<ValuedInContext> options) : base(options)
         {
-
         }
 
         public DbSet<UserCredentials> UserCredentials { get; set; }
@@ -29,9 +28,8 @@ namespace ValuedInBE.Contexts
             MapModelsToTables(modelBuilder);
         }
 
-        private void MapUserModels(ModelBuilder modelBuilder)
+        private static void MapUserModels(ModelBuilder modelBuilder)
         {
-
             modelBuilder.Entity<UserCredentials>()
             .HasOne(a => a.UserDetails).WithOne()
             .HasForeignKey<UserDetails>(e => e.UserID).IsRequired();
@@ -41,21 +39,18 @@ namespace ValuedInBE.Contexts
                 .IsUnique();
         }
 
-        private void MapMessagingModels(ModelBuilder modelBuilder)
+        private static void MapMessagingModels(ModelBuilder modelBuilder)
         {
-
             modelBuilder.Entity<Chat>()
             .HasMany(a => a.Messages).WithOne()
             .HasForeignKey(e => e.ChatID).IsRequired();
 
             modelBuilder.Entity<ChatParticipant>()
                 .HasKey(e => new { e.UserID, e.ChatID });
-
         }
 
-        private void MapModelsToTables(ModelBuilder modelBuilder)
+        private static void MapModelsToTables(ModelBuilder modelBuilder)
         {
-
             modelBuilder.Entity<UserCredentials>().ToTable("UserCredentials");
             modelBuilder.Entity<UserDetails>().ToTable("UserDetails");
             modelBuilder.Entity<Chat>().ToTable("Chats");

@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ValuedInBE.Models.Entities;
 using ValuedInBE.Models.Entities.Messaging;
 
 namespace ValuedInBE.Models.Users
 {
-    public class UserDetails
+    public class UserDetails : AuditCreatedUpdateBase
     {
         public UserDetails() { }
 
