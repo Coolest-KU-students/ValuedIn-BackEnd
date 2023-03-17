@@ -38,13 +38,13 @@ namespace ValuedInBETests.IntegrationTests.Users
 
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access
             {
-                AddUserIdToClient(role);
+                AddLoginHeaderToHttpClient(role);
                 HttpResponseMessage httpResponse = await _client.PostAsync(userPageRoute, requestContent);
                 Assert.Equal(HttpStatusCode.Forbidden, httpResponse.StatusCode);
-                RemoveUserIdFromClient();
+                RemoveLoginHeaderFromHttpClient();
             }
 
-            AddUserIdToClient(_sysAdminRoleName);
+            AddLoginHeaderToHttpClient(_sysAdminRoleName);
             HttpResponseMessage response = await _client.PostAsync(userPageRoute, requestContent);
             Assert.NotNull(response);
 
@@ -65,13 +65,13 @@ namespace ValuedInBETests.IntegrationTests.Users
 
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access
             {
-                AddUserIdToClient(role);
+                AddLoginHeaderToHttpClient(role);
                 HttpResponseMessage httpResponse = await _client.GetAsync(getLoginPath);
                 Assert.Equal(HttpStatusCode.Forbidden, httpResponse.StatusCode);
-                RemoveUserIdFromClient();
+                RemoveLoginHeaderFromHttpClient();
             }
 
-            AddUserIdToClient(_sysAdminRoleName);
+            AddLoginHeaderToHttpClient(_sysAdminRoleName);
 
             HttpResponseMessage getUserResponse = await _client.GetAsync(getLoginPath);
             Assert.NotNull(getUserResponse);
@@ -82,7 +82,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             Assert.Equal(user!.Login, targetLogin);
             Assert.False(user.IsExpired);
 
-            RemoveUserIdFromClient(); ; //reset
+            RemoveLoginHeaderFromHttpClient(); ; //reset
             UpdatedUser updatedUser = new()
             {
                 UserID = user.UserID,
@@ -96,13 +96,13 @@ namespace ValuedInBETests.IntegrationTests.Users
             StringContent requestContent = SerializeIntoJsonHttpContent(updatedUser);
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access
             {
-                AddUserIdToClient(role);
+                AddLoginHeaderToHttpClient(role);
                 HttpResponseMessage httpResponse = await _client.PutAsync(updateUserPath, requestContent);
                 Assert.Equal(HttpStatusCode.Forbidden, httpResponse.StatusCode);
-                RemoveUserIdFromClient();
+                RemoveLoginHeaderFromHttpClient();
             }
 
-            AddUserIdToClient(_sysAdminRoleName);
+            AddLoginHeaderToHttpClient(_sysAdminRoleName);
             HttpResponseMessage updateUserResponse = await _client.PutAsync(updateUserPath, requestContent);
             Assert.True(updateUserResponse.IsSuccessStatusCode);
             Assert.True(
@@ -112,16 +112,16 @@ namespace ValuedInBETests.IntegrationTests.Users
                     .Any()
                 );
 
-            RemoveUserIdFromClient(); ; //reset
+            RemoveLoginHeaderFromHttpClient(); ; //reset
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access
             {
-                AddUserIdToClient(role);
+                AddLoginHeaderToHttpClient(role);
                 HttpResponseMessage httpResponse = await _client.DeleteAsync(expireUserRoute);
                 Assert.Equal(HttpStatusCode.Forbidden, httpResponse.StatusCode);
-                RemoveUserIdFromClient();
+                RemoveLoginHeaderFromHttpClient();
             }
 
-            AddUserIdToClient(_sysAdminRoleName);
+            AddLoginHeaderToHttpClient(_sysAdminRoleName);
             HttpResponseMessage expirationResponse = await _client.DeleteAsync(expireUserRoute);
             Assert.True(expirationResponse.IsSuccessStatusCode);
             Assert.True(

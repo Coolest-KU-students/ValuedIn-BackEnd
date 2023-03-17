@@ -19,11 +19,11 @@ namespace ValuedInBETests.TestingConstants
             get{
                 var chatMessage = new ChatMessage()
                 {
-                    ID = messageID,
-                    ChatID = chatID,
-                    Created = created,
+                    Id = messageID,
+                    ChatId = chatID,
+                    CreatedOn = created,
                     Message = message,
-                    UserId = senderUserId
+                    CreatedBy = senderUserId
                 };
                 return chatMessage;
             } }

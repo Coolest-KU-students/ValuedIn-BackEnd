@@ -3,15 +3,15 @@ using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Models;
 using ValuedInBE.Models.DTOs.Requests.Chats;
 using ValuedInBE.Models.DTOs.Responses.Chats;
+using ValuedInBE.Models.Entities.Messaging;
 
 namespace ValuedInBE.Services.Chats
 {
     public interface IChatService
     {
-        Task<OffsetPage<ChatInfo, DateTime>> GetChatsAsync(ChatPageRequest chatPage, UserContext userContext);
-        Task<ChatInfo> GetChatInfoAsync(long id);
-        Task<OffsetPage<MessageDTO, DateTime>> GetMessagesAsync(MessagePageRequest messagePage, long chatId, UserContext userContext);
-        Task<MessageDTO> CreateNewMessageAsync(long chatId, NewMessage newMessage, UserContext userContext);
-        Task<ChatInfo> FetchOrCreateChatAsync(NewChatRequest newChatRequest, UserContext userContext);
+        Task<OffsetPage<ChatInfo, DateTime>> GetChatsAsync(ChatPageRequest chatPage);
+        Task<OffsetPage<MessageDTO, DateTime>> GetMessagesAsync(MessagePageRequest messagePage, long chatId);
+        Task<ChatMessage> CreateNewMessageAsync(long chatId, string message); 
+        Task<Chat> FetchOrCreateChatAsync(NewChatRequest newChatRequest);
     }
 }

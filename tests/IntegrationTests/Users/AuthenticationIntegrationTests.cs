@@ -37,12 +37,12 @@ namespace ValuedInBETests.IntegrationTests.Users
             StringContent requestContent = SerializeIntoJsonHttpContent(newUser);
             foreach (string user in _rolesThatAreNotSysAdmin) //check if others are restricted
             {
-                AddUserIdToClient(user);
+                AddLoginHeaderToHttpClient(user);
                 HttpResponseMessage httpResponse = await _client.PostAsync(registerUserRoute, requestContent);
                 Assert.Equal(System.Net.HttpStatusCode.Forbidden, httpResponse.StatusCode);
-                RemoveUserIdFromClient();
+                RemoveLoginHeaderFromHttpClient();
             }
-            AddUserIdToClient(_sysAdmin);
+            AddLoginHeaderToHttpClient(_sysAdmin);
             HttpResponseMessage response = await _client.PostAsync(registerUserRoute, requestContent);
             Assert.True(response.IsSuccessStatusCode);
             Task<bool> credentialsExistTask = _valuedInContext.UserCredentials.AnyAsync(creds => creds.Login == newUser.Login && creds.UserDetails != null);

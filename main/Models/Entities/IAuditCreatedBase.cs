@@ -2,7 +2,7 @@
 {
     public interface IAuditCreatedBase
     {
-        DateTimeOffset CreatedOn { get; set; }
+        DateTime CreatedOn { get; set; }
         string CreatedBy { get; set; }
     }
 }

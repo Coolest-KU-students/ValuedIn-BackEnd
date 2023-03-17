@@ -17,5 +17,6 @@ namespace ValuedInBE.Repositories
         Task<UserCredentials> GetByLoginWithDetails(string login);
         Task<int> CountWithNames(string firstName, string lastName);
         Task<UserCredentials> GetByUserIdWithDetails(string userID);
+        Task<bool> VerifyUserIds(List<string> userIds);
     }
 }

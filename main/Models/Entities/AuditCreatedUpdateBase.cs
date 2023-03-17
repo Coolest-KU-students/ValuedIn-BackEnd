@@ -2,7 +2,7 @@
 {
     public class AuditCreatedUpdateBase : AuditCreatedBase, IAuditCreateUpdateBase
     {
-        public DateTimeOffset UpdatedOn { get; set; }
+        public DateTime UpdatedOn { get; set; }
         public string UpdatedBy { get; set; }
     }
 }

@@ -10,9 +10,11 @@ using ValuedInBE.Models.Users;
 using ValuedInBE.Repositories;
 using ValuedInBE.Security.Users;
 using ValuedInBE.System;
+using ValuedInBE.System.Middleware;
 
 namespace ValuedInBE.Services.Users.Implementations
 {
+
     public class UserService : IUserService
     {
         private readonly ILogger<UserService> _logger;
@@ -176,6 +178,11 @@ namespace ValuedInBE.Services.Users.Implementations
         {
             return _contextAccessor.HttpContext?.GetUserContext() 
                    ?? throw new Exception("User could not be recognized by the system; Cannot execute");
+        }
+
+        public async Task<bool> VerifyUserIdExistenceAsync(List<string> userIds)
+        {
+            return await _userCredentialRepository.VerifyUserIds(userIds);
         }
     }
 }

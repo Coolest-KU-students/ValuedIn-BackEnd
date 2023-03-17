@@ -121,5 +121,11 @@ namespace ValuedInBE.Repositories.Database
             _context.ChangeTracker.CheckAuditing(updatedBy);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> VerifyUserIds(List<string> userIds)
+        {
+            int count = await _context.UserCredentials.CountAsync(c => userIds.Contains(c.UserID));
+            return count == userIds.Count; 
+        }
     }
 }

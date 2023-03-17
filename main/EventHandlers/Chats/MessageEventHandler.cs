@@ -33,8 +33,9 @@ namespace ValuedInBE.Events.Handlers
                 new()
                 {
                     GroupId = groupId,
-                    AutoOffsetReset = AutoOffsetReset.Earliest
-                });
+                    AutoOffsetReset = AutoOffsetReset.Earliest, 
+                    AllowAutoCreateTopics = true
+                }); 
             _producer = configurationBuilder.ConfigureProducer();
             _consumer.Subscribe(newChatMessageTopic);
         }
@@ -42,20 +43,20 @@ namespace ValuedInBE.Events.Handlers
         public async Task HandleSentMessageEvent(NewMessageEvent messageEvent)
         {
             ChatMessage messageSent = messageEvent.ChatMessage;
-            _logger.LogDebug("Registering that message {messageID} was sent in chat {chatID}", messageSent.ID, messageSent.ChatID);
+            _logger.LogDebug("Registering that message {messageID} was sent in chat {chatID}", messageSent.Id, messageSent.ChatId);
 
-            DeliveryResult<long, NewMessageEvent> delivery = await _producer.ProduceAsync(newChatMessageTopic, new() { Key = messageSent.ID, Value = messageEvent });
+            DeliveryResult<long, NewMessageEvent> delivery = await _producer.ProduceAsync(newChatMessageTopic, new() { Key = messageSent.Id, Value = messageEvent });
 
             switch (delivery.Status)
             {
                 case PersistenceStatus.Persisted:
-                    _logger.LogInformation("Message {messageID} registered", messageSent.ID);
+                    _logger.LogInformation("Message {messageID} registered", messageSent.Id);
                     break;
                 case PersistenceStatus.PossiblyPersisted:
-                    _logger.LogWarning("Message {messageID} might not be registered", messageSent.ID);
+                    _logger.LogWarning("Message {messageID} might not be registered", messageSent.Id);
                     break;
                 case PersistenceStatus.NotPersisted:
-                    _logger.LogCritical("Message {messageID} was not registered, delivery info: {headers}", messageSent.ID, delivery.Headers);
+                    _logger.LogCritical("Message {messageID} was not registered, delivery info: {headers}", messageSent.Id, delivery.Headers);
                     break;
             }
         }
@@ -92,7 +93,7 @@ namespace ValuedInBE.Events.Handlers
         {
             _logger.LogTrace("Awaiting for a message");
             ConsumeResult<long, NewMessageEvent> received = _consumer.Consume(cancellationToken);
-            _logger.LogInformation("Received that message {messageID} was sent in chat {chatID}", received.Message.Key, received.Message.Value.ChatMessage.ChatID);
+            _logger.LogInformation("Received that message {messageID} was sent in chat {chatID}", received.Message.Key, received.Message.Value.ChatMessage.ChatId);
             return received;
         }
 
@@ -101,7 +102,7 @@ namespace ValuedInBE.Events.Handlers
             List<Task> tasks = new();
             foreach (string user in userIds)
             {
-                _logger.LogDebug("Sending a message {chatId} to user {user}", chatMessage.ChatID, user);
+                _logger.LogDebug("Sending a message {chatId} to user {user}", chatMessage.ChatId, user);
                 tasks.Add(SendMessage(user, chatMessage, cancellationToken));
             }
             await Task.WhenAll(tasks);
@@ -121,7 +122,7 @@ namespace ValuedInBE.Events.Handlers
 
         private static async Task SendMessage(WebSocket socket, ChatMessage chatMessage, CancellationToken cancellationToken)
         {
-            if (!socket.CloseStatus.HasValue)
+            if (socket.State == WebSocketState.Open)
             {
                 string messageJson = JsonConvert.SerializeObject(chatMessage);
                 await socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageJson)), 0, true, cancellationToken);

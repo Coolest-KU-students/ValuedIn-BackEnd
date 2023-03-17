@@ -24,11 +24,8 @@ namespace ValuedInBE.System.Tests
         private readonly Mock<WebSocket> _mockedUnregisteredSocket = new();
         private readonly TimeSpan _toTimeout = TimeSpan.FromSeconds(15);
 
-
-
         private ActiveWebSocketTracker MockActiveWebSocketTracker()
         {
-            
             ActiveWebSocketTracker tracker = new(_logger.Object);
             tracker.AddOrUpdate(firstUserId, new List<WebSocket>(){ _mockedFirstSocket.Object }, (userId, newList) => newList);
             tracker.AddOrUpdate(secondUserId, new List<WebSocket>() { _mockedSecondSocket.Object }, (userId, newList) => newList);

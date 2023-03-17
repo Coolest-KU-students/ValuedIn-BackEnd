@@ -22,10 +22,20 @@ namespace ValuedInBE.System.Middleware
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             string jwtToken = context.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-            if (string.IsNullOrEmpty(jwtToken)) return;
-            UserCredentials credentials = await _authenticationService.GetUserFromToken(jwtToken);
-            UserContext user = _mapper.Map<UserContext>(credentials);
-            context.Items[userContextItemName] = user;
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                try
+                {
+                    UserCredentials credentials = await _authenticationService.GetUserFromToken(jwtToken);
+                    UserContext user = _mapper.Map<UserContext>(credentials);
+                    context.Items[userContextItemName] = user;
+                }
+                catch(Exception ex)
+                {
+                    //TODO: log this?
+                }
+            }
+            await next.Invoke(context);
         }
     }
 

@@ -55,6 +55,17 @@ namespace ValuedInBE.DataControls.Memory
             _logger.LogTrace("Attempting to remove a memoized value with Key({key})", key);
             this.RemoveByKey(key);
         }
+
+        public TValue TryGetAndRemove<TKey, TValue>(TKey key)
+        {
+            _logger.LogTrace("Attempting to remove a memoized value with Key({key})", key);
+            if(TryRemove(new MemoizationKey<TKey>() { Key = key}, out MemoizedValue value))
+            {
+                MemoizedValue<TValue> specifiedTypeValue = (MemoizedValue<TValue>) value;
+                return specifiedTypeValue.Value;
+            }
+            throw new KeyNotFoundException();
+        }
     }
 
 

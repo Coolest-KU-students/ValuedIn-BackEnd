@@ -42,7 +42,7 @@ namespace ValuedInBE.Events.Chats.Tests
         {
             ChatMessage chatMessage = ChatConstants.ChatMessage;
             NewMessageEvent newMessageEvent = new(){ OtherParticipantIDs = new List<string>(), ChatMessage = chatMessage };
-            Message<long, NewMessageEvent> message = new() { Key = chatMessage.ID, Value = newMessageEvent };
+            Message<long, NewMessageEvent> message = new() { Key = chatMessage.Id, Value = newMessageEvent };
             DeliveryResult<long, NewMessageEvent> deliveryResult = new()
             {
                 Message = message,
@@ -50,7 +50,7 @@ namespace ValuedInBE.Events.Chats.Tests
             };
             _producer
                 .Setup(procuder => 
-                    procuder.ProduceAsync(newChatMessageTopic, It.Is<Message<long, NewMessageEvent>>(exp => exp.Key.Equals(chatMessage.ID)), It.IsAny<CancellationToken>()))
+                    procuder.ProduceAsync(newChatMessageTopic, It.Is<Message<long, NewMessageEvent>>(exp => exp.Key.Equals(chatMessage.Id)), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(deliveryResult);
 
             MessageEventHandler messageEventHandler = MockMessageEventHandler();
@@ -91,7 +91,7 @@ namespace ValuedInBE.Events.Chats.Tests
             ChatMessage chatMessage = ChatConstants.ChatMessage;
             string firstUserId = "first";
             string secondUserId = "second";
-            long chatId = chatMessage.ID;
+            long chatId = chatMessage.Id;
 
             NewMessageEvent newMessageEvent = new()
             {
@@ -107,7 +107,7 @@ namespace ValuedInBE.Events.Chats.Tests
                 .Returns(secondUserSockets);
 
             /** Consumer Setup **/
-            Message<long, NewMessageEvent> message = new() { Key = chatMessage.ID, Value = newMessageEvent };
+            Message<long, NewMessageEvent> message = new() { Key = chatMessage.Id, Value = newMessageEvent };
             ConsumeResult<long, NewMessageEvent> consumeResult = new()
             {
                 Message = message

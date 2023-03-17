@@ -43,10 +43,10 @@ namespace ValuedInBE.Contexts
         {
             modelBuilder.Entity<Chat>()
             .HasMany(a => a.Messages).WithOne()
-            .HasForeignKey(e => e.ChatID).IsRequired();
+            .HasForeignKey(e => e.ChatId).IsRequired();
 
             modelBuilder.Entity<ChatParticipant>()
-                .HasKey(e => new { e.UserID, e.ChatID });
+                .HasKey(e => new { e.UserId, e.ChatId });
         }
 
         private static void MapModelsToTables(ModelBuilder modelBuilder)
