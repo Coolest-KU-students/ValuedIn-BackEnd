@@ -91,6 +91,7 @@ namespace ValuedInBE.Events.Handlers
         
         private ConsumeResult<long, NewMessageEvent> ConsumeNextMessage(CancellationToken cancellationToken = default)
         {
+
             _logger.LogTrace("Awaiting for a message");
             ConsumeResult<long, NewMessageEvent> received = _consumer.Consume(cancellationToken);
             _logger.LogInformation("Received that message {messageID} was sent in chat {chatID}", received.Message.Key, received.Message.Value.ChatMessage.ChatId);
