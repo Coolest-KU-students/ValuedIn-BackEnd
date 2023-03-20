@@ -3,9 +3,10 @@ using Newtonsoft.Json;
 using System.Net;
 using ValuedInBE;
 using ValuedInBE.DataControls.Paging;
-using ValuedInBE.Models.DTOs.Requests.Users;
-using ValuedInBE.Models.DTOs.Responses.Users;
-using ValuedInBE.Security.Users;
+using ValuedInBE.System.DataControls.Paging;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Models.DTOs.Request;
+using ValuedInBE.Users.Models.DTOs.Response;
 using ValuedInBETests.IntegrationTests.Config;
 using Xunit;
 

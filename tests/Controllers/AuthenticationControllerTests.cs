@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using ValuedInBE.Controllers.Users;
-using ValuedInBE.Models.DTOs.Requests.Users;
-using ValuedInBE.Models.DTOs.Responses.Authentication;
-using ValuedInBE.Security.Users;
-using ValuedInBE.Services.Users;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Controllers;
+using ValuedInBE.Users.Models.DTOs.Request;
+using ValuedInBE.Users.Models.DTOs.Response;
+using ValuedInBE.Users.Services;
 using Xunit;
 
 namespace ValuedInBE.Controllers.Tests

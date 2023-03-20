@@ -1,28 +1,23 @@
 ﻿
-using ValuedInBE.Controllers.Chats;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Moq;
-using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
-using ValuedInBE.Services.Chats;
 using Xunit;
-using ValuedInBE.Models.DTOs.Requests.Chats;
 using Microsoft.AspNetCore.Mvc;
-using ValuedInBE.DataControls.Paging;
-using ValuedInBE.Models.DTOs.Responses.Chats;
 using NuGet.ContentModel;
-using ValuedInBE.Models.Entities.Messaging;
 using ValuedInBETests.TestingConstants;
 using Microsoft.AspNetCore.Http;
-using ValuedInBE.System.Middleware;
+using ValuedInBE.System.WebConfigs.Middleware;
+using ValuedInBE.System.DataControls.Paging;
+using ValuedInBE.Chats.Controllers;
+using ValuedInBE.Chats.Models.DTOs.Request;
+using ValuedInBE.Chats.Models.DTOs.Response;
+using ValuedInBE.Chats.Models.Entities;
+using ValuedInBE.Chats.Services;
+using ValuedInBE.DataControls.Paging;
 
 namespace ValuedInBE.Controllers.Chats.Tests
 {
-    
+
     public class ChatControllerTests
     {
         private readonly Mock<ILogger<ChatController>> _logger = new();

@@ -1,15 +1,8 @@
-﻿using Xunit;
-using ValuedInBE.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 using Moq;
-using Castle.Core.Logging;
-using Microsoft.Extensions.Logging;
 using System.Net.WebSockets;
-using NuGet.Common;
+using ValuedInBE.WebSockets.Services;
+using Xunit;
 
 namespace ValuedInBE.System.Tests
 {
@@ -27,7 +20,7 @@ namespace ValuedInBE.System.Tests
         private ActiveWebSocketTracker MockActiveWebSocketTracker()
         {
             ActiveWebSocketTracker tracker = new(_logger.Object);
-            tracker.AddOrUpdate(firstUserId, new List<WebSocket>(){ _mockedFirstSocket.Object }, (userId, newList) => newList);
+            tracker.AddOrUpdate(firstUserId, new List<WebSocket>() { _mockedFirstSocket.Object }, (userId, newList) => newList);
             tracker.AddOrUpdate(secondUserId, new List<WebSocket>() { _mockedSecondSocket.Object }, (userId, newList) => newList);
             return tracker;
         }
@@ -64,9 +57,9 @@ namespace ValuedInBE.System.Tests
         public async void TestStartAsync()
         {
             WebSocketReceiveResult receiveResult = new(0, WebSocketMessageType.Text, true);
-            
+
             //First socket is alive, retuns correctly
-            _mockedFirstSocket.Setup(socket => 
+            _mockedFirstSocket.Setup(socket =>
                 socket.ReceiveAsync(
                     It.IsAny<ArraySegment<byte>>(),
                     It.IsAny<CancellationToken>()
@@ -95,7 +88,8 @@ namespace ValuedInBE.System.Tests
                 )
             ).Returns(
                 Task.Run(
-                    async () => {
+                    async () =>
+                    {
                         wasCalled = true;
                         await Task.Delay(_toTimeout);
                         return receiveResult;
@@ -142,6 +136,6 @@ namespace ValuedInBE.System.Tests
 
         }
 
-        
+
     }
 }

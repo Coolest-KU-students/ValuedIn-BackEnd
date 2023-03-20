@@ -1,6 +1,6 @@
-﻿using ValuedInBE.Models.DTOs.Requests.Users;
-using ValuedInBE.Security.Users;
-using ValuedInBE.Services.Users;
+﻿using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Models.DTOs.Request;
+using ValuedInBE.Users.Services;
 
 namespace ValuedInBETests.IntegrationTests.Data
 {

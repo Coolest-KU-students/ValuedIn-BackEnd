@@ -5,9 +5,9 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Common;
-using ValuedInBE.Contexts;
-using ValuedInBE.Security.Users;
-using ValuedInBE.Services.Users;
+using ValuedInBE.System.PersistenceLayer.Contexts;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Services;
 using ValuedInBETests.IntegrationTests.Data;
 
 namespace ValuedInBETests.IntegrationTests.Config

@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Net.Http.Headers;
 using ValuedInBE;
-using ValuedInBE.Models.DTOs.Requests.Users;
-using ValuedInBE.Models.DTOs.Responses.Authentication;
-using ValuedInBE.Security.Users;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Models.DTOs.Request;
+using ValuedInBE.Users.Models.DTOs.Response;
 using ValuedInBETests.IntegrationTests.Config;
 using Xunit;
 
@@ -39,7 +39,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             {
                 AddLoginHeaderToHttpClient(user);
                 HttpResponseMessage httpResponse = await _client.PostAsync(registerUserRoute, requestContent);
-                Assert.Equal(System.Net.HttpStatusCode.Forbidden, httpResponse.StatusCode);
+                Assert.Equal(HttpStatusCode.Forbidden, httpResponse.StatusCode);
                 RemoveLoginHeaderFromHttpClient();
             }
             AddLoginHeaderToHttpClient(_sysAdmin);

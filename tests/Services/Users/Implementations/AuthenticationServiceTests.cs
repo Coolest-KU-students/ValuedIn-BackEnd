@@ -5,11 +5,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Extensions;
 using Moq;
 using System.IdentityModel.Tokens.Jwt;
-using ValuedInBE.Models;
-using ValuedInBE.Models.DTOs.Requests.Users;
-using ValuedInBE.Models.DTOs.Responses.Authentication;
-using ValuedInBE.Models.Users;
-using ValuedInBE.Security.Users;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Models;
+using ValuedInBE.Users.Models.DTOs.Request;
+using ValuedInBE.Users.Models.DTOs.Response;
+using ValuedInBE.Users.Models.Entities;
+using ValuedInBE.Users.Services;
+using ValuedInBE.Users.Services.Implementations;
 using Xunit;
 
 namespace ValuedInBE.Services.Users.Implementations.Tests

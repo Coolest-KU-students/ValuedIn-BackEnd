@@ -1,18 +1,18 @@
 ﻿using Xunit;
-using ValuedInBE.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Moq;
-using ValuedInBE.System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ValuedInBE.Models;
 using System.Net.WebSockets;
 using Microsoft.Extensions.Logging;
-using ValuedInBE.Services.Tokens;
+using ValuedInBE.WebSockets.Controllers;
+using ValuedInBE.Tokens.Services;
+using ValuedInBE.Users.Models;
+using ValuedInBE.WebSockets.Services;
 
 namespace ValuedInBE.Controllers.Tests
 {

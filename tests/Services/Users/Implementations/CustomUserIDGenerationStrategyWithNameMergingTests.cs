@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
+using ValuedInBE.Users.Services.Implementations;
 using Xunit;
 
 namespace ValuedInBE.Services.Users.Implementations.Tests

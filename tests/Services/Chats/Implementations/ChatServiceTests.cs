@@ -1,19 +1,20 @@
 ﻿using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
-using ValuedInBE.Services.Users;
 using Microsoft.AspNetCore.Http;
-using ValuedInBE.Events.Handlers;
-using ValuedInBE.Models;
-using ValuedInBE.System.Middleware;
-using ValuedInBE.Repositories;
-using ValuedInBE.Models.Entities.Messaging;
-using ValuedInBE.Models.DTOs.Requests.Chats;
-using ValuedInBE.DataControls.Paging;
-using ValuedInBE.Models.DTOs.Responses.Chats;
 using ValuedInBETests.TestingConstants;
-using ValuedInBE.Models.Events;
-using ValuedInBE.Models.Users;
+using ValuedInBE.Users.Services;
+using ValuedInBE.Users.Models.Entities;
+using ValuedInBE.Users.Models;
+using ValuedInBE.System.WebConfigs.Middleware;
+using ValuedInBE.Chats.EventHandlers;
+using ValuedInBE.Chats.Models.DTOs.Request;
+using ValuedInBE.Chats.Models.DTOs.Response;
+using ValuedInBE.Chats.Models.Entities;
+using ValuedInBE.Chats.Models.Events;
+using ValuedInBE.Chats.Repositories;
+using ValuedInBE.Chats.Services.Implementations;
+using ValuedInBE.DataControls.Paging;
 
 namespace ValuedInBE.Services.Chats.Implementations.Tests
 {

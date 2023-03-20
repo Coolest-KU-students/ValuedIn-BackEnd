@@ -2,18 +2,12 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading.Tasks;
 using ValuedInBE;
-using ValuedInBE.Contexts;
-using ValuedInBE.Models.DTOs.Requests.Chats;
-using ValuedInBE.Models.Entities.Messaging;
-using ValuedInBE.Models.Users;
-using ValuedInBE.Repositories;
+using ValuedInBE.Chats.Models.DTOs.Request;
+using ValuedInBE.Chats.Models.Entities;
+using ValuedInBE.Users.Models.Entities;
 using ValuedInBETests.IntegrationTests.Config;
 using Xunit;
 
