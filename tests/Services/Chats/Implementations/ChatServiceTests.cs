@@ -19,12 +19,13 @@ namespace ValuedInBE.Services.Chats.Implementations.Tests
 {
     public class ChatServiceTests
     {
-        private Mock<IChatRepository> _chatRepositoryMock = new();
-        private Mock<ILogger<ChatService>> _loggerMock = new();
-        private Mock<IUserService> _userServiceMock = new();
-        private Mock<IHttpContextAccessor> _contextAccessorMock = new();
-        private Mock<IMessageEventHandler> _messageEventHandlerMock = new();
-        private Mock<HttpContext> _httpContextMock = new();
+        private readonly Mock<IChatRepository> _chatRepositoryMock = new();
+        private readonly Mock<ILogger<ChatService>> _loggerMock = new();
+        private readonly Mock<IUserService> _userServiceMock = new();
+        private readonly Mock<IHttpContextAccessor> _contextAccessorMock = new();
+        private readonly Mock<IMessageEventHandler> _messageEventHandlerMock = new();
+        private readonly Mock<HttpContext> _httpContextMock = new();
+
         private ChatService MockChatService()
         {
             UserContext userContext = UserConstants.UserContextInstance;
