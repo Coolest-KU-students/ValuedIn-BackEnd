@@ -13,7 +13,7 @@ using ValuedInBE.System.Kafka;
 
 namespace ValuedInBE.Events.Handlers
 {
-    public class MessageEventHandler : IHostedService
+    public class MessageEventHandler : IHostedService, IMessageEventHandler
     {
         private const string groupId = "chats";
         private const string newChatMessageTopic = "New-Chat-Message";
@@ -33,9 +33,9 @@ namespace ValuedInBE.Events.Handlers
                 new()
                 {
                     GroupId = groupId,
-                    AutoOffsetReset = AutoOffsetReset.Earliest, 
+                    AutoOffsetReset = AutoOffsetReset.Earliest,
                     AllowAutoCreateTopics = true
-                }); 
+                });
             _producer = configurationBuilder.ConfigureProducer();
             _consumer.Subscribe(newChatMessageTopic);
         }
@@ -75,7 +75,7 @@ namespace ValuedInBE.Events.Handlers
             _logger.LogInformation("Message event handler has stopped");
             return Task.CompletedTask;
         }
-        
+
         private async void MessageProcessingAsync(object state)
         {
             while (!_cancellationToken.IsCancellationRequested)
@@ -87,8 +87,8 @@ namespace ValuedInBE.Events.Handlers
                 await DistributeMessages(participatingUsers, result.Message.Value.ChatMessage, _cancellationToken);
             }
         }
-        
-        
+
+
         private ConsumeResult<long, NewMessageEvent> ConsumeNextMessage(CancellationToken cancellationToken = default)
         {
 

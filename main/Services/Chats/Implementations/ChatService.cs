@@ -1,4 +1,5 @@
-﻿using ValuedInBE.DataControls.Memory;
+﻿using System;
+using ValuedInBE.DataControls.Memory;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Events.Handlers;
 using ValuedInBE.Models;
@@ -18,9 +19,9 @@ namespace ValuedInBE.Services.Chats.Implementations
         private readonly IUserService _userService;
         private readonly ILogger<ChatService> _logger;
         private readonly IHttpContextAccessor _contextAccessor;
-        private readonly MessageEventHandler _eventHandler;
+        private readonly IMessageEventHandler _eventHandler;
 
-        public ChatService(IChatRepository chatRepository, ILogger<ChatService> logger, IHttpContextAccessor contextAccessor, MessageEventHandler eventHandler, IUserService userService)
+        public ChatService(IChatRepository chatRepository, ILogger<ChatService> logger, IHttpContextAccessor contextAccessor, IMessageEventHandler eventHandler, IUserService userService)
         {
             _chatRepository = chatRepository;
             _logger = logger;
@@ -35,7 +36,7 @@ namespace ValuedInBE.Services.Chats.Implementations
             UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
             IEnumerable<Chat> chats = await _chatRepository.GetChatsWithLastMessageAndParticipantsAsync(userContext.UserID, chatPage.Size, chatPage.Offset);
             DateTime newOffset = chats.LastOrDefault()?.CreatedOn ?? createdSince ?? DateTime.Now;
-            bool isLast = !chats.Any();
+            bool isLast = chats.Count() != chatPage.Size; //Should never be more; if less, means there's no more left
 
             IEnumerable<ChatInfo> chatInfos =
                 chats.Select(
@@ -51,7 +52,7 @@ namespace ValuedInBE.Services.Chats.Implementations
 
             return new()
             {
-                Last = chats.Any(),
+                Last = isLast,
                 NextOffset = newOffset,
                 Results = chatInfos,
             };
@@ -133,7 +134,7 @@ namespace ValuedInBE.Services.Chats.Implementations
             
             List<ChatMessage> messages = chat.Messages;
             DateTime newOffset = messages.LastOrDefault()?.CreatedOn ?? createdSince ?? DateTime.Now;
-            bool isLast = !messages.Any();
+            bool isLast = messages.Count != messagePage.Size;
 
             IEnumerable<MessageDTO> messageDTOs =
                 messages.Select(
@@ -148,7 +149,7 @@ namespace ValuedInBE.Services.Chats.Implementations
 
             return new()
             {
-                Last = messages.Any(),
+                Last = isLast,
                 NextOffset = newOffset,
                 Results = messageDTOs,
             };

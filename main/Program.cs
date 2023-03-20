@@ -60,6 +60,7 @@ namespace ValuedInBE
             builder.Services.AddSingleton<ActiveWebSocketTracker>();
             builder.Services.AddSingleton<MessageEventHandler>();
             builder.Services.AddSingleton<IWebSocketTracker>(x => x.GetRequiredService<ActiveWebSocketTracker>());
+            builder.Services.AddSingleton<IMessageEventHandler>(x => x.GetRequiredService<MessageEventHandler>());
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<ITokenService, TokenService>();
 

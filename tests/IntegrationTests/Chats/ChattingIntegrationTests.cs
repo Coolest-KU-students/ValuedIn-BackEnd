@@ -29,7 +29,7 @@ namespace ValuedInBETests.IntegrationTests.Chats
         private const string receiverLogin = "ChatMessageReceiver";
         private const string sendableMessage = "HELLO THIS IS NEW MESSAGE";
         private const string pingMessage = "ping";
-        private readonly WebSocketClient _webSocketClient;
+        private readonly WebSocketClient _webSocketClient; 
 
         public ChattingIntegrationTests(IntegrationTestWebApplicationFactory<Program> factory) : base(factory)
         {
@@ -68,47 +68,38 @@ namespace ValuedInBETests.IntegrationTests.Chats
         [Fact]
         public async Task CreatingChatAndSendingAMessageShouldBothTriggerWebSocket()
         {
+            await Task.Delay(10000);
             string messageContent = "This is message content";
             string secondMessageContent = "This is different content";
             string receiver = await GetUserIdFromLoginAsync(receiverLogin);
             string sender = await GetUserIdFromLoginAsync(senderLogin);
-            ArraySegment<byte> buffer = new(Encoding.UTF8.GetBytes(pingMessage));
+            byte[] buffer = new byte[1024 * 4];
+            ArraySegment<byte> socketResponse = new(buffer);
             NewMessage newMessage = new() { Content = secondMessageContent };
-
-            AddLoginHeaderToHttpClient(senderLogin);
-            HttpResponseMessage tokenResponse = await _client.GetAsync(webSocketTokenRoute);
-            Assert.True(tokenResponse.IsSuccessStatusCode);
-            Assert.NotNull(tokenResponse.Content);
-            string webSocketToken = await tokenResponse.Content.ReadAsStringAsync();
-            Uri webSocketUri = new UriBuilder(_clientBaseAdress) { Scheme = "wss", Path = webSocketRoute, Query = $"token={webSocketToken}"}.Uri;
-            WebSocket webSocket = await _webSocketClient.ConnectAsync(webSocketUri, CancellationToken.None);
-            await webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
-
             NewChatRequest request = new()
             {
                 MessageContent = messageContent,
                 Participants = new() { receiver }
             };
-
             StringContent chatRequestContent = SerializeIntoJsonHttpContent(request);
+            AddLoginHeaderToHttpClient(senderLogin);
+            DumbDebug($"Added Login to Header : {DateTime.Now}");
+            WebSocket webSocket = await EstablishWebSocketConnection();
+
+            DumbDebug($"Posting : {DateTime.Now}");
             HttpResponseMessage chatResponse = await _client.PostAsync(chatsRoute, chatRequestContent);
+
+            DumbDebug($"Posted : {DateTime.Now}");
+            var WebSocketReceiveTask = webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
             Assert.True(chatResponse.IsSuccessStatusCode);
             Assert.NotNull(chatResponse.Content);
             string chatResponseString = await chatResponse.Content.ReadAsStringAsync();
             Chat? createdChat = JsonConvert.DeserializeObject<Chat>(chatResponseString);
             Assert.NotNull(createdChat);
-            byte[] buffer2 = new byte[1024 * 4];
-            ArraySegment<byte> socketResponse = new(buffer2);
-
-            string socketResponseAsString = pingMessage;
-            for(int i = 0;  socketResponseAsString == pingMessage; i++) {
-                if (i == 2)  Assert.True(false, "Should not need 2 cycles to receive the correct message");
-                
-                WebSocketReceiveResult firstResults = await webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
-                Assert.False(firstResults.CloseStatus.HasValue, "Should not have closed the socekt");
-                Assert.NotNull(socketResponse.Array);
-                socketResponseAsString = Encoding.UTF8.GetString(socketResponse.Array!).Trim('\0');
-            }
+            WebSocketReceiveResult firstResults = await WebSocketReceiveTask;
+            Assert.False(firstResults.CloseStatus.HasValue, "Should not have closed the socekt");
+            Assert.NotNull(socketResponse.Array);
+            string socketResponseAsString = Encoding.UTF8.GetString(socketResponse.Array!).Trim('\0');
             ChatMessage? chatMessage = JsonConvert.DeserializeObject<ChatMessage>(socketResponseAsString);
 
             Assert.NotNull(chatMessage);
@@ -142,6 +133,49 @@ namespace ValuedInBETests.IntegrationTests.Chats
         {
             UserCredentials user = await _valuedInContext.UserCredentials.FirstAsync(c => c.Login == login);
             return user.UserID;
+        }
+
+        private static async Task<WebSocket> ReceiveFromSocketAndIfTimerHasPassedEnsureReconnection(WebSocket webSocket, Timer timer)
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task CheckWebSocketConnection(WebSocket webSocket)
+        {
+            Assert.False(webSocket.CloseStatus.HasValue);
+            ArraySegment<byte> buffer = new(Encoding.UTF8.GetBytes(pingMessage));
+            byte[] buffer2 = new byte[1024 * 4];
+            ArraySegment<byte> socketResponse = new(buffer2);
+            await webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+            WebSocketReceiveResult firstResults = await webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
+            Assert.False(firstResults.CloseStatus.HasValue);
+            Assert.NotNull(socketResponse.Array);
+            Assert.Equal(pingMessage, Encoding.UTF8.GetString(socketResponse.Array!).Trim('\0'));
+        }
+
+        private async Task<WebSocket> EstablishWebSocketConnection()
+        {
+            string webSocketToken = await GetTokenForWebSocket();
+            Uri webSocketUri = new UriBuilder(_clientBaseAdress) { Scheme = "wss", Path = webSocketRoute, Query = $"token={webSocketToken}" }.Uri;
+            WebSocket webSocket = await _webSocketClient.ConnectAsync(webSocketUri, CancellationToken.None);
+            await CheckWebSocketConnection(webSocket);
+            return webSocket;
+        }
+
+        private async Task<string> GetTokenForWebSocket()
+        {
+            HttpResponseMessage tokenResponse = await _client.GetAsync(webSocketTokenRoute);
+            Assert.True(tokenResponse.IsSuccessStatusCode);
+            Assert.NotNull(tokenResponse.Content);
+            string webSocketToken = await tokenResponse.Content.ReadAsStringAsync();
+            Assert.False(string.IsNullOrEmpty(webSocketToken));
+            return webSocketToken;
+        }
+
+        public static void DumbDebug(string message)
+        {
+            string file = @"C:\Users\Lukas\Source\Repos\ValuedInBE\tests\debug.txt";
+            File.AppendAllTextAsync(file, message+'\n'); 
         }
     }
 }
