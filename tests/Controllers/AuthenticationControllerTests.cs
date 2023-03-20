@@ -26,10 +26,10 @@ namespace ValuedInBE.Controllers.Tests
         public async void RegisterUserShouldReturnOk()
         {
             NewUser newUser = UserConstants.NewUserInstance;
-            _mockAuthenticationService.Setup(service => service.RegisterNewUser(newUser)).Verifiable();
+            _mockAuthenticationService.Setup(service => service.RegisterNewUserAsync(newUser)).Verifiable();
             AuthenticationController controller = MockAuthenticationController();
 
-            ActionResult actionResult = await controller.RegisterUser(newUser);
+            ActionResult actionResult = await controller.RegisterUserAsync(newUser);
             Assert.IsType<OkResult>(actionResult);
             _mockAuthenticationService.Verify();
         }
@@ -38,10 +38,10 @@ namespace ValuedInBE.Controllers.Tests
         public async Task SelfRegisterUserShouldReturnOk()
         {
             NewUser newUser = UserConstants.NewUserInstance;
-            _mockAuthenticationService.Setup(service => service.SelfRegister(newUser)).Verifiable();
+            _mockAuthenticationService.Setup(service => service.SelfRegisterAsync(newUser)).Verifiable();
             AuthenticationController controller = MockAuthenticationController();
 
-            ActionResult actionResult = await controller.SelfRegisterUser(newUser);
+            ActionResult actionResult = await controller.SelfRegisterUserAsync(newUser);
             Assert.IsType<OkResult>(actionResult);
             _mockAuthenticationService.Verify();
         }
@@ -55,11 +55,11 @@ namespace ValuedInBE.Controllers.Tests
                 Role = UserRoleExtended.DEFAULT
             };
             AuthRequest authRequest = UserConstants.AuthRequestInstance;
-            _mockAuthenticationService.Setup(service => service.AuthenticateUser(authRequest))
+            _mockAuthenticationService.Setup(service => service.AuthenticateUserAsync(authRequest))
                 .ReturnsAsync(tokenAndRole);
             AuthenticationController controller = MockAuthenticationController();
 
-            ActionResult<TokenAndRole> actionResult = await controller.LogIn(authRequest);
+            ActionResult<TokenAndRole> actionResult = await controller.LogInAsync(authRequest);
             Assert.NotNull(actionResult.Value);
             Assert.Equal(fakeToken, actionResult.Value!.Token);
             Assert.Equal(UserRoleExtended.DEFAULT, actionResult.Value.Role);

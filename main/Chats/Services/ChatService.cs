@@ -10,7 +10,7 @@ using ValuedInBE.System.WebConfigs.Middleware;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Services;
 
-namespace ValuedInBE.Chats.Services.Implementations
+namespace ValuedInBE.Chats.Services
 {
     public class ChatService : IChatService
     {
@@ -110,23 +110,23 @@ namespace ValuedInBE.Chats.Services.Implementations
             return chatMessage;
         }
 
-        public async Task SendMessageEvent(ChatMessage chatMessage, List<string> otherParticipants = null)
+        public async Task SendMessageEvent(ChatMessage chatMessage, IEnumerable<string> otherParticipants = null)
         {
-            otherParticipants ??= await _chatRepository.GetParticipantIdsFromChat(chatMessage.ChatId);
+            otherParticipants ??= await _chatRepository.GetParticipantIdsFromChatAsync(chatMessage.ChatId);
             NewMessageEvent messageEvent = new()
             {
                 ChatMessage = chatMessage,
                 OtherParticipantIDs = otherParticipants,
             };
 
-            await _eventHandler.HandleSentMessageEvent(messageEvent);
+            await _eventHandler.HandleSentMessageEventAsync(messageEvent);
         }
 
         public async Task<OffsetPage<MessageDTO, DateTime>> GetMessagesAsync(MessagePageRequest messagePage, long chatId)
         {
             DateTime? createdSince = messagePage.Offset;
             UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
-            Chat chat = await _chatRepository.GetChatMessagesWithParticipantsDetails(chatId, messagePage.Size, createdSince);
+            Chat chat = await _chatRepository.GetChatMessagesWithParticipantsDetailsAsync(chatId, messagePage.Size, createdSince);
             if (chat == null)
             {
                 throw new Exception("Chat not found");

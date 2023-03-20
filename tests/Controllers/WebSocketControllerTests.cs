@@ -49,12 +49,12 @@ namespace ValuedInBE.Controllers.Tests
 
             WebSocketController socketController = MockWebSocketController();
             socketController.ControllerContext.HttpContext = _mockHttpContext.Object;
-            ActionResult emptyTokenEstablish = await socketController.Establish("");
+            ActionResult emptyTokenEstablish = await socketController.EstablishAsync("");
             Assert.NotNull(emptyTokenEstablish);
             Assert.IsType<BadRequestResult>(emptyTokenEstablish);
 
             socketController.ControllerContext.HttpContext = new DefaultHttpContext();
-            Task<ActionResult> establishTask = socketController.Establish("bad token");
+            Task<ActionResult> establishTask = socketController.EstablishAsync("bad token");
             await Task.Delay(1); //to ensure synchronisity;
             Assert.True(establishTask.IsCompleted);
             ActionResult result = await establishTask;
@@ -82,7 +82,7 @@ namespace ValuedInBE.Controllers.Tests
 
             WebSocketController socketController = MockWebSocketController();
             socketController.ControllerContext.HttpContext = _mockHttpContext.Object;
-            Task<ActionResult> establishTask = socketController.Establish(token);
+            Task<ActionResult> establishTask = socketController.EstablishAsync(token);
             
             await Task.Delay(_connectionVerificationIntervals*0.1); //to ensure it ran at least one loop;
             Assert.False(establishTask.IsCompleted);

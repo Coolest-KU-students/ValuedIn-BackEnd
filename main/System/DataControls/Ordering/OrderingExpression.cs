@@ -1,8 +1,7 @@
 ﻿using System.Linq.Expressions;
 
-namespace ValuedInBE.DataControls.Ordering.Internal
+namespace ValuedInBE.System.DataControls.Ordering
 {
-
     public class OrderingExpression<TEntity>
     {
         private readonly Expression<Func<TEntity, object>> _func;

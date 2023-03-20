@@ -33,11 +33,11 @@ namespace ValuedInBE.Users.Services.Implementations
             _mapper = mapper;
         }
 
-        public async Task<Page<UserSystemInfo>> GetUserPage(UserPageRequest config)
+        public async Task<Page<UserSystemInfo>> GetUserPageAsync(UserPageRequest config)
         {
             _logger.LogDebug("Fetching User Page {pageNo} with size {size}", config.Page, config.Size);
             Page<UserCredentials> credentialPage =
-                await _userCredentialRepository.GetUserPageWithDetails(config);
+                await _userCredentialRepository.GetUserPageWithDetailsAsync(config);
 
             return new Page<UserSystemInfo>(
                 credentialPage.Results
@@ -46,19 +46,19 @@ namespace ValuedInBE.Users.Services.Implementations
                 credentialPage.PageNo);
         }
 
-        public async Task CreateNewUser(NewUser newUser, UserContext userContext = null)
+        public async Task CreateNewUserAsync(NewUser newUser, UserContext userContext = null)
         {
             _logger.LogDebug("Creating new user with login {login}", newUser.Login);
             userContext ??= _contextAccessor.HttpContext?.GetUserContext();
 
-            if (await _userCredentialRepository.LoginExists(newUser.Login))
+            if (await _userCredentialRepository.LoginExistsAsync(newUser.Login))
             {
                 _logger.LogTrace("Tried to create a new user, but {login} was already taken", newUser.Login);
                 throw new Exception("Login already exists");
             }
 
-            int sameNameUserCount = await _userCredentialRepository.CountWithNames(newUser.FirstName, newUser.LastName);
-            string generatedUserID = await _userIDGeneration.GenerateUserIDForNewUser(newUser, sameNameUserCount);
+            int sameNameUserCount = await _userCredentialRepository.CountWithNamesAsync(newUser.FirstName, newUser.LastName);
+            string generatedUserID = await _userIDGeneration.GenerateUserIDForNewUserAsync(newUser, sameNameUserCount);
             UserRoleExtended role = UserRoleExtended.FromString(newUser.Role) ?? UserRole.DEFAULT;
             UserDetails userDetails = new()
             {
@@ -90,19 +90,19 @@ namespace ValuedInBE.Users.Services.Implementations
                     Role = UserRole.SYS_ADMIN //since that is basically what it is given
                 };
             }
-            await _userCredentialRepository.Insert(userCredentials, userContext);
+            await _userCredentialRepository.InsertAsync(userCredentials, userContext);
         }
 
-        public async Task<UserCredentials> GetUserCredentialsByLogin(string login)
+        public async Task<UserCredentials> GetUserCredentialsByLoginAsync(string login)
         {
             _logger.LogDebug("Fetching user credentials for login {login} ", login);
-            return await _userCredentialRepository.GetByLogin(login);
+            return await _userCredentialRepository.GetByLoginAsync(login);
         }
 
-        public async Task<UserSystemInfo> GetUserSystemInfoByLogin(string login)
+        public async Task<UserSystemInfo> GetUserSystemInfoByLoginAsync(string login)
         {
             _logger.LogDebug("Fetching user system info for login {login} ", login);
-            UserCredentials credentials = await _userCredentialRepository.GetByLoginWithDetails(login);
+            UserCredentials credentials = await _userCredentialRepository.GetByLoginWithDetailsAsync(login);
             return credentials != null ? MapSystemInfoFromCredentials(credentials) : null;
         }
 
@@ -120,11 +120,11 @@ namespace ValuedInBE.Users.Services.Implementations
                 Telephone = credentials.UserDetails.Telephone
             };
 
-        public async Task ExpireUser(string login)
+        public async Task ExpireUserAsync(string login)
         {
             _logger.LogDebug("Tying to expired user with {login} ", login);
             UserContext userContext = GetUserContextFromHttpOrThrowException();
-            UserCredentials credentials = await _userCredentialRepository.GetByLogin(login);
+            UserCredentials credentials = await _userCredentialRepository.GetByLoginAsync(login);
             if (credentials == null)
             {
                 _logger.LogTrace("Did not find a user wiht login {login}", login);
@@ -133,14 +133,14 @@ namespace ValuedInBE.Users.Services.Implementations
 
             credentials.IsExpired = true;
 
-            await _userCredentialRepository.Update(credentials, userContext);
+            await _userCredentialRepository.UpdateAsync(credentials, userContext);
         }
 
-        public async Task UpdateUser(UpdatedUser updatedUser)
+        public async Task UpdateUserAsync(UpdatedUser updatedUser)
         {
             _logger.LogDebug("Tying to update user with userId {userId} ", updatedUser.UserID);
             UserContext userContext = GetUserContextFromHttpOrThrowException();
-            UserCredentials credentials = await _userCredentialRepository.GetByUserIdWithDetails(updatedUser.UserID);
+            UserCredentials credentials = await _userCredentialRepository.GetByUserIdWithDetailsAsync(updatedUser.UserID);
             if (credentials == null)
             {
                 _logger.LogTrace("Did not find a user with userId {login}", updatedUser.UserID);
@@ -153,23 +153,23 @@ namespace ValuedInBE.Users.Services.Implementations
             credentials.UserDetails.Email = updatedUser.Email;
             credentials.UserDetails.Telephone = updatedUser.Telephone;
 
-            await _userCredentialRepository.Update(credentials, userContext);
+            await _userCredentialRepository.UpdateAsync(credentials, userContext);
         }
 
-        public async Task UpdateLastActiveByLogin(string login)
+        public async Task UpdateLastActiveByLoginAsync(string login)
         {
-            UserCredentials credentials = await _userCredentialRepository.GetByLogin(login);
+            UserCredentials credentials = await _userCredentialRepository.GetByLoginAsync(login);
             UserContext userContext = _mapper.Map<UserContext>(credentials);
             credentials.LastActive = DateTime.Now;
-            await _userCredentialRepository.Update(credentials, userContext);
+            await _userCredentialRepository.UpdateAsync(credentials, userContext);
         }
 
-        public async Task UpdateLastActiveByUserID(string userID)
+        public async Task UpdateLastActiveByUserIDAsync(string userID)
         {
-            UserCredentials credentials = await _userCredentialRepository.GetByUserID(userID);
+            UserCredentials credentials = await _userCredentialRepository.GetByUserIDAsync(userID);
             UserContext userContext = _mapper.Map<UserContext>(credentials);
             credentials.LastActive = DateTime.Now;
-            await _userCredentialRepository.Update(credentials, userContext);
+            await _userCredentialRepository.UpdateAsync(credentials, userContext);
         }
 
         private UserContext GetUserContextFromHttpOrThrowException()
@@ -180,7 +180,7 @@ namespace ValuedInBE.Users.Services.Implementations
 
         public async Task<bool> VerifyUserIdExistenceAsync(List<string> userIds)
         {
-            return await _userCredentialRepository.VerifyUserIds(userIds);
+            return await _userCredentialRepository.VerifyUserIdsAsync(userIds);
         }
     }
 }

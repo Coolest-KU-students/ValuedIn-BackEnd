@@ -22,36 +22,36 @@ namespace ValuedInBE.Users.Controllers
 
         [Authorize(Roles = "SYS_ADMIN")]
         [HttpPost("page")]
-        public async Task<ActionResult<Page<UserSystemInfo>>> GetUserPage(UserPageRequest pageRequest)
+        public async Task<ActionResult<Page<UserSystemInfo>>> GetUserPageAsync(UserPageRequest pageRequest)
         {
 
             _logger.LogTrace("Got a request to fetch a User Page");
-            return await _userService.GetUserPage(pageRequest);
+            return await _userService.GetUserPageAsync(pageRequest);
         }
 
         [Authorize(Roles = "SYS_ADMIN")]
         [HttpGet("{login}")]
-        public async Task<ActionResult<UserSystemInfo>> GetUserSystemInfo(string login)
+        public async Task<ActionResult<UserSystemInfo>> GetUserSystemInfoAsync(string login)
         {
             _logger.LogTrace("Got a request to fetch a User with Login: {login}", login);
-            UserSystemInfo user = await _userService.GetUserSystemInfoByLogin(login);
+            UserSystemInfo user = await _userService.GetUserSystemInfoByLoginAsync(login);
             return user != null ? user : NoContent();
         }
 
         [Authorize(Roles = "SYS_ADMIN")]
         [HttpPut]
-        public async Task UpdateUser(UpdatedUser updatedUser)
+        public async Task UpdateUserAsync(UpdatedUser updatedUser)
         {
             _logger.LogTrace("Got a request to update a User with User Id: {updatedUser.UserID}", updatedUser.UserID);
-            await _userService.UpdateUser(updatedUser);
+            await _userService.UpdateUserAsync(updatedUser);
         }
 
         [Authorize(Roles = "SYS_ADMIN")]
         [HttpDelete("expire/{login}")]
-        public async Task ExpireUser(string login)
+        public async Task ExpireUserAsync(string login)
         {
             _logger.LogTrace("Got a request to expire a User with User Id: {login}", login);
-            await _userService.ExpireUser(login);
+            await _userService.ExpireUserAsync(login);
         }
     }
 }

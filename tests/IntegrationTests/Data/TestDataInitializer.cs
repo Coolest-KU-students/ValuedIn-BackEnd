@@ -17,7 +17,7 @@ namespace ValuedInBETests.IntegrationTests.Data
         {
             foreach (NewUser user in GetTestingNewUserList())
             {
-                await authenticationService.RegisterNewUser(user);
+                await authenticationService.RegisterNewUserAsync(user);
             }
         }
 

@@ -39,9 +39,9 @@ namespace ValuedInBE.Users.Services.Implementations
             Key = config.GetSection("Key").Value;
         }
 
-        public async Task<TokenAndRole> AuthenticateUser(AuthRequest auth)
+        public async Task<TokenAndRole> AuthenticateUserAsync(AuthRequest auth)
         {
-            UserCredentials credentials = await _userService.GetUserCredentialsByLogin(auth.Login);
+            UserCredentials credentials = await _userService.GetUserCredentialsByLoginAsync(auth.Login);
             if (credentials == null)
             {
                 _logger.LogError("Did not find any credentials with login {login} when trying to authenticate", auth.Login);
@@ -62,7 +62,7 @@ namespace ValuedInBE.Users.Services.Implementations
                     break;
             }
 
-            await _userService.UpdateLastActiveByLogin(credentials.Login);
+            await _userService.UpdateLastActiveByLoginAsync(credentials.Login);
 
             return new()
             {
@@ -71,12 +71,12 @@ namespace ValuedInBE.Users.Services.Implementations
             };
         }
 
-        public async Task RegisterNewUser(NewUser newUser)
+        public async Task RegisterNewUserAsync(NewUser newUser)
         {
             await HashPasswordAndSave(newUser);
         }
 
-        public async Task SelfRegister(NewUser newUser)
+        public async Task SelfRegisterAsync(NewUser newUser)
         {
             if (newUser.Role != UserRoleExtended.DEFAULT)
             {
@@ -92,7 +92,7 @@ namespace ValuedInBE.Users.Services.Implementations
             await HashPasswordAndSave(newUser, userContext);
         }
 
-        public async Task<UserCredentials> GetUserFromToken(string token)
+        public async Task<UserCredentials> GetUserFromTokenAsync(string token)
         {
             _logger.LogTrace("Attempting to fetch UserCredentials from token {token}", token);
             TokenValidationParameters tokenValidationParameters = new()
@@ -107,13 +107,13 @@ namespace ValuedInBE.Users.Services.Implementations
             ClaimsPrincipal claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(token, tokenValidationParameters, out SecurityToken _);
             string login = claimsPrincipal.FindFirstValue(ClaimTypes.Name);
             _logger.LogDebug("Extracted login {login} from token ", login);
-            return await _userService.GetUserCredentialsByLogin(login);
+            return await _userService.GetUserCredentialsByLoginAsync(login);
         }
-        public async Task<TokenAndRole> VerifyToken(string token)
+        public async Task<TokenAndRole> VerifyTokenAsync(string token)
         {
-            UserCredentials credentials = await GetUserFromToken(token);
+            UserCredentials credentials = await GetUserFromTokenAsync(token);
             if (credentials.IsExpired) throw new Exception("User is expired");
-            await _userService.UpdateLastActiveByLogin(credentials.Login);
+            await _userService.UpdateLastActiveByLoginAsync(credentials.Login);
             return new()
             {
                 Token = GenerateJWT(_mapper.Map<User>(credentials)),
@@ -126,7 +126,7 @@ namespace ValuedInBE.Users.Services.Implementations
             User user = _mapper.Map<User>(newUser);
             newUser.Password = HashPassword(user, newUser.Password);
             _logger.LogTrace("Hashing a password for login {login}", newUser.Login);
-            await _userService.CreateNewUser(newUser, creatorContext);
+            await _userService.CreateNewUserAsync(newUser, creatorContext);
         }
 
         private string HashPassword(User user, string password)

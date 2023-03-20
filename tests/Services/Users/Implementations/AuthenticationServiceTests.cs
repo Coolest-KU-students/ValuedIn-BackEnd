@@ -57,7 +57,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
             JwtSecurityTokenHandler tokenHandler = new();
 
             _userServiceMock
-                .Setup(service => service.GetUserCredentialsByLogin(UserConstants.login))
+                .Setup(service => service.GetUserCredentialsByLoginAsync(UserConstants.login))
                 .ReturnsAsync(userCredentials);
             _mapperMock
                 .Setup(mock => mock.Map<User>(userCredentials))
@@ -68,7 +68,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
 
             AuthenticationService service = MockAuthenticationService();
 
-            TokenAndRole tokenReturned = await service.AuthenticateUser(auth);
+            TokenAndRole tokenReturned = await service.AuthenticateUserAsync(auth);
             Assert.True(tokenHandler.CanReadToken(tokenReturned.Token));
             Assert.Equal(tokenHandler.TokenLifetimeInMinutes / 60, jwtExpirationInHours);
 
@@ -86,13 +86,13 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 .Setup(hasher => hasher.HashPassword(user, UserConstants.password)) //has to hash the password
                 .Returns(UserConstants.hashedPassword);
             _userServiceMock
-                .Setup(service => service.CreateNewUser(newUser, null))
+                .Setup(service => service.CreateNewUserAsync(newUser, null))
                 .Verifiable();
             _mapperMock
                 .Setup(mapper => mapper.Map<User>(newUser))
                 .Returns(user);
             AuthenticationService service = MockAuthenticationService();
-            await service.RegisterNewUser(newUser);
+            await service.RegisterNewUserAsync(newUser);
             _userServiceMock.Verify();
         }
 
@@ -105,19 +105,19 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 .Setup(hasher => hasher.HashPassword(user, UserConstants.password)) //has to hash the password
                 .Returns(UserConstants.hashedPassword);
             _userServiceMock
-                .Setup(service => service.CreateNewUser(newUser, It.IsAny<UserContext>()))
+                .Setup(service => service.CreateNewUserAsync(newUser, It.IsAny<UserContext>()))
                 .Verifiable();
             _mapperMock
                 .Setup(mapper => mapper.Map<User>(newUser))
                 .Returns(user);
 
             AuthenticationService service = MockAuthenticationService();
-            await Assert.ThrowsAnyAsync<Exception>(() => service.SelfRegister(CreateNewUserWithOnlyRole(UserRole.SYS_ADMIN)));
-            await Assert.ThrowsAnyAsync<Exception>(() => service.SelfRegister(CreateNewUserWithOnlyRole(UserRole.ORG_ADMIN)));
-            await Assert.ThrowsAnyAsync<Exception>(() => service.SelfRegister(CreateNewUserWithOnlyRole(UserRole.HR)));
+            await Assert.ThrowsAnyAsync<Exception>(() => service.SelfRegisterAsync(CreateNewUserWithOnlyRole(UserRole.SYS_ADMIN)));
+            await Assert.ThrowsAnyAsync<Exception>(() => service.SelfRegisterAsync(CreateNewUserWithOnlyRole(UserRole.ORG_ADMIN)));
+            await Assert.ThrowsAnyAsync<Exception>(() => service.SelfRegisterAsync(CreateNewUserWithOnlyRole(UserRole.HR)));
             _userServiceMock.VerifyNoOtherCalls();
 
-            await service.SelfRegister(newUser);
+            await service.SelfRegisterAsync(newUser);
             _userServiceMock.Verify();
 
         }

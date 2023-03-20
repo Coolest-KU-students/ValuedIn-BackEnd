@@ -29,7 +29,6 @@ namespace ValuedInBE.DataControls.Ordering
                     : query.ThenByDescending(GetProperty<TEntity>());
         }
 
-
         private Expression<Func<TEntity, TEntity>> GetProperty<TEntity>() => //I have no idea how I'm able to return TEntity itself and it still works. Might be just using "object" ref under the hood, but best I have for now
                 entity => EF.Property<TEntity>(entity, Column);
     }

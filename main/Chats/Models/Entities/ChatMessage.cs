@@ -6,10 +6,6 @@ namespace ValuedInBE.Chats.Models.Entities
 {
     public class ChatMessage : AuditCreatedBase
     {
-        public ChatMessage()
-        {
-        }
-
         [Key]
         public long Id { get; set; }
         public long ChatId { get; set; }

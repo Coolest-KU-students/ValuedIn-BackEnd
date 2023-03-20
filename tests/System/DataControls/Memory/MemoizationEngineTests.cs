@@ -29,7 +29,7 @@ namespace ValuedInBETests.System.DataControls.Memory
 
             Assert.Single(_memoizationEngine);
             Func<string, string> retrieved =
-                _memoizationEngine.TryGetValue<List<string>, Func<string, string>>(_listAsKey);
+                _memoizationEngine.GetValue<List<string>, Func<string, string>>(_listAsKey);
 
             Assert.Equal(testingValue, retrieved.Invoke(testingValue));
 
@@ -38,7 +38,7 @@ namespace ValuedInBETests.System.DataControls.Memory
 
             Assert.Empty(_memoizationEngine);
             Assert.Throws<KeyNotFoundException>(
-                () => _memoizationEngine.TryGetValue<List<string>, Func<string, string>>(_listAsKey)
+                () => _memoizationEngine.GetValue<List<string>, Func<string, string>>(_listAsKey)
              );
         }
 
@@ -51,7 +51,7 @@ namespace ValuedInBETests.System.DataControls.Memory
             _memoizationEngine.RemoveByKey(_listAsKey);
             Assert.Empty(_memoizationEngine);
             Assert.Throws<KeyNotFoundException>(
-                () => _memoizationEngine.TryGetValue<List<string>, Func<string, string>>(_listAsKey)
+                () => _memoizationEngine.GetValue<List<string>, Func<string, string>>(_listAsKey)
              );
         }
 
@@ -69,7 +69,7 @@ namespace ValuedInBETests.System.DataControls.Memory
             await Task.Delay(stressTestAsyncTimePillow);
             Assert.Empty(_memoizationEngine);
             Assert.Throws<KeyNotFoundException>(
-                () => _memoizationEngine.TryGetValue<List<string>, Func<string, string>>(_listAsKey)
+                () => _memoizationEngine.GetValue<List<string>, Func<string, string>>(_listAsKey)
              );
         }
     }

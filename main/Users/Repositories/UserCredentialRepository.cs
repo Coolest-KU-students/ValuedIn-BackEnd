@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ValuedInBE.DataControls.Ordering;
-using ValuedInBE.DataControls.Ordering.Internal;
+using ValuedInBE.System.DataControls.Ordering;
 using ValuedInBE.System.DataControls.Paging;
 using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.PersistenceLayer.Extensions;
@@ -27,22 +27,23 @@ namespace ValuedInBE.Users.Repositories
             _logger = logger;
         }
 
-        public async Task<int> CountWithNames(string firstName, string lastName)
+        public async Task<int> CountWithNamesAsync(string firstName, string lastName)
         {
             _logger.LogTrace("Requested user with First Name '{firstName}', Last Name '{lastName}'", firstName, lastName);
             return await _context.UserDetails.CountAsync(a => a.FirstName == firstName && a.LastName == lastName);
         }
 
-        public async Task<List<UserCredentials>> GetAllUsers()
+        public async Task<IEnumerable<UserCredentials>> GetAllUsersAsync()
         {
             _logger.LogTrace("All User List Requested");
             var credentialQuery = from c in _context.UserCredentials
                                             .Include(a => a.UserDetails)
                                   select c;
-            return await credentialQuery.ToListAsync();
+            await credentialQuery.LoadAsync();
+            return credentialQuery;
         }
 
-        public async Task<UserCredentials> GetByLogin(string login)
+        public async Task<UserCredentials> GetByLoginAsync(string login)
         {
             _logger.LogTrace("Request user credentials with login {login}", login);
             var credentialQuery = from c in _context.UserCredentials
@@ -50,7 +51,7 @@ namespace ValuedInBE.Users.Repositories
                                   select c;
             return await credentialQuery.FirstOrDefaultAsync();
         }
-        public async Task<UserCredentials> GetByUserID(string userID)
+        public async Task<UserCredentials> GetByUserIDAsync(string userID)
         {
             _logger.LogTrace("Request user credentials with userID {userID}", userID);
             var credentialQuery = from c in _context.UserCredentials
@@ -59,7 +60,7 @@ namespace ValuedInBE.Users.Repositories
             return await credentialQuery.FirstOrDefaultAsync();
         }
 
-        public async Task<UserCredentials> GetByLoginWithDetails(string login)
+        public async Task<UserCredentials> GetByLoginWithDetailsAsync(string login)
         {
             _logger.LogTrace("Request user credentials and details with login {login}", login);
             var credentialQuery = from c in _context.UserCredentials
@@ -70,7 +71,7 @@ namespace ValuedInBE.Users.Repositories
             return await credentialQuery.FirstOrDefaultAsync();
         }
 
-        public async Task<UserCredentials> GetByUserIdWithDetails(string userID)
+        public async Task<UserCredentials> GetByUserIdWithDetailsAsync(string userID)
         {
             _logger.LogTrace("Request user credentials and details with user ID {userId}", userID);
             var credentialQuery = from c in _context.UserCredentials
@@ -82,7 +83,7 @@ namespace ValuedInBE.Users.Repositories
         }
 
 
-        public async Task<Page<UserCredentials>> GetUserPageWithDetails(UserPageRequest config)
+        public async Task<Page<UserCredentials>> GetUserPageWithDetailsAsync(UserPageRequest config)
         {
             _logger.LogTrace("Request Requested {size} User Page {page}", config.Size, config.Page);
 
@@ -100,7 +101,7 @@ namespace ValuedInBE.Users.Repositories
             return new Page<UserCredentials>(credentials, total, config.Page + 1);
         }
 
-        public async Task Insert(UserCredentials userCredentials, UserContext createdBy)
+        public async Task InsertAsync(UserCredentials userCredentials, UserContext createdBy)
         {
             _logger.LogTrace("Inserting user with login {login}", userCredentials.Login);
             _context.UserCredentials.Add(userCredentials);
@@ -108,13 +109,13 @@ namespace ValuedInBE.Users.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> LoginExists(string login)
+        public async Task<bool> LoginExistsAsync(string login)
         {
             _logger.LogTrace("Inserting user with login {login}", login);
             return await _context.UserCredentials.AnyAsync(c => c.Login == login);
         }
 
-        public async Task Update(UserCredentials userCredentials, UserContext updatedBy)
+        public async Task UpdateAsync(UserCredentials userCredentials, UserContext updatedBy)
         {
             _logger.LogTrace("Updating user with login {login}", userCredentials.Login);
             _context.UserCredentials.Update(userCredentials);
@@ -122,7 +123,7 @@ namespace ValuedInBE.Users.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> VerifyUserIds(List<string> userIds)
+        public async Task<bool> VerifyUserIdsAsync(List<string> userIds)
         {
             int count = await _context.UserCredentials.CountAsync(c => userIds.Contains(c.UserID));
             return count == userIds.Count;

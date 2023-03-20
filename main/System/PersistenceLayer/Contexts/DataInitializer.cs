@@ -6,17 +6,17 @@ namespace ValuedInBE.System.PersistenceLayer.Contexts
 {
     public class DataInitializer
     {
-        public static async Task Initialize(ValuedInContext context, IAuthenticationService authenticationService)
+        public static async Task InitializeAsync(ValuedInContext context, IAuthenticationService authenticationService)
         {
             if (context.UserCredentials.Any())
             {
                 return;   // DB has been seeded
             }
 
-            await CreateDefaultUser(authenticationService); //Need to create it with a service to hash the password
+            await CreateDefaultUsersAsync(authenticationService); //Need to create it with a service to hash the password
         }
 
-        private static async Task CreateDefaultUser(IAuthenticationService authenticationService)
+        private static async Task CreateDefaultUsersAsync(IAuthenticationService authenticationService)
         {
             NewUser newUser = new()
             {
@@ -28,7 +28,7 @@ namespace ValuedInBE.System.PersistenceLayer.Contexts
                 Telephone = "",
                 Email = ""
             };
-            await authenticationService.RegisterNewUser(newUser);
+            await authenticationService.RegisterNewUserAsync(newUser);
         }
 
     }

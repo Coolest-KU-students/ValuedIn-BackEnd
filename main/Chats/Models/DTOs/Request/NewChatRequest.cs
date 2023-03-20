@@ -4,6 +4,5 @@
     {
         public List<string> Participants { get; set; }
         public string MessageContent { get; set; }
-
     }
 }

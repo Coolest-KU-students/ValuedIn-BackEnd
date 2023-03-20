@@ -24,11 +24,11 @@ namespace ValuedInBE.System.WebConfigs.Middleware
             {
                 try
                 {
-                    UserCredentials credentials = await _authenticationService.GetUserFromToken(jwtToken);
+                    UserCredentials credentials = await _authenticationService.GetUserFromTokenAsync(jwtToken);
                     UserContext user = _mapper.Map<UserContext>(credentials);
                     context.Items[userContextItemName] = user;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //TODO: log this?
                 }

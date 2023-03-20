@@ -16,7 +16,6 @@ namespace ValuedInBE.Tokens.Services
             _memoizationEngine = memoizationEngine;
         }
 
-
         public string GenerateOneTimeUserAccessToken(UserContext userContext, string type, TimeSpan? timeOut = null)
         {
             TokenData<UserContext> data = new()
@@ -33,7 +32,7 @@ namespace ValuedInBE.Tokens.Services
 
         public UserContext GetUserContextFromToken(string token, string type)
         {
-            TokenData<UserContext> tokenData = _memoizationEngine.TryGetAndRemove<string, TokenData<UserContext>>(token);
+            TokenData<UserContext> tokenData = _memoizationEngine.Extract<string, TokenData<UserContext>>(token);
             if (tokenData?.Type == type)
             {
                 return tokenData.Value;

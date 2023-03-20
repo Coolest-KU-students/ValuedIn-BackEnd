@@ -12,7 +12,6 @@ namespace ValuedInBE.Chats.Repositories
         private readonly ValuedInContext _context;
         private readonly IHttpContextAccessor _contextAccessor;
 
-
         public ChatRepository(ValuedInContext context, IHttpContextAccessor contextAccessor)
         {
             _context = context;
@@ -68,31 +67,27 @@ namespace ValuedInBE.Chats.Repositories
             return a;
         }
 
-        public List<ChatParticipant> GetParticipantsFromChat(long chatId)
+        public async Task<IEnumerable<ChatParticipant>> GetParticipantsFromChatAsync(long chatId)
         {
             IQueryable<ChatParticipant> a = from p in _context.ChatParticipants
                                                         .Where(p => p.ChatId == chatId)
                                             select p;
-
-            return a.ToList();
+            await a.LoadAsync();
+            return a;
         }
 
-        public async Task<List<string>> GetParticipantIdsFromChat(long chatId)
+        public async Task<IEnumerable<string>> GetParticipantIdsFromChatAsync(long chatId)
         {
             IQueryable<string> a = from p in _context.ChatParticipants
                                                         .Where(p => p.ChatId == chatId)
                                    select p.UserId;
 
-            return await a.ToListAsync();
+            await a.LoadAsync();
+            return a;
         }
 
-        private void CheckEntityAuditing()
-        {
-            UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
-            _context.ChangeTracker.CheckAuditing(userContext);
-        }
 
-        public async Task<Chat> GetChatMessagesWithParticipantsDetails(long chatId, int size, DateTime? createdSince)
+        public async Task<Chat> GetChatMessagesWithParticipantsDetailsAsync(long chatId, int size, DateTime? createdSince)
         {
             UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
             var a = _context.Chats
@@ -105,6 +100,12 @@ namespace ValuedInBE.Chats.Repositories
                         ).FirstOrDefaultAsync(c => c.Id == chatId && c.Participants.Any(p => p.UserId == userContext.UserID));
 
             return await a;
+        }
+
+        private void CheckEntityAuditing()
+        {
+            UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
+            _context.ChangeTracker.CheckAuditing(userContext);
         }
     }
 }

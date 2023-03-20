@@ -1,4 +1,4 @@
-﻿using ValuedInBE.DataControls.Ordering.Internal;
+﻿using ValuedInBE.System.DataControls.Ordering;
 
 namespace ValuedInBE.DataControls.Ordering
 {

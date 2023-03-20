@@ -10,7 +10,6 @@ using ValuedInBE.Chats.EventHandlers;
 using ValuedInBE.Chats.Models.Events;
 using ValuedInBE.Chats.Repositories;
 using ValuedInBE.Chats.Services;
-using ValuedInBE.Chats.Services.Implementations;
 using ValuedInBE.DataControls.Memory;
 using ValuedInBE.System;
 using ValuedInBE.System.External.Services.Kafka;
@@ -116,7 +115,7 @@ namespace ValuedInBE
                 IAuthenticationService authenticationService = services.GetRequiredService<IAuthenticationService>();
 
                 context.Database.EnsureCreated();
-                await DataInitializer.Initialize(context, authenticationService);
+                await DataInitializer.InitializeAsync(context, authenticationService);
             }
 
             app.UseHttpsRedirection();

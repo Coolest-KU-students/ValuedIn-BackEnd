@@ -10,7 +10,5 @@ namespace ValuedInBE.Users.Models.DTOs.Request
         {
             ShowExpired = showExpired;
         }
-
-
     }
 }

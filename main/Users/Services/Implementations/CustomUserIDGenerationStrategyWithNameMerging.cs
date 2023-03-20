@@ -13,7 +13,7 @@ namespace ValuedInBE.Users.Services.Implementations
             _logger = logger;
         }
 
-        public Task<string> GenerateUserIDForNewUser(NewUser newUser, int sameNameRepeatCount)
+        public Task<string> GenerateUserIDForNewUserAsync(NewUser newUser, int sameNameRepeatCount)
         {
             _logger.LogTrace("Generating User ID for user with login {login}", newUser.Login);
             return Task.FromResult(GenerateUserIDForNewUser(newUser.FirstName, newUser.LastName, sameNameRepeatCount));

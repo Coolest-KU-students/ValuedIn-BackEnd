@@ -43,13 +43,13 @@ namespace ValuedInBE.WebSockets.Services
             List<Task> closingTasks = new();
             foreach (WebSocket socket in Values.SelectMany(value => value))
             {
-                closingTasks.Add(CloseSocketAndDispose(socket, cancellationToken));
+                closingTasks.Add(CloseSocketAndDisposeAsync(socket, cancellationToken));
             }
             Clear();
             await Task.WhenAll(closingTasks);
         }
 
-        public List<WebSocket> GetSockets(string userId)
+        public IEnumerable<WebSocket> GetSockets(string userId)
         {
             _logger.LogTrace("Getting sockets for user ID: {userId}", userId);
             return TryGetValue(userId, out List<WebSocket> sockets)
@@ -60,7 +60,7 @@ namespace ValuedInBE.WebSockets.Services
         private Func<string, List<WebSocket>, List<WebSocket>> UpdateExistingSocketList =>
             (userId, newList) =>
             {
-                List<WebSocket> currentList = GetSockets(userId);
+                List<WebSocket> currentList = GetSockets(userId).ToList();
                 currentList.AddRange(newList);
                 return currentList;
             };
@@ -91,24 +91,24 @@ namespace ValuedInBE.WebSockets.Services
                         socket.Dispose();
                         webSockets.Remove(socket);
                     }
-                    tasks.Add(TryPingPongWithinTime(socket, _cancellationTokenSource.Token));
+                    tasks.Add(TryPingPongWithinTimeAsync(socket, _cancellationTokenSource.Token));
                 }
             );
         }
 
-        private static async Task CloseSocketAndDispose(WebSocket socket, CancellationToken cancellationToken)
+        private static async Task CloseSocketAndDisposeAsync(WebSocket socket, CancellationToken cancellationToken)
         {
             if (socket.State == WebSocketState.None)
                 await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Service is closing", cancellationToken);
         }
 
-        private async Task TryPingPongWithinTime(WebSocket webSocket, CancellationToken cancellationToken)
+        private async Task TryPingPongWithinTimeAsync(WebSocket webSocket, CancellationToken cancellationToken)
         {
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             try
             {
 
-                Task echoTask = PingPong(webSocket, cancellationTokenSource.Token);
+                Task echoTask = PingPongAsync(webSocket, cancellationTokenSource.Token);
                 await Task.Delay(_heartbeatTimeoutTimespan, cancellationToken);
                 if (echoTask.IsCompleted)
                     return;
@@ -121,7 +121,7 @@ namespace ValuedInBE.WebSockets.Services
             await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Heartbeat timeout", CancellationToken.None);
         }
 
-        private static async Task PingPong(WebSocket webSocket, CancellationToken cancellationToken)
+        private static async Task PingPongAsync(WebSocket webSocket, CancellationToken cancellationToken)
         {
             var buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);

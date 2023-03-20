@@ -36,7 +36,7 @@ namespace ValuedInBE.Chats.EventHandlers
             _consumer.Subscribe(newChatMessageTopic);
         }
 
-        public async Task HandleSentMessageEvent(NewMessageEvent messageEvent)
+        public async Task HandleSentMessageEventAsync(NewMessageEvent messageEvent)
         {
             ChatMessage messageSent = messageEvent.ChatMessage;
             _logger.LogDebug("Registering that message {messageID} was sent in chat {chatID}", messageSent.Id, messageSent.ChatId);
@@ -78,9 +78,9 @@ namespace ValuedInBE.Chats.EventHandlers
             {
                 ConsumeResult<long, NewMessageEvent> result = ConsumeNextMessage(_cancellationToken);
                 long chatId = result.Message.Key;
-                List<string> participatingUsers = result.Message.Value.OtherParticipantIDs;
+                IEnumerable<string> participatingUsers = result.Message.Value.OtherParticipantIDs;
                 _logger.LogTrace("Received new message in chat {chatID}, attempting to distribute to users {users}", chatId, string.Join(", ", participatingUsers));
-                await DistributeMessages(participatingUsers, result.Message.Value.ChatMessage, _cancellationToken);
+                await DistributeMessagesAsync(participatingUsers, result.Message.Value.ChatMessage, _cancellationToken);
             }
         }
 
@@ -94,30 +94,30 @@ namespace ValuedInBE.Chats.EventHandlers
             return received;
         }
 
-        private async Task DistributeMessages(List<string> userIds, ChatMessage chatMessage, CancellationToken cancellationToken)
+        private async Task DistributeMessagesAsync(IEnumerable<string> userIds, ChatMessage chatMessage, CancellationToken cancellationToken)
         {
             List<Task> tasks = new();
             foreach (string user in userIds)
             {
                 _logger.LogDebug("Sending a message {chatId} to user {user}", chatMessage.ChatId, user);
-                tasks.Add(SendMessage(user, chatMessage, cancellationToken));
+                tasks.Add(SendMessageAsync(user, chatMessage, cancellationToken));
             }
             await Task.WhenAll(tasks);
         }
 
-        private async Task SendMessage(string userId, ChatMessage chatMessage, CancellationToken cancellationToken)
+        private async Task SendMessageAsync(string userId, ChatMessage chatMessage, CancellationToken cancellationToken)
         {
             List<WebSocket> sockets = _webSocketTracker.GetSockets(userId);
             _logger.LogTrace("User {userId} was found to have {amount} of sockets active when sending a message", userId, sockets.Count);
             List<Task> tasks = new();
             foreach (WebSocket socket in sockets)
             {
-                tasks.Add(SendMessage(socket, chatMessage, cancellationToken));
+                tasks.Add(SendMessageAsync(socket, chatMessage, cancellationToken));
             }
             await Task.WhenAll(tasks);
         }
 
-        private static async Task SendMessage(WebSocket socket, ChatMessage chatMessage, CancellationToken cancellationToken)
+        private static async Task SendMessageAsync(WebSocket socket, ChatMessage chatMessage, CancellationToken cancellationToken)
         {
             if (socket.State == WebSocketState.Open)
             {

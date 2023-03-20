@@ -13,8 +13,8 @@ using ValuedInBE.Chats.Models.DTOs.Response;
 using ValuedInBE.Chats.Models.Entities;
 using ValuedInBE.Chats.Models.Events;
 using ValuedInBE.Chats.Repositories;
-using ValuedInBE.Chats.Services.Implementations;
 using ValuedInBE.DataControls.Paging;
+using ValuedInBE.Chats.Services;
 
 namespace ValuedInBE.Services.Chats.Implementations.Tests
 {
@@ -163,10 +163,10 @@ namespace ValuedInBE.Services.Chats.Implementations.Tests
             _chatRepositoryMock.Setup(repository => repository.CreateNewChatMessageAsync(It.Is<ChatMessage>(message => message.ChatId == chatId && message.Message.Equals(message))))
                 .Verifiable();
 
-            _chatRepositoryMock.Setup(repository => repository.GetParticipantIdsFromChat(chatId))
+            _chatRepositoryMock.Setup(repository => repository.GetParticipantIdsFromChatAsync(chatId))
                 .ReturnsAsync(participantIds);
 
-            _messageEventHandlerMock.Setup(handler => handler.HandleSentMessageEvent(It.Is<NewMessageEvent>(message => message.OtherParticipantIDs == participantIds && message.ChatMessage.ChatId == chatId)))
+            _messageEventHandlerMock.Setup(handler => handler.HandleSentMessageEventAsync(It.Is<NewMessageEvent>(message => message.OtherParticipantIDs == participantIds && message.ChatMessage.ChatId == chatId)))
                 .Verifiable();
 
             ChatService service = MockChatService();
@@ -202,7 +202,7 @@ namespace ValuedInBE.Services.Chats.Implementations.Tests
                 Messages = new() { new ChatMessage() {Id = 1, ChatId = chatId, CreatedOn = newDateTimeOffset, CreatedBy = userId, Message = message } },
                 Participants = new() { new(){ ChatId = chatId,  UserId = userId, User = user } }
             };
-            _chatRepositoryMock.Setup(repository => repository.GetChatMessagesWithParticipantsDetails(chatId, size, dateTimeOffset))
+            _chatRepositoryMock.Setup(repository => repository.GetChatMessagesWithParticipantsDetailsAsync(chatId, size, dateTimeOffset))
                 .ReturnsAsync(chat);
 
             ChatService chatService = MockChatService();

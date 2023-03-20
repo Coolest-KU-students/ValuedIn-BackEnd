@@ -2,13 +2,13 @@
 {
     public class Page<TEntity>
     {
-        public static Page<TEntity> Empty() => new(new(), 0, 0);
-        public List<TEntity> Results { get; set; }
+        public static Page<TEntity> Empty() => new(new List<TEntity>(), 0, 0);
+        public IEnumerable<TEntity> Results { get; set; }
         public int Total { get; set; }
         public int PageNo { get; set; }
-        public int Count => Results.Count;
+        public int Count => Results.Count();
 
-        public Page(List<TEntity> results, int total, int pageNo)
+        public Page(IEnumerable<TEntity> results, int total, int pageNo)
         {
             Results = results;
             Total = total;

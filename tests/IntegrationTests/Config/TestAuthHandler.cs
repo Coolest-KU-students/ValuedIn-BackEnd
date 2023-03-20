@@ -45,7 +45,7 @@ namespace ValuedInBETests.IntegrationTests.Config
                 login = userIdValues[0]; 
             }
 
-            UserCredentials userCredentials = await _userCredentialRepository.GetByLoginWithDetails(login);
+            UserCredentials userCredentials = await _userCredentialRepository.GetByLoginWithDetailsAsync(login);
 
             AddUserContextIfMissing(userCredentials);
 

@@ -54,7 +54,7 @@ namespace ValuedInBE.Events.Chats.Tests
                 .ReturnsAsync(deliveryResult);
 
             MessageEventHandler messageEventHandler = MockMessageEventHandler();
-            await messageEventHandler.HandleSentMessageEvent(newMessageEvent);
+            await messageEventHandler.HandleSentMessageEventAsync(newMessageEvent);
         }
 
         [Fact()]
@@ -95,7 +95,7 @@ namespace ValuedInBE.Events.Chats.Tests
 
             NewMessageEvent newMessageEvent = new()
             {
-                OtherParticipantIDs = new() { firstUserId, secondUserId }
+                OtherParticipantIDs = new List<string>() { firstUserId, secondUserId }
                 ,
                 ChatMessage = chatMessage
             };
@@ -119,7 +119,6 @@ namespace ValuedInBE.Events.Chats.Tests
             _consumer.Setup(consumer => consumer.Consume(It.IsAny<CancellationToken>()))
                 .Returns(consumeResult)
                 .Callback(tokenSource.Cancel);
-
 
             /** Test */
             MessageEventHandler messageEventHandler = MockMessageEventHandler();

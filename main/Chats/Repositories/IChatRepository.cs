@@ -9,8 +9,8 @@ namespace ValuedInBE.Chats.Repositories
         Task CreateNewChatMessageAsync(ChatMessage chatMessage);
         Task<Chat> GetChatFromParticipantsAsync(List<string> allParticipants);
         Task<IEnumerable<Chat>> GetChatsWithLastMessageAndParticipantsAsync(string userId, int pageSize, DateTime? createdSince);
-        List<ChatParticipant> GetParticipantsFromChat(long chatId);
-        Task<Chat> GetChatMessagesWithParticipantsDetails(long chatId, int size, DateTime? createdSince);
-        Task<List<string>> GetParticipantIdsFromChat(long chatId);
+        Task<IEnumerable<ChatParticipant>> GetParticipantsFromChatAsync(long chatId);
+        Task<Chat> GetChatMessagesWithParticipantsDetailsAsync(long chatId, int size, DateTime? createdSince);
+        Task<IEnumerable<string>> GetParticipantIdsFromChatAsync(long chatId);
     }
 }

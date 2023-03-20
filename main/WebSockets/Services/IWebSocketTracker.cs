@@ -4,11 +4,8 @@ namespace ValuedInBE.WebSockets.Services
 {
     public interface IWebSocketTracker
     {
-
         void Add(string userId, WebSocket webSocket);
 
-        List<WebSocket> GetSockets(string userId);
-
-
+        IEnumerable<WebSocket> GetSockets(string userId);
     }
 }

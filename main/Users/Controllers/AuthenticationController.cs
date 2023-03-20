@@ -13,7 +13,6 @@ namespace ValuedInBE.Users.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly ILogger<AuthenticationController> _logger;
 
-
         public AuthenticationController(IAuthenticationService authenticationService, ILogger<AuthenticationController> logger)
         {
             _authenticationService = authenticationService;
@@ -22,36 +21,36 @@ namespace ValuedInBE.Users.Controllers
 
         [Authorize(Roles = "SYS_ADMIN")]
         [HttpPost("registerUser")]
-        public async Task<ActionResult> RegisterUser(NewUser newUser)
+        public async Task<ActionResult> RegisterUserAsync(NewUser newUser)
         {
             _logger.LogTrace("Got a request to RegisterUser with Login: {newUser.Login}; and Role: {newUser.Role}", newUser.Login, newUser.Role);
-            await _authenticationService.RegisterNewUser(newUser);
+            await _authenticationService.RegisterNewUserAsync(newUser);
             return Ok();
         }
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<ActionResult> SelfRegisterUser(NewUser newUser) //TODO: need a differentiation
+        public async Task<ActionResult> SelfRegisterUserAsync(NewUser newUser) //TODO: need a differentiation
         {
             _logger.LogTrace("Got a request to SelfRegisterUser with Login: {newUser.Login}", newUser.Login);
-            await _authenticationService.SelfRegister(newUser);
+            await _authenticationService.SelfRegisterAsync(newUser);
             return Ok();
         }
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<ActionResult<TokenAndRole>> LogIn(AuthRequest authRequest)
+        public async Task<ActionResult<TokenAndRole>> LogInAsync(AuthRequest authRequest)
         {
             _logger.LogTrace("Got a request to log in from: {authRequest.Login}", authRequest.Login);
-            return await _authenticationService.AuthenticateUser(authRequest);
+            return await _authenticationService.AuthenticateUserAsync(authRequest);
         }
 
         [HttpGet]
-        public async Task<ActionResult<TokenAndRole>> CheckAuthentication()
+        public async Task<ActionResult<TokenAndRole>> CheckAuthenticationAsync()
         {
             string jwtToken = HttpContext.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
             _logger.LogTrace("Got a request to check Authentication with token: {jwtToken}", jwtToken);
-            return await _authenticationService.VerifyToken(jwtToken);
+            return await _authenticationService.VerifyTokenAsync(jwtToken);
         }
     }
 }

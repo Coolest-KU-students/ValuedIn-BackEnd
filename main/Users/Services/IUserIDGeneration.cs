@@ -4,6 +4,6 @@ namespace ValuedInBE.Users.Services
 {
     public interface IUserIDGenerationStrategy
     {
-        Task<string> GenerateUserIDForNewUser(NewUser newUser, int sameNameRepeatCount);
+        Task<string> GenerateUserIDForNewUserAsync(NewUser newUser, int sameNameRepeatCount);
     }
 }

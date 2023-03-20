@@ -29,7 +29,7 @@ namespace ValuedInBE.WebSockets.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> Establish([FromQuery] string token)
+        public async Task<ActionResult> EstablishAsync([FromQuery] string token)
         {
             if (!HttpContext.WebSockets.IsWebSocketRequest || string.IsNullOrEmpty(token))
             {

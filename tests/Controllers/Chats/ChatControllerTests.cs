@@ -53,7 +53,7 @@ namespace ValuedInBE.Controllers.Chats.Tests
                 .ReturnsAsync(offsetPage);
             
             ChatController controller = MockChatController();
-            ActionResult<OffsetPage<ChatInfo, DateTime>> getPagesActionResult = await controller.GetChatPages(chatPageRequest);
+            ActionResult<OffsetPage<ChatInfo, DateTime>> getPagesActionResult = await controller.GetChatPagesAsync(chatPageRequest);
 
             Assert.NotNull(getPagesActionResult.Value);
             OffsetPage<ChatInfo, DateTime> receivedOffsetPage = getPagesActionResult.Value!;
@@ -80,7 +80,7 @@ namespace ValuedInBE.Controllers.Chats.Tests
             _chatService.Setup(service => service.FetchOrCreateChatAsync(newChatRequest))
                 .ReturnsAsync(chat);
             ChatController controller = MockChatController();
-            ActionResult<Chat> receivedActionResult = await controller.CreateNewChat(newChatRequest);
+            ActionResult<Chat> receivedActionResult = await controller.CreateNewChatAsync(newChatRequest);
             Assert.NotNull(receivedActionResult.Value);
             Chat receivedChat = receivedActionResult.Value!;
             Assert.Equal(chat, receivedChat);
@@ -104,7 +104,7 @@ namespace ValuedInBE.Controllers.Chats.Tests
                 .ReturnsAsync(offsetPage);
 
             ChatController controller = MockChatController();
-            ActionResult<OffsetPage<MessageDTO, DateTime>> actionResult = await controller.GetMessages(chatId, messagePageRequest);
+            ActionResult<OffsetPage<MessageDTO, DateTime>> actionResult = await controller.GetMessagesAsync(chatId, messagePageRequest);
             Assert.NotNull(actionResult.Value);
             OffsetPage<MessageDTO, DateTime> receivedOffsetPage = actionResult.Value!;
             Assert.Equal(offsetPage, receivedOffsetPage);
@@ -130,7 +130,7 @@ namespace ValuedInBE.Controllers.Chats.Tests
                 .ReturnsAsync(chatMessage);
 
             ChatController controller = MockChatController();
-            ActionResult<ChatMessage> actionResult = await controller.SendNewMessage(chatId, newMessage);
+            ActionResult<ChatMessage> actionResult = await controller.SendNewMessageAsync(chatId, newMessage);
             Assert.NotNull(actionResult.Value);
             ChatMessage receivedChatMessage = actionResult.Value!;
             Assert.Equal(chatMessage, receivedChatMessage);

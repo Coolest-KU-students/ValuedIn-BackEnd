@@ -6,8 +6,6 @@ namespace ValuedInBE.Users.Models.Entities
 {
     public class UserDetails : AuditCreatedUpdateBase
     {
-        public UserDetails() { }
-
         [Key]
         [MaxLength(128)]
         public string UserID { get; set; }
@@ -15,6 +13,6 @@ namespace ValuedInBE.Users.Models.Entities
         public string LastName { get; set; }
         public string Email { get; set; }
         public string Telephone { get; set; }
-        public ICollection<ChatParticipant> ChatParticipants { get; set; }
+        public IEnumerable<ChatParticipant> ChatParticipants { get; set; }
     }
 }

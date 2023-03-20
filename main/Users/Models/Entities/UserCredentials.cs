@@ -7,19 +7,6 @@ namespace ValuedInBE.Users.Models.Entities
 {
     public class UserCredentials : AuditCreatedUpdateBase
     {
-        public UserCredentials() { }
-
-        public UserCredentials(string login, string password, bool isExpired, DateTime? lastActive, UserRole role, UserDetails userDetails)
-        {
-            Login = login;
-            Password = password;
-            IsExpired = isExpired;
-            LastActive = lastActive;
-            Role = role;
-            UserDetails = userDetails;
-        }
-
-
         [MaxLength(128)]
         public string Login { get; set; }
         [Key]

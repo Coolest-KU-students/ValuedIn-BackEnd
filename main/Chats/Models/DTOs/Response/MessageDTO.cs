@@ -8,6 +8,5 @@
         public string Content { get; set; }
         public DateTime Sent { get; set; }
         public bool Unread { get; set; }
-
     }
 }

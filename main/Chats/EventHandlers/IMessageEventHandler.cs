@@ -4,6 +4,6 @@ namespace ValuedInBE.Chats.EventHandlers
 {
     public interface IMessageEventHandler
     {
-        Task HandleSentMessageEvent(NewMessageEvent messageEvent);
+        Task HandleSentMessageEventAsync(NewMessageEvent messageEvent);
     }
 }

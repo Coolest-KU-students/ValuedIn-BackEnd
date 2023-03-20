@@ -27,7 +27,6 @@ namespace ValuedInBE.System.External.Services.Kafka
         public IProducer<TKey, TValue> ConfigureProducer(ProducerConfig config)
         {
             config.BootstrapServers ??= bootstrapServer;
-
             return new ProducerBuilder<TKey, TValue>(config).SetValueSerializer(_serialization).Build();
         }
     }

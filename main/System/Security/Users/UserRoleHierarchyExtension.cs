@@ -4,9 +4,11 @@
     {
         private static readonly Dictionary<UserRoleExtended, HashSet<UserRoleExtended>> hierarchy = new();
 
-        private static void Includes(UserRoleExtended userRole, params UserRoleExtended[] otherRoles)
+        private static void Includes(UserRoleExtended userRole, params UserRoleExtended[] inheritedRoles)
         {
-            hierarchy.Add(userRole, otherRoles.ToHashSet());
+            if (inheritedRoles.Contains(userRole))
+                throw new Exception($"User Role {userRole} cannot inherit itself");
+            hierarchy.Add(userRole, inheritedRoles.ToHashSet());
         }
 
         public static HashSet<UserRoleExtended> GetIncludedRoles(this UserRoleExtended userRole)
@@ -14,7 +16,7 @@
             return new(hierarchy[userRole]);
         }
 
-        static UserRoleHierarchyExtension() //TODO: need a test that verifies this setup is not self looping.
+        static UserRoleHierarchyExtension() 
         {
             Includes(UserRole.DEFAULT); //UserRole.DEFAULT does not inherit anything
             Includes(UserRole.HR, UserRole.DEFAULT);

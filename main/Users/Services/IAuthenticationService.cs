@@ -6,10 +6,10 @@ namespace ValuedInBE.Users.Services
 {
     public interface IAuthenticationService
     {
-        Task<TokenAndRole> AuthenticateUser(AuthRequest auth);
-        Task RegisterNewUser(NewUser newUser);
-        Task SelfRegister(NewUser newUser);
-        Task<TokenAndRole> VerifyToken(string token);
-        Task<UserCredentials> GetUserFromToken(string token);
+        Task<TokenAndRole> AuthenticateUserAsync(AuthRequest auth);
+        Task RegisterNewUserAsync(NewUser newUser);
+        Task SelfRegisterAsync(NewUser newUser);
+        Task<TokenAndRole> VerifyTokenAsync(string token);
+        Task<UserCredentials> GetUserFromTokenAsync(string token);
     }
 }
