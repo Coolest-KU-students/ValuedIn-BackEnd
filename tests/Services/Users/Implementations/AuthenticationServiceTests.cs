@@ -85,7 +85,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 .Setup(hasher => hasher.HashPassword(user, UserConstants.password)) //has to hash the password
                 .Returns(UserConstants.hashedPassword);
             _userServiceMock
-                .Setup(service => service.CreateNewUser(newUser))
+                .Setup(service => service.CreateNewUser(newUser, null))
                 .Verifiable();
             _mapperMock
                 .Setup(mapper => mapper.Map<User>(newUser))
@@ -104,7 +104,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 .Setup(hasher => hasher.HashPassword(user, UserConstants.password)) //has to hash the password
                 .Returns(UserConstants.hashedPassword);
             _userServiceMock
-                .Setup(service => service.CreateNewUser(newUser))
+                .Setup(service => service.CreateNewUser(newUser, It.IsAny<UserContext>()))
                 .Verifiable();
             _mapperMock
                 .Setup(mapper => mapper.Map<User>(newUser))

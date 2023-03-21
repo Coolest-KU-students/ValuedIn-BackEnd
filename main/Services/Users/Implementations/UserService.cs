@@ -1,11 +1,15 @@
-﻿using Microsoft.OpenApi.Extensions;
+﻿using AutoMapper;
+using Microsoft.OpenApi.Extensions;
 using NuGet.Protocol.Plugins;
+using ValuedInBE.DataControls.Memory;
 using ValuedInBE.DataControls.Paging;
+using ValuedInBE.Models;
 using ValuedInBE.Models.DTOs.Requests.Users;
 using ValuedInBE.Models.DTOs.Responses.Users;
 using ValuedInBE.Models.Users;
 using ValuedInBE.Repositories;
 using ValuedInBE.Security.Users;
+using ValuedInBE.System;
 
 namespace ValuedInBE.Services.Users.Implementations
 {
@@ -14,17 +18,24 @@ namespace ValuedInBE.Services.Users.Implementations
         private readonly ILogger<UserService> _logger;
         private readonly IUserCredentialRepository _userCredentialRepository;
         private readonly IUserIDGenerationStrategy _userIDGeneration;
+        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IMemoizationEngine _memoizationEngine;
+        private readonly IMapper _mapper;
 
-        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository, IUserIDGenerationStrategy userIDGeneration)
+
+        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository, IUserIDGenerationStrategy userIDGeneration, IMemoizationEngine memoizationEngine, IHttpContextAccessor contextAccessor, IMapper mapper)
         {
             _logger = logger;
             _userCredentialRepository = userCredentialRepository;
             _userIDGeneration = userIDGeneration;
+            _memoizationEngine = memoizationEngine;
+            _contextAccessor = contextAccessor;
+            _mapper = mapper;
         }
 
         public async Task<Page<UserSystemInfo>> GetUserPage(UserPageRequest config)
         {
-            _logger.LogDebug("Fetcing User Page {pageNo} with size {size}", config.Page, config.Size);
+            _logger.LogDebug("Fetching User Page {pageNo} with size {size}", config.Page, config.Size);
             Page<UserCredentials> credentialPage =
                 await _userCredentialRepository.GetUserPageWithDetails(config);
 
@@ -35,9 +46,11 @@ namespace ValuedInBE.Services.Users.Implementations
                 credentialPage.PageNo);
         }
 
-        public async Task CreateNewUser(NewUser newUser)
+        public async Task CreateNewUser(NewUser newUser, UserContext userContext = null)
         {
             _logger.LogDebug("Creating new user with login {login}", newUser.Login);
+            userContext ??= _contextAccessor.HttpContext?.GetUserContext();
+            
             if (await _userCredentialRepository.LoginExists(newUser.Login))
             {
                 _logger.LogTrace("Tried to create a new user, but {login} was already taken", newUser.Login);
@@ -46,7 +59,7 @@ namespace ValuedInBE.Services.Users.Implementations
 
             int sameNameUserCount = await _userCredentialRepository.CountWithNames(newUser.FirstName, newUser.LastName);
             string generatedUserID = await _userIDGeneration.GenerateUserIDForNewUser(newUser, sameNameUserCount);
-
+            UserRoleExtended role = UserRoleExtended.FromString(newUser.Role) ?? UserRole.DEFAULT;
             UserDetails userDetails = new()
             {
                 UserID = generatedUserID,
@@ -63,11 +76,21 @@ namespace ValuedInBE.Services.Users.Implementations
                 Password = newUser.Password,
                 IsExpired = false,
                 LastActive = null,
-                Role = UserRoleExtended.FromString(newUser.Role) ?? UserRole.DEFAULT,
+                Role = role,
                 UserDetails = userDetails
             };
-
-            await _userCredentialRepository.Insert(userCredentials);
+            if (userContext == null)
+            {
+                //TODO: I question this security myself, should throw an error, but then initial Seed will break
+                _logger.LogWarning("User is being created with Login {login}, ID {userId} and Role {role}, but there is no User Context present. ", newUser.Login, generatedUserID, role);
+                userContext = new()
+                {
+                    Login = "Unknown",
+                    UserID = "Unknown",
+                    Role = UserRole.SYS_ADMIN //since that is basically what it is given
+                };
+            }
+            await _userCredentialRepository.Insert(userCredentials, userContext);
         }
 
         public async Task<UserCredentials> GetUserCredentialsByLogin(string login)
@@ -100,6 +123,7 @@ namespace ValuedInBE.Services.Users.Implementations
         public async Task ExpireUser(string login)
         {
             _logger.LogDebug("Tying to expired user with {login} ", login);
+            UserContext userContext = GetUserContextFromHttpOrThrowException();
             UserCredentials credentials = await _userCredentialRepository.GetByLogin(login);
             if (credentials == null)
             {
@@ -108,12 +132,14 @@ namespace ValuedInBE.Services.Users.Implementations
             }
 
             credentials.IsExpired = true;
-            await _userCredentialRepository.Update(credentials);
+
+            await _userCredentialRepository.Update(credentials, userContext);
         }
 
         public async Task UpdateUser(UpdatedUser updatedUser)
         {
             _logger.LogDebug("Tying to update user with userId {userId} ", updatedUser.UserID);
+            UserContext userContext = GetUserContextFromHttpOrThrowException();
             UserCredentials credentials = await _userCredentialRepository.GetByUserIdWithDetails(updatedUser.UserID);
             if (credentials == null)
             {
@@ -121,26 +147,35 @@ namespace ValuedInBE.Services.Users.Implementations
                 throw new KeyNotFoundException("Login does not exist");
             }
 
-            credentials.Role = updatedUser.Role.GetEnumFromDisplayName<UserRole>();
+            credentials.Role = UserRoleExtended.FromString(updatedUser.Role);
             credentials.UserDetails.FirstName = updatedUser.FirstName;
             credentials.UserDetails.LastName = updatedUser.LastName;
             credentials.UserDetails.Email = updatedUser.Email;
             credentials.UserDetails.Telephone = updatedUser.Telephone;
-            await _userCredentialRepository.Update(credentials);
+
+            await _userCredentialRepository.Update(credentials, userContext);
         }
 
         public async Task UpdateLastActiveByLogin(string login)
         {
             UserCredentials credentials = await _userCredentialRepository.GetByLogin(login);
+            UserContext userContext = _mapper.Map<UserContext>(credentials);
             credentials.LastActive = DateTime.Now;
-            await _userCredentialRepository.Update(credentials);
+            await _userCredentialRepository.Update(credentials, userContext);
         }
 
         public async Task UpdateLastActiveByUserID(string userID)
         {
             UserCredentials credentials = await _userCredentialRepository.GetByUserID(userID);
+            UserContext userContext = _mapper.Map<UserContext>(credentials);
             credentials.LastActive = DateTime.Now;
-            await _userCredentialRepository.Update(credentials);
+            await _userCredentialRepository.Update(credentials, userContext);
+        }
+
+        private UserContext GetUserContextFromHttpOrThrowException()
+        {
+            return _contextAccessor.HttpContext?.GetUserContext() 
+                   ?? throw new Exception("User could not be recognized by the system; Cannot execute");
         }
     }
 }

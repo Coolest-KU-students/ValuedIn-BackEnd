@@ -83,7 +83,13 @@ namespace ValuedInBE.Services.Users.Implementations
                 _logger.LogError("Attempter to Self Register a user with {login}, but role {Role} was not allowed", newUser.Login, newUser.Role);
                 throw new Exception("Unallowed User role");
             }
-            await HashPasswordAndSave(newUser);
+            UserContext userContext = new()
+            {
+                UserID = null,
+                Login = newUser.Login,
+                Role = UserRole.DEFAULT
+            };
+            await HashPasswordAndSave(newUser, userContext);
         }
 
         public async Task<UserCredentials> GetUserFromToken(string token)
@@ -115,12 +121,12 @@ namespace ValuedInBE.Services.Users.Implementations
             };
         }
 
-        private async Task HashPasswordAndSave(NewUser newUser)
+        private async Task HashPasswordAndSave(NewUser newUser, UserContext creatorContext = null)
         {
             User user = _mapper.Map<User>(newUser);
             newUser.Password = HashPassword(user, newUser.Password);
             _logger.LogTrace("Hashing a password for login {login}", newUser.Login);
-            await _userService.CreateNewUser(newUser);
+            await _userService.CreateNewUser(newUser, creatorContext);
         }
 
         private string HashPassword(User user, string password)
