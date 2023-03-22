@@ -22,7 +22,7 @@ using ValuedInBE.WebSockets.Services;
 
 namespace ValuedInBE
 {
-    public static class Program
+    public class Program
     {
 
         public static async Task Main(string[] args)
@@ -46,6 +46,7 @@ namespace ValuedInBE
             #endregion
 
             #region Singletons  
+            builder.Services.AddSingleton(jwtConfiguration);
             builder.Services.AddSingleton(typeof(IKafkaConfigurationBuilder<,>), typeof(KafkaConfigurationBuilder<,>));
             builder.Services.AddSingleton<ActiveWebSocketTracker>();
             builder.Services.AddSingleton<MessageEventHandler>();

@@ -31,9 +31,9 @@ namespace ValuedInBE.System.Tests
         {
             ActiveWebSocketTracker tracker = MockActiveWebSocketTracker();
 
-            List<WebSocket> emptySockets = tracker.GetSockets(unregisteredId);
-            List<WebSocket> firstUserSockets = tracker.GetSockets(firstUserId);
-            List<WebSocket> secondUserSockets = tracker.GetSockets(secondUserId);
+            IEnumerable<WebSocket> emptySockets = tracker.GetSockets(unregisteredId);
+            IEnumerable<WebSocket> firstUserSockets = tracker.GetSockets(firstUserId);
+            IEnumerable<WebSocket> secondUserSockets = tracker.GetSockets(secondUserId);
 
             Assert.Empty(emptySockets);
             Assert.NotEmpty(firstUserSockets);

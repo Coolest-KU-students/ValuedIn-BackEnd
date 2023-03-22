@@ -42,9 +42,9 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
             return new(
                 _loggerMock.Object,
                 _userServiceMock.Object,
-                _fakedConfiguration,
                 _hasherMock.Object,
-                _mapperMock.Object
+                _mapperMock.Object,
+                 new(_fakedConfiguration)
                 );
         }
 
