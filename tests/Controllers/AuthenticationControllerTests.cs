@@ -23,7 +23,7 @@ namespace ValuedInBE.Controllers.Tests
         }
 
         [Fact()]
-        public async void RegisterUserShouldReturnOk()
+        public async Task RegisterUserShouldReturnOk()
         {
             NewUser newUser = UserConstants.NewUserInstance;
             _mockAuthenticationService.Setup(service => service.RegisterNewUserAsync(newUser)).Verifiable();

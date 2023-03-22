@@ -2,18 +2,18 @@
 {
     internal static class UserRoleHierarchyExtension
     {
-        private static readonly Dictionary<UserRoleExtended, HashSet<UserRoleExtended>> hierarchy = new();
+        private static readonly Dictionary<UserRoleExtended, HashSet<UserRoleExtended>> _hierarchy = new();
 
         private static void Includes(UserRoleExtended userRole, params UserRoleExtended[] inheritedRoles)
         {
             if (inheritedRoles.Contains(userRole))
                 throw new Exception($"User Role {userRole} cannot inherit itself");
-            hierarchy.Add(userRole, inheritedRoles.ToHashSet());
+            _hierarchy.Add(userRole, inheritedRoles.ToHashSet());
         }
 
         public static HashSet<UserRoleExtended> GetIncludedRoles(this UserRoleExtended userRole)
         {
-            return new(hierarchy[userRole]);
+            return new(_hierarchy[userRole]);
         }
 
         static UserRoleHierarchyExtension() 

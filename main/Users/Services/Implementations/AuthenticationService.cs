@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using ValuedInBE.System.Security.Users;
+using ValuedInBE.System.WebConfigs;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.DTOs.Request;
 using ValuedInBE.Users.Models.DTOs.Response;
@@ -20,23 +21,16 @@ namespace ValuedInBE.Users.Services.Implementations
         private readonly IPasswordHasher<User> _hasher;
         private readonly ILogger<AuthenticationService> _logger;
         private readonly IMapper _mapper;
+        private readonly JwtConfiguration _jwtConfigurer;
 
-        private double ExpirationInHours { get; init; }
-        private string Issuer { get; init; }
-        private string Audience { get; init; }
-        private string Key { get; init; }
 
-        public AuthenticationService(ILogger<AuthenticationService> logger, IUserService userService, IConfiguration configuration, IPasswordHasher<User> passwordHasher, IMapper mapper)
+        public AuthenticationService(ILogger<AuthenticationService> logger, IUserService userService,  IPasswordHasher<User> passwordHasher, IMapper mapper, JwtConfiguration jwtConfigurer)
         {
             _userService = userService;
             _hasher = passwordHasher;
             _logger = logger;
             _mapper = mapper;
-            IConfigurationSection config = configuration.GetRequiredSection("Jwt");
-            ExpirationInHours = Convert.ToDouble(config.GetSection("ExpirationInHours").Value);
-            Issuer = config.GetSection("Issuer").Value;
-            Audience = config.GetSection("Audience").Value;
-            Key = config.GetSection("Key").Value;
+            _jwtConfigurer = jwtConfigurer;
         }
 
         public async Task<TokenAndRole> AuthenticateUserAsync(AuthRequest auth)
@@ -95,16 +89,7 @@ namespace ValuedInBE.Users.Services.Implementations
         public async Task<UserCredentials> GetUserFromTokenAsync(string token)
         {
             _logger.LogTrace("Attempting to fetch UserCredentials from token {token}", token);
-            TokenValidationParameters tokenValidationParameters = new()
-            {
-                ValidIssuer = Issuer,
-                ValidAudience = Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key)),
-                ValidateAudience = true,
-                ValidateIssuer = true,
-                ValidateIssuerSigningKey = true
-            };
-            ClaimsPrincipal claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(token, tokenValidationParameters, out SecurityToken _);
+            ClaimsPrincipal claimsPrincipal = _jwtConfigurer.GetClaimsFromToken(token); 
             string login = claimsPrincipal.FindFirstValue(ClaimTypes.Name);
             _logger.LogDebug("Extracted login {login} from token ", login);
             return await _userService.GetUserCredentialsByLoginAsync(login);
@@ -137,7 +122,6 @@ namespace ValuedInBE.Users.Services.Implementations
 
         private string GenerateJWT(User user)
         {
-            SigningCredentials signingCredentials = GetSigningCredentials();
             List<Claim> claims = new()
             {
                 new Claim(ClaimTypes.Name, user.Login),
@@ -149,29 +133,8 @@ namespace ValuedInBE.Users.Services.Implementations
                 claims.Add(new Claim(ClaimTypes.Role, (string)role));
             }
 
-            JwtSecurityToken tokenOptions = GenerateTokenOptions(signingCredentials, claims);
-            string token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+            string token = _jwtConfigurer.GenerateJWT(claims);
             return token;
         }
-
-        private SigningCredentials GetSigningCredentials()
-        {
-            var key = Encoding.UTF8.GetBytes(Key);
-            var secret = new SymmetricSecurityKey(key);
-            return new SigningCredentials(secret, SecurityAlgorithms.HmacSha512Signature);
-        }
-        private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
-        {
-            var tokenOptions =
-                new JwtSecurityToken(
-                    issuer: Issuer,
-                    audience: Audience,
-                    claims: claims,
-                    expires: DateTime.Now.AddHours(ExpirationInHours),
-                    signingCredentials: signingCredentials
-                );
-            return tokenOptions;
-        }
-
     }
 }
