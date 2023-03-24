@@ -18,7 +18,7 @@ namespace ValuedInBE.Chats.Repositories
             _contextAccessor = contextAccessor;
         }
 
-        public async Task AddChatParticipantsAsync(List<ChatParticipant> participants)
+        public async Task AddChatParticipantsAsync(IEnumerable<ChatParticipant> participants)
         {
             _context.ChatParticipants.AddRange(participants);
             CheckEntityAuditing();
@@ -39,7 +39,7 @@ namespace ValuedInBE.Chats.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Chat> GetChatFromParticipantsAsync(List<string> allParticipants)
+        public async Task<Chat> GetChatFromParticipantsAsync(IEnumerable<string> allParticipants)
         {
             var a = from c in _context.Chats
                                 .Where(c => c.Participants.Any() &&

@@ -1,5 +1,4 @@
-﻿using System;
-using ValuedInBE.Chats.EventHandlers;
+﻿using ValuedInBE.Chats.EventHandlers;
 using ValuedInBE.Chats.Models.DTOs.Request;
 using ValuedInBE.Chats.Models.DTOs.Response;
 using ValuedInBE.Chats.Models.Entities;
@@ -33,16 +32,19 @@ namespace ValuedInBE.Chats.Services
         {
             DateTime? createdSince = chatPage.Offset;
             UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
+            _logger.LogDebug("User {user} has requested Chat Page with Offset {offset}", userContext.UserID, createdSince);
             IEnumerable<Chat> chats = await _chatRepository.GetChatsWithLastMessageAndParticipantsAsync(userContext.UserID, chatPage.Size, chatPage.Offset);
             DateTime newOffset = chats.LastOrDefault()?.CreatedOn ?? createdSince ?? DateTime.Now;
             bool isLast = chats.Count() != chatPage.Size; //Should never be more; if less, means there's no more left
 
+            _logger.LogTrace("Fetched {count} chat records, setting new offset to {newOffset}. {lastPageMessage}", chats.Count(), newOffset, isLast ? "Is last page" : "Is not last page ");
+
             IEnumerable<ChatInfo> chatInfos =
                 chats.Select(
-                chat => new ChatInfo()
+                chat => new ChatInfo
                 {
                     Id = chat.Id,
-                    ChatName = "Lorem Ipsum",
+                    ChatName = "Lorem Ipsum", //TODO: this is not represented in DB model, need to address with team
                     LastMessage = chat.Messages.First().CreatedOn,
                     LastMessageContent = chat.Messages.First()?.Message,
                     ParticipatingUsers = chat.Participants.Select(p => p.UserId).ToList(),
@@ -92,7 +94,7 @@ namespace ValuedInBE.Chats.Services
 
             await _chatRepository.AddChatParticipantsAsync(chatParticipants);
 
-            ChatMessage chatMessage = await CreateNewMessageAsync(newChatId, newChatRequest.MessageContent);
+            await CreateNewMessageAsync(newChatId, newChatRequest.MessageContent);
 
             return newChat;
         }
@@ -125,7 +127,6 @@ namespace ValuedInBE.Chats.Services
         public async Task<OffsetPage<MessageDTO, DateTime>> GetMessagesAsync(MessagePageRequest messagePage, long chatId)
         {
             DateTime? createdSince = messagePage.Offset;
-            UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
             Chat chat = await _chatRepository.GetChatMessagesWithParticipantsDetailsAsync(chatId, messagePage.Size, createdSince);
             if (chat == null)
             {
