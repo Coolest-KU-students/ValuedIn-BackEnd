@@ -34,7 +34,11 @@ namespace ValuedInBETests.IntegrationTests.Users
         [Fact]
         public async Task GetUserPageOnlyAsSysAdmin()
         {
-            PageConfig pageConfig = new(0, 10, new());
+            PageConfig pageConfig = new() { 
+                Page = 0, 
+                Size = 10, 
+                OrderByColumns = new() 
+            };
             StringContent requestContent = SerializeIntoJsonHttpContent(pageConfig);
 
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access

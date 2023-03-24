@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using Microsoft.Build.Framework;
+using System.Linq.Expressions;
 
 namespace ValuedInBE.DataControls.Ordering
 {
@@ -20,29 +21,33 @@ namespace ValuedInBE.DataControls.Ordering
 
         public IQueryable<TEntity> ApplyOrderingInLinq<TEntity>(IQueryable<TEntity> query, CustomColumnMapping<TEntity> customColumnMapping)
         {
-            if (Count == 0) return query;
+            if (!this.Any()) return query;
 
+            IOrderedQueryable<TEntity> orderedQuery;
             Enumerator enumerate = this.GetEnumerator();
             enumerate.MoveNext();
-            OrderByColumn orderBy = enumerate.Current;
-            IOrderedQueryable<TEntity> orderedQuery;
+            OrderByColumn currentOrderBy = enumerate.Current;
 
-            if (customColumnMapping.TryGetValue(orderBy.Column, out var expression))
+            //check if there is a custom mapping to be applied to current column
+            if (customColumnMapping.TryGetValue(currentOrderBy.Column, out var expression))
             {
+                //extracts expression
                 Expression<Func<TEntity, object>> func = expression.GetKeySelectorFunction();
-                orderedQuery = orderBy.Ascending ? query.OrderBy(func) : query.OrderByDescending(func);
+                orderedQuery = currentOrderBy.Ascending ? query.OrderBy(func) : query.OrderByDescending(func);
             }
-            else orderedQuery = orderBy.ApplyOrderBy(query);
+            //if there is no custom mapping, apply normally
+            else orderedQuery = currentOrderBy.ApplyOrderBy(query);
 
+            //Proceed with secondary columns if any
             while (enumerate.MoveNext())
             {
-                orderBy = enumerate.Current;
-                if (customColumnMapping.TryGetValue(orderBy.Column, out expression))
+                currentOrderBy = enumerate.Current;
+                if (customColumnMapping.TryGetValue(currentOrderBy.Column, out expression))
                 {
                     Expression<Func<TEntity, object>> func = expression.GetKeySelectorFunction();
-                    orderedQuery = orderBy.Ascending ? orderedQuery.ThenBy(func) : orderedQuery.ThenByDescending(func);
+                    orderedQuery = currentOrderBy.Ascending ? orderedQuery.ThenBy(func) : orderedQuery.ThenByDescending(func);
                 }
-                else orderedQuery = orderBy.ApplyOrderBy(orderedQuery);
+                else orderedQuery = currentOrderBy.ApplyOrderBy(orderedQuery);
             }
             return orderedQuery;
         }

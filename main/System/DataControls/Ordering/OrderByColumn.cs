@@ -8,12 +8,6 @@ namespace ValuedInBE.DataControls.Ordering
         public string Column { get; set; }
         public bool Ascending { get; set; }
 
-        public OrderByColumn(string column, bool ascending)
-        {
-            Column = column;
-            Ascending = ascending;
-        }
-
         public IOrderedQueryable<TEntity> ApplyOrderBy<TEntity>(IQueryable<TEntity> query)
         {
 

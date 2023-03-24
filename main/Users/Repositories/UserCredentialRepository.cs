@@ -98,7 +98,10 @@ namespace ValuedInBE.Users.Repositories
             credentialQuery.Take(config.Size);
             List<UserCredentials> credentials = await credentialQuery.ToListAsync();
 
-            return new Page<UserCredentials>(credentials, total, config.Page + 1);
+            return new Page<UserCredentials> { 
+                Results = credentials, 
+                Total = total, 
+                PageNo = config.Page + 1 };
         }
 
         public async Task InsertAsync(UserCredentials userCredentials, UserContext createdBy)

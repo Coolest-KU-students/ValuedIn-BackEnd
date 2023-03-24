@@ -39,11 +39,11 @@ namespace ValuedInBE.Users.Services.Implementations
             Page<UserCredentials> credentialPage =
                 await _userCredentialRepository.GetUserPageWithDetailsAsync(config);
 
-            return new Page<UserSystemInfo>(
-                credentialPage.Results
+            return new Page<UserSystemInfo> {
+                Results = credentialPage.Results
                     .Select(MapSystemInfoFromCredentials).ToList(),
-                credentialPage.Total,
-                credentialPage.PageNo);
+                Total = credentialPage.Total,
+                PageNo = credentialPage.PageNo};
         }
 
         public async Task CreateNewUserAsync(NewUser newUser, UserContext userContext = null)
