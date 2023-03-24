@@ -1,37 +1,43 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Immutable;
 
 namespace ValuedInBE.DataControls.Memory
 {
-    public class MemoizationEngine : ConcurrentDictionary<MemoizationKey, MemoizedValue>, IMemoizationEngine
+    public class MemoizationEngine : IMemoizationEngine
     {
+        private readonly ConcurrentDictionary<MemoizationKey, MemoizedValue> _memoized;
         private readonly ILogger<MemoizationEngine> _logger;
+
+        public ImmutableDictionary<MemoizationKey, MemoizedValue> InnerDictionary { get => _memoized.ToImmutableDictionary(); }
+        public int Count => _memoized.Count;
 
         public MemoizationEngine(ILogger<MemoizationEngine> logger)
         {
             _logger = logger;
+            _memoized = new();
         }
 
         public void Memoize<TKey, TValue>(TKey key, TValue value)
         {
             _logger.LogTrace("Memoization with Key({key}) and Value({value})", key, value);
-            MemoizationKey<TKey> memoizationKey = new() { Key = key };
-            MemoizedValue<TValue> memoizedValue = new() { Value = value };
+            MemoizationKey<TKey> memoizationKey = MemKey(key);
+            MemoizedValue<TValue> memoizedValue = MemValue(value);
 
-            TryAdd(memoizationKey, memoizedValue);
+            _memoized.TryAdd(memoizationKey, memoizedValue);
         }
 
-        public void Memoize<TKey, TValue>(TKey key, TValue value, TimeSpan lifeTime)
+        public void Memoize<TKey, TValue>(TKey key, TValue value, TimeSpan timeSpan)
         {
             Memoize(key, value);
 
-            _logger.LogTrace("Memoization with Key({key}) and Value({value}) will expire in {lifeTime} seconds", key, value, lifeTime.TotalSeconds);
-            RemoveKeyAfterSpecifiedTime(key, lifeTime); //discard so it does not wait till task executes
+            _logger.LogTrace("Memoization with Key({key}) and Value({value}) will expire in {lifeTime} seconds", key, value, timeSpan.TotalSeconds);
+            RemoveKeyAfterSpecifiedTime(key, timeSpan); //discard so it does not wait till task executes
         }
 
         public TValue GetValue<TKey, TValue>(TKey key)
         {
             _logger.LogDebug("Attempting to find memoized value with Key({key})", key);
-            bool exists = this.TryGetValue(new MemoizationKey<TKey>() { Key = key }, out MemoizedValue memoizedValue);
+            bool exists =  _memoized.TryGetValue(MemKey(key), out MemoizedValue memoizedValue);
 
             if (!exists)
             {
@@ -45,7 +51,7 @@ namespace ValuedInBE.DataControls.Memory
         public TValue Extract<TKey, TValue>(TKey key)
         {
             _logger.LogTrace("Attempting to remove a memoized value with Key({key})", key);
-            if (TryRemove(new MemoizationKey<TKey>() { Key = key }, out MemoizedValue value))
+            if (_memoized.TryRemove(MemKey(key), out MemoizedValue value))
             {
                 MemoizedValue<TValue> specifiedTypeValue = (MemoizedValue<TValue>)value;
                 return specifiedTypeValue.Value;
@@ -56,14 +62,25 @@ namespace ValuedInBE.DataControls.Memory
         public void RemoveByKey<TKey>(TKey key)
         {
             _logger.LogTrace("Attempting to remove a memoized value with Key({key})", key);
-            TryRemove(new MemoizationKey<TKey>() { Key = key }, out _);
+            _memoized.TryRemove(MemKey(key), out _);
         }
+
 
         private async void RemoveKeyAfterSpecifiedTime<TKey>(TKey key, TimeSpan lifeTime)
         {
             await Task.Delay(lifeTime);
             _logger.LogTrace("Attempting to remove a memoized value with Key({key})", key);
             this.RemoveByKey(key);
+        }
+
+        private static MemoizationKey<TKey> MemKey<TKey>(TKey key)
+        {
+            return new() { Key = key };
+        }
+
+        private static MemoizedValue<TValue> MemValue<TValue>(TValue value)
+        {
+            return new() { Value = value };
         }
     }
 }

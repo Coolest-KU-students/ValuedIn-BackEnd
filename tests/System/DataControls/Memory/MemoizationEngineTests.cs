@@ -27,7 +27,7 @@ namespace ValuedInBETests.System.DataControls.Memory
         {
             _memoizationEngine.Memoize(_listAsKey, _functionThatReturnsTheInput, _timeout);
 
-            Assert.Single(_memoizationEngine);
+            Assert.Single(_memoizationEngine.InnerDictionary);
             Func<string, string> retrieved =
                 _memoizationEngine.GetValue<List<string>, Func<string, string>>(_listAsKey);
 
@@ -36,7 +36,7 @@ namespace ValuedInBETests.System.DataControls.Memory
             await Task.Delay(_timeout);
             await Task.Delay(stressTestAsyncTimePillow);
 
-            Assert.Empty(_memoizationEngine);
+            Assert.Empty(_memoizationEngine.InnerDictionary);
             Assert.Throws<KeyNotFoundException>(
                 () => _memoizationEngine.GetValue<List<string>, Func<string, string>>(_listAsKey)
              );
@@ -46,10 +46,10 @@ namespace ValuedInBETests.System.DataControls.Memory
         public void AddWithoutTimeoutAndRemove()
         {
             _memoizationEngine.Memoize(_listAsKey, _functionThatReturnsTheInput);
-            Assert.Single(_memoizationEngine);
+            Assert.Single(_memoizationEngine.InnerDictionary);
 
             _memoizationEngine.RemoveByKey(_listAsKey);
-            Assert.Empty(_memoizationEngine);
+            Assert.Empty(_memoizationEngine.InnerDictionary);
             Assert.Throws<KeyNotFoundException>(
                 () => _memoizationEngine.GetValue<List<string>, Func<string, string>>(_listAsKey)
              );
@@ -67,7 +67,7 @@ namespace ValuedInBETests.System.DataControls.Memory
 
             await Task.Delay(_timeout);
             await Task.Delay(stressTestAsyncTimePillow);
-            Assert.Empty(_memoizationEngine);
+            Assert.Empty(_memoizationEngine.InnerDictionary);
             Assert.Throws<KeyNotFoundException>(
                 () => _memoizationEngine.GetValue<List<string>, Func<string, string>>(_listAsKey)
              );
