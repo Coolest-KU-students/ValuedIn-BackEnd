@@ -20,8 +20,8 @@ namespace ValuedInBE.System.Tests
         private ActiveWebSocketTracker MockActiveWebSocketTracker()
         {
             ActiveWebSocketTracker tracker = new(_logger.Object);
-            tracker.AddOrUpdate(firstUserId, new List<WebSocket>() { _mockedFirstSocket.Object }, (userId, newList) => newList);
-            tracker.AddOrUpdate(secondUserId, new List<WebSocket>() { _mockedSecondSocket.Object }, (userId, newList) => newList);
+            tracker.UserWebSocketDictionary.AddOrUpdate(firstUserId, new List<WebSocket>() { _mockedFirstSocket.Object }, (userId, newList) => newList);
+            tracker.UserWebSocketDictionary.AddOrUpdate(secondUserId, new List<WebSocket>() { _mockedSecondSocket.Object }, (userId, newList) => newList);
             return tracker;
         }
 
@@ -50,11 +50,11 @@ namespace ValuedInBE.System.Tests
             tracker.Add(firstUserId, _mockedUnregisteredSocket.Object); //And tehse should not change anything
             tracker.Add(secondUserId, _mockedUnregisteredSocket.Object);
 
-            Assert.Equal(3, tracker.Count);
+            Assert.Equal(3, tracker.UserWebSocketDictionary.Count);
         }
 
         [Fact()]
-        public async void TestStartAsync()
+        public async Task TestStartAsync()
         {
             WebSocketReceiveResult receiveResult = new(0, WebSocketMessageType.Text, true);
 
@@ -131,9 +131,7 @@ namespace ValuedInBE.System.Tests
             Task stopTask = tracker.StopAsync(token);
 
             Assert.True(stopTask.IsCompleted); //No actual IO processes, should complete immediately
-            Assert.Empty(tracker);
-
-
+            Assert.Empty(tracker.UserWebSocketDictionary);
         }
 
 

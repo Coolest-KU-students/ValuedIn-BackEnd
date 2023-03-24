@@ -1,7 +1,6 @@
 ﻿using Confluent.Kafka;
 using Newtonsoft.Json;
 using System.Net.WebSockets;
-using System.Text;
 using ValuedInBE.Chats.Models.Entities;
 using ValuedInBE.Chats.Models.Events;
 using ValuedInBE.System.External.Services.Kafka;
@@ -29,7 +28,7 @@ namespace ValuedInBE.Chats.EventHandlers
                 new()
                 {
                     GroupId = groupId,
-                    AutoOffsetReset = AutoOffsetReset.Earliest,
+                    AutoOffsetReset = AutoOffsetReset.Latest,
                     AllowAutoCreateTopics = true
                 });
             _producer = configurationBuilder.ConfigureProducer();
@@ -84,46 +83,28 @@ namespace ValuedInBE.Chats.EventHandlers
             }
         }
 
-
-        private ConsumeResult<long, NewMessageEvent> ConsumeNextMessage(CancellationToken cancellationToken = default)
+        private ConsumeResult<long, NewMessageEvent> ConsumeNextMessage(CancellationToken? cancellationToken = null)
         {
-
+            cancellationToken ??= _cancellationToken;
             _logger.LogTrace("Awaiting for a message");
-            ConsumeResult<long, NewMessageEvent> received = _consumer.Consume(cancellationToken);
+            ConsumeResult<long, NewMessageEvent> received = _consumer.Consume(cancellationToken.Value);
             _logger.LogInformation("Received that message {messageID} was sent in chat {chatID}", received.Message.Key, received.Message.Value.ChatMessage.ChatId);
             return received;
         }
 
         private async Task DistributeMessagesAsync(IEnumerable<string> userIds, ChatMessage chatMessage, CancellationToken cancellationToken)
         {
-            List<Task> tasks = new();
-            foreach (string user in userIds)
-            {
-                _logger.LogDebug("Sending a message {chatId} to user {user}", chatMessage.ChatId, user);
-                tasks.Add(SendMessageAsync(user, chatMessage, cancellationToken));
-            }
-            await Task.WhenAll(tasks);
+            if(cancellationToken.IsCancellationRequested) return;
+            _logger.LogDebug("Sending a message {chatId} to users {user}", chatMessage.ChatId, string.Join(", ", userIds));
+            await Task.WhenAll(userIds.Select(userId => SendMessageAsync(userId, chatMessage, cancellationToken)));
         }
 
         private async Task SendMessageAsync(string userId, ChatMessage chatMessage, CancellationToken cancellationToken)
         {
             IEnumerable<WebSocket> sockets = _webSocketTracker.GetSockets(userId);
             _logger.LogTrace("User {userId} was found to have {amount} of sockets active when sending a message", userId, sockets.Count());
-            List<Task> tasks = new();
-            foreach (WebSocket socket in sockets)
-            {
-                tasks.Add(SendMessageAsync(socket, chatMessage, cancellationToken));
-            }
-            await Task.WhenAll(tasks);
-        }
-
-        private static async Task SendMessageAsync(WebSocket socket, ChatMessage chatMessage, CancellationToken cancellationToken)
-        {
-            if (socket.State == WebSocketState.Open)
-            {
-                string messageJson = JsonConvert.SerializeObject(chatMessage);
-                await socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageJson)), 0, true, cancellationToken);
-            }
+            string messageJson = JsonConvert.SerializeObject(chatMessage);
+            await _webSocketTracker.SendMessageAsync(messageJson, userId, cancellationToken);
         }
     }
 }

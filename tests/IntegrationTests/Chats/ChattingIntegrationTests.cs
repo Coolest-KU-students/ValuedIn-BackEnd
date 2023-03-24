@@ -77,13 +77,10 @@ namespace ValuedInBETests.IntegrationTests.Chats
             };
             StringContent chatRequestContent = SerializeIntoJsonHttpContent(request);
             AddLoginHeaderToHttpClient(senderLogin);
-            DumbDebug($"Added Login to Header : {DateTime.Now}");
             WebSocket webSocket = await EstablishWebSocketConnection();
 
-            DumbDebug($"Posting : {DateTime.Now}");
             HttpResponseMessage chatResponse = await _client.PostAsync(chatsRoute, chatRequestContent);
 
-            DumbDebug($"Posted : {DateTime.Now}");
             var WebSocketReceiveTask = webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
             Assert.True(chatResponse.IsSuccessStatusCode);
             Assert.NotNull(chatResponse.Content);
@@ -129,11 +126,6 @@ namespace ValuedInBETests.IntegrationTests.Chats
             return user.UserID;
         }
 
-        private static async Task<WebSocket> ReceiveFromSocketAndIfTimerHasPassedEnsureReconnection(WebSocket webSocket, Timer timer)
-        {
-            throw new NotImplementedException();
-        }
-
         private async Task CheckWebSocketConnection(WebSocket webSocket)
         {
             Assert.False(webSocket.CloseStatus.HasValue);
@@ -164,12 +156,6 @@ namespace ValuedInBETests.IntegrationTests.Chats
             string webSocketToken = await tokenResponse.Content.ReadAsStringAsync();
             Assert.False(string.IsNullOrEmpty(webSocketToken));
             return webSocketToken;
-        }
-
-        public static void DumbDebug(string message)
-        {
-            string file = @"C:\Users\Lukas\Source\Repos\ValuedInBE\tests\debug.txt";
-            File.AppendAllTextAsync(file, message+'\n'); 
         }
     }
 }

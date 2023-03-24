@@ -1,11 +1,14 @@
-﻿using System.Collections.Concurrent;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
 
 namespace ValuedInBE.WebSockets.Services
 {
-    public class ActiveWebSocketTracker : ConcurrentDictionary<string, List<WebSocket>>, IWebSocketTracker, IHostedService
+    public class ActiveWebSocketTracker : IWebSocketTracker, IHostedService
     {
+        public ConcurrentDictionary<string, List<WebSocket>> UserWebSocketDictionary { get; init; }
+
         private const int heartbeatIntervalsInSeconds = 30;
         private readonly TimeSpan _heartbeatIntervalTimespan = TimeSpan.FromSeconds(heartbeatIntervalsInSeconds);
         private const int heartbeatTimeoutInSeconds = 2;
@@ -15,17 +18,20 @@ namespace ValuedInBE.WebSockets.Services
         private readonly ILogger<ActiveWebSocketTracker> _logger;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private bool _stillInCheck = false; //failsafe in case I'm stupid with the timer
+        private readonly Encoding _encoding = Encoding.UTF8;
+
 
         public ActiveWebSocketTracker(ILogger<ActiveWebSocketTracker> logger)
         {
             _heartbeatTimer = new Timer(CheckHeartbeat, null, Timeout.Infinite, Timeout.Infinite);
             _logger = logger;
+            UserWebSocketDictionary = new();
         }
 
         public void Add(string userId, WebSocket webSocket)
         {
             _logger.LogDebug("Added web socket for user ID: {userId}", userId);
-            AddOrUpdate(userId, new List<WebSocket>() { webSocket }, UpdateExistingSocketList);
+            UserWebSocketDictionary.AddOrUpdate(userId, new List<WebSocket>() { webSocket }, UpdateExistingSocketList);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -41,18 +47,18 @@ namespace ValuedInBE.WebSockets.Services
             _heartbeatTimer.Dispose();
             _cancellationTokenSource.Cancel(false);
             List<Task> closingTasks = new();
-            foreach (WebSocket socket in Values.SelectMany(value => value))
+            foreach (WebSocket socket in UserWebSocketDictionary.Values.SelectMany(value => value))
             {
                 closingTasks.Add(CloseSocketAndDisposeAsync(socket, cancellationToken));
             }
-            Clear();
+            UserWebSocketDictionary.Clear();
             await Task.WhenAll(closingTasks);
         }
 
         public IEnumerable<WebSocket> GetSockets(string userId)
         {
             _logger.LogTrace("Getting sockets for user ID: {userId}", userId);
-            return TryGetValue(userId, out List<WebSocket> sockets)
+            return UserWebSocketDictionary.TryGetValue(userId, out List<WebSocket> sockets)
                     ? sockets
                     : new List<WebSocket>();
         }
@@ -62,7 +68,7 @@ namespace ValuedInBE.WebSockets.Services
             {
                 List<WebSocket> currentList = GetSockets(userId).ToList();
                 currentList.AddRange(newList);
-                return currentList;
+                return currentList; 
             };
 
         private async void CheckHeartbeat(object state)
@@ -71,7 +77,7 @@ namespace ValuedInBE.WebSockets.Services
             _stillInCheck = true;
             _logger.LogDebug("Checking Heartbeat for WebSockets");
             List<Task> tasks = new();
-            foreach (List<WebSocket> webSockets in Values)
+            foreach (List<WebSocket> webSockets in UserWebSocketDictionary.Values)
             {
                 CheckWebSockets(tasks, webSockets);
             }
@@ -88,6 +94,7 @@ namespace ValuedInBE.WebSockets.Services
                 {
                     if (socket.State != WebSocketState.Open)
                     {
+                        _logger.LogTrace("Tracker disposing of socket {socket}",   socket);
                         socket.Dispose();
                         webSockets.Remove(socket);
                     }
@@ -98,35 +105,53 @@ namespace ValuedInBE.WebSockets.Services
 
         private static async Task CloseSocketAndDisposeAsync(WebSocket socket, CancellationToken cancellationToken)
         {
-            if (socket.State == WebSocketState.None)
-                await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Service is closing", cancellationToken);
+            if (socket.State != WebSocketState.Open) return;
+            
+            await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Service is closing", cancellationToken);
+            socket.Dispose();
         }
 
         private async Task TryPingPongWithinTimeAsync(WebSocket webSocket, CancellationToken cancellationToken)
         {
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource cancellationTokenSource = new();
             try
             {
-
                 Task echoTask = PingPongAsync(webSocket, cancellationTokenSource.Token);
                 await Task.Delay(_heartbeatTimeoutTimespan, cancellationToken);
+                
                 if (echoTask.IsCompleted)
                     return;
             }
             catch (TaskCanceledException)
             {
-                //TODO: die silently
+                _logger.LogWarning("Task Cancellation issued within Socker Tracker");
             }
             cancellationTokenSource.Cancel();
             await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Heartbeat timeout", CancellationToken.None);
         }
 
-        private static async Task PingPongAsync(WebSocket webSocket, CancellationToken cancellationToken)
+        private async Task PingPongAsync(WebSocket webSocket, CancellationToken cancellationToken)
         {
             var buffer = new byte[1024 * 4];
-            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
-            if (cancellationToken.IsCancellationRequested) return;
-            await webSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(heartbeatSendMessage), 0, heartbeatSendMessage.Length), result.MessageType, true, cancellationToken);
+            await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+            if (cancellationToken.IsCancellationRequested 
+            || webSocket.State != WebSocketState.Open) 
+                    return;
+            await SendMessageAsync(webSocket, heartbeatSendMessage, cancellationToken);
+        }
+
+        public async Task SendMessageAsync(string message, string userId, CancellationToken token)
+        {
+            IEnumerable<WebSocket> userWebSockets = GetSockets(userId);
+            if(!userWebSockets.Any()) { return; }
+
+            await Task.WhenAll(userWebSockets.Select(socket => SendMessageAsync(socket, message, token)));
+        }
+    
+        public async Task SendMessageAsync(WebSocket socket, string message, CancellationToken? token = null)
+        {
+            token ??= _cancellationTokenSource.Token;
+            await socket.SendAsync(_encoding.GetBytes(message), WebSocketMessageType.Text, true, token.Value);
         }
     }
 }
