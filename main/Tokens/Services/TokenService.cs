@@ -18,6 +18,7 @@ namespace ValuedInBE.Tokens.Services
 
         public string GenerateOneTimeUserAccessToken(UserContext userContext, string type, TimeSpan? timeOut = null)
         {
+            _logger.LogDebug("Generating One Time {type} Token for user {user}", type, userContext.UserID);
             TokenData<UserContext> data = new()
             {
                 Value = userContext,
@@ -26,12 +27,14 @@ namespace ValuedInBE.Tokens.Services
 
             string token = Guid.NewGuid().ToString();
 
+            //Memoizes the token for the duration
             _memoizationEngine.Memoize(token, data, timeOut ?? _defaultTimeout);
             return token;
         }
 
         public UserContext GetUserContextFromToken(string token, string type)
         {
+            _logger.LogDebug("Extracting user from {type} token ", token);
             TokenData<UserContext> tokenData = _memoizationEngine.Extract<string, TokenData<UserContext>>(token);
             if (tokenData?.Type == type)
             {
