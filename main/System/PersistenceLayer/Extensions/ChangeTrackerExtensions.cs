@@ -26,7 +26,7 @@ namespace ValuedInBE.System.PersistenceLayer.Extensions
                     entityCreateBase.CreatedOn = DateTime.Now;
                     entityCreateBase.CreatedBy = userContext.UserID;
                 }
-                if (entity.Entity is IAuditCreateUpdateBase entityUpdateBase && entity.State == EntityState.Modified)
+                if (entity.Entity is IAuditCreateUpdateBase entityUpdateBase && entity.State == EntityState.Modified )
                 {
                     entityUpdateBase.UpdatedOn = DateTime.Now;
                     entityUpdateBase.UpdatedBy = userContext.UserID;

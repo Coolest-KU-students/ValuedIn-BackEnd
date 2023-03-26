@@ -4,7 +4,7 @@ using ValuedInBE.Users.Services;
 
 namespace ValuedInBE.System.PersistenceLayer.Contexts
 {
-    public class DataInitializer
+    internal static class DataInitializer
     {
         public static async Task InitializeAsync(ValuedInContext context, IAuthenticationService authenticationService)
         {

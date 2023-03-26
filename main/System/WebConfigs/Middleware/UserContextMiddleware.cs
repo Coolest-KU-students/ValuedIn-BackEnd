@@ -44,5 +44,4 @@ namespace ValuedInBE.System.WebConfigs.Middleware
             return (UserContext)context.Items[UserContextMiddleware.userContextItemName];
         }
     }
-
 }

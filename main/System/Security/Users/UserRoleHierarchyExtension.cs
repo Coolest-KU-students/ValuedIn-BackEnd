@@ -4,24 +4,24 @@
     {
         private static readonly Dictionary<UserRoleExtended, HashSet<UserRoleExtended>> _hierarchy = new();
 
-        private static void Includes(UserRoleExtended userRole, params UserRoleExtended[] inheritedRoles)
+        private static void Inherits(UserRoleExtended userRoleThatInherits, params UserRoleExtended[] inheritedRoles)
         {
-            if (inheritedRoles.Contains(userRole))
-                throw new Exception($"User Role {userRole} cannot inherit itself");
-            _hierarchy.Add(userRole, inheritedRoles.ToHashSet());
+            if (inheritedRoles.Contains(userRoleThatInherits))
+                throw new ApplicationException($"User Role {userRoleThatInherits} cannot inherit itself");
+            _hierarchy.Add(userRoleThatInherits, inheritedRoles.ToHashSet());
         }
 
-        public static HashSet<UserRoleExtended> GetIncludedRoles(this UserRoleExtended userRole)
+        public static HashSet<UserRoleExtended> GetInherittedRoles(this UserRoleExtended userRole)
         {
             return new(_hierarchy[userRole]);
         }
 
         static UserRoleHierarchyExtension() 
         {
-            Includes(UserRole.DEFAULT); //UserRole.DEFAULT does not inherit anything
-            Includes(UserRole.HR, UserRole.DEFAULT);
-            Includes(UserRole.ORG_ADMIN, UserRole.HR);
-            Includes(UserRole.SYS_ADMIN);//UserRole.SYS_ADMIN does not inherit anthing
+            Inherits(UserRole.DEFAULT); //UserRole.DEFAULT does not inherit anything
+            Inherits(UserRole.HR, UserRole.DEFAULT);
+            Inherits(UserRole.ORG_ADMIN, UserRole.HR);
+            Inherits(UserRole.SYS_ADMIN);//UserRole.SYS_ADMIN does not inherit anthing
         }
     }
 }

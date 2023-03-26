@@ -7,17 +7,17 @@ namespace ValuedInBE.System.External.Services.Kafka.Serializers
     {
         public TModel Deserialize(ReadOnlySpan<byte> data, bool isNull, SerializationContext context)
         {
-            using var ms = new MemoryStream(data.ToArray());
-            var reader = new StreamReader(ms);
+            using MemoryStream ms = new(data.ToArray());
+            StreamReader reader = new(ms);
             string json = reader.ReadToEnd();
             return JsonConvert.DeserializeObject<TModel>(json);
         }
 
         public byte[] Serialize(TModel data, SerializationContext context)
         {
-            using var ms = new MemoryStream();
+            using MemoryStream ms = new();
             string jsonString = JsonConvert.SerializeObject(data);
-            var writer = new StreamWriter(ms);
+            StreamWriter writer = new(ms);
 
             writer.Write(jsonString);
             writer.Flush();
