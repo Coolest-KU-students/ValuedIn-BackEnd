@@ -20,7 +20,6 @@ namespace ValuedInBE.WebSockets.Services
         private bool _stillInCheck = false; //failsafe in case I'm stupid with the timer
         private readonly Encoding _encoding = Encoding.UTF8;
 
-
         public ActiveWebSocketTracker(ILogger<ActiveWebSocketTracker> logger)
         {
             _heartbeatTimer = new Timer(CheckHeartbeat, null, Timeout.Infinite, Timeout.Infinite);
@@ -55,7 +54,7 @@ namespace ValuedInBE.WebSockets.Services
             await Task.WhenAll(closingTasks);
         }
 
-        public IEnumerable<WebSocket> GetSockets(string userId)
+        public IEnumerable<WebSocket> GetUserSockets(string userId)
         {
             _logger.LogTrace("Getting sockets for user ID: {userId}", userId);
             return UserWebSocketDictionary.TryGetValue(userId, out List<WebSocket> sockets)
@@ -66,9 +65,9 @@ namespace ValuedInBE.WebSockets.Services
         private Func<string, List<WebSocket>, List<WebSocket>> UpdateExistingSocketList =>
             (userId, newList) =>
             {
-                List<WebSocket> currentList = GetSockets(userId).ToList();
-                currentList.AddRange(newList);
-                return currentList; 
+                IEnumerable<WebSocket> currentList = GetUserSockets(userId);
+                newList.AddRange(currentList);
+                return newList; 
             };
 
         private async void CheckHeartbeat(object state)
@@ -76,20 +75,16 @@ namespace ValuedInBE.WebSockets.Services
             if (_stillInCheck) { return; } //skip if it hasn't finished?
             _stillInCheck = true;
             _logger.LogDebug("Checking Heartbeat for WebSockets");
-            List<Task> tasks = new();
-            foreach (List<WebSocket> webSockets in UserWebSocketDictionary.Values)
-            {
-                CheckWebSockets(tasks, webSockets);
-            }
+
+            IEnumerable<Task> tasks = UserWebSocketDictionary.Values.SelectMany(CheckWebSockets);
             await Task.WhenAll(tasks);
             _stillInCheck = false;
         }
 
-
-        private void CheckWebSockets(List<Task> tasks, List<WebSocket> webSockets)
+        private IEnumerable<Task> CheckWebSockets(List<WebSocket> webSockets)
         {
             webSockets.RemoveAll(socket => socket.CloseStatus.HasValue);//clear all closed ones
-            webSockets.ForEach(
+            return webSockets.Select(
                 socket =>
                 {
                     if (socket.State != WebSocketState.Open)
@@ -98,15 +93,15 @@ namespace ValuedInBE.WebSockets.Services
                         socket.Dispose();
                         webSockets.Remove(socket);
                     }
-                    tasks.Add(TryPingPongWithinTimeAsync(socket, _cancellationTokenSource.Token));
+                    return TryPingPongWithinTimeAsync(socket, _cancellationTokenSource.Token);
                 }
             );
         }
 
         private static async Task CloseSocketAndDisposeAsync(WebSocket socket, CancellationToken cancellationToken)
         {
-            if (socket.State != WebSocketState.Open) return;
-            
+            if (socket.State != WebSocketState.Open) 
+                return;
             await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Service is closing", cancellationToken);
             socket.Dispose();
         }
@@ -122,7 +117,7 @@ namespace ValuedInBE.WebSockets.Services
                 if (echoTask.IsCompleted)
                     return;
             }
-            catch (TaskCanceledException)
+            catch (TaskCanceledException) // will  be thrown by the delay task
             {
                 _logger.LogWarning("Task Cancellation issued within Socker Tracker");
             }
@@ -133,16 +128,16 @@ namespace ValuedInBE.WebSockets.Services
         private async Task PingPongAsync(WebSocket webSocket, CancellationToken cancellationToken)
         {
             var buffer = new byte[1024 * 4];
-            await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
-            if (cancellationToken.IsCancellationRequested 
-            || webSocket.State != WebSocketState.Open) 
-                    return;
-            await SendMessageAsync(webSocket, heartbeatSendMessage, cancellationToken);
+            await SendMessageAsync(webSocket, heartbeatSendMessage, cancellationToken); //TODO: should only send and receive through the tracker to avoid parallel operations going wrong
+            if (cancellationToken.IsCancellationRequested //cancellation request came from above
+                || webSocket.State != WebSocketState.Open) //or it took so long the socket closed
+                return;
+            await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken); 
         }
 
         public async Task SendMessageAsync(string message, string userId, CancellationToken token)
         {
-            IEnumerable<WebSocket> userWebSockets = GetSockets(userId);
+            IEnumerable<WebSocket> userWebSockets = GetUserSockets(userId);
             if(!userWebSockets.Any()) { return; }
 
             await Task.WhenAll(userWebSockets.Select(socket => SendMessageAsync(socket, message, token)));

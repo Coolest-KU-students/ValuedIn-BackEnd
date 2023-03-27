@@ -38,7 +38,7 @@ namespace ValuedInBE
             #region Scoped
             builder.Services.AddScoped<IUserCredentialRepository, UserCredentialRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            builder.Services.AddScoped<IPasswordHasher<UserData>, PasswordHasher<UserData>>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             builder.Services.AddScoped<IUserIDGenerationStrategy, CustomUserIDGenerationStrategyWithNameMerging>();
             builder.Services.AddScoped<IChatRepository, ChatRepository>();

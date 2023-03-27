@@ -33,7 +33,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
 
         private readonly Mock<ILogger<AuthenticationService>> _loggerMock = new();
         private readonly Mock<IUserService> _userServiceMock = new();
-        private readonly Mock<IPasswordHasher<User>> _hasherMock = new();
+        private readonly Mock<IPasswordHasher<UserData>> _hasherMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
         private readonly IConfiguration _fakedConfiguration = new ConfigurationBuilder().AddInMemoryCollection(_inMemoryJWTConfig).Build();
 
@@ -53,14 +53,14 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
         {
             AuthRequest auth = UserConstants.AuthRequestInstance;
             UserCredentials userCredentials = UserConstants.UserCredentialsInstance;
-            User user = UserConstants.UserInstance;
+            UserData user = UserConstants.UserInstance;
             JwtSecurityTokenHandler tokenHandler = new();
 
             _userServiceMock
                 .Setup(service => service.GetUserCredentialsByLoginAsync(UserConstants.login))
                 .ReturnsAsync(userCredentials);
             _mapperMock
-                .Setup(mock => mock.Map<User>(userCredentials))
+                .Setup(mock => mock.Map<UserData>(userCredentials))
                 .Returns(() => user);
             _hasherMock
                 .Setup(hasher => hasher.VerifyHashedPassword(user, UserConstants.hashedPassword, UserConstants.password))
@@ -81,7 +81,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
         public async Task RegisterNewUserTestAsync()
         {
             NewUser newUser = UserConstants.NewUserInstance;
-            User user = UserConstants.UserInstance;
+            UserData user = UserConstants.UserInstance;
             _hasherMock
                 .Setup(hasher => hasher.HashPassword(user, UserConstants.password)) //has to hash the password
                 .Returns(UserConstants.hashedPassword);
@@ -89,7 +89,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 .Setup(service => service.CreateNewUserAsync(newUser, null))
                 .Verifiable();
             _mapperMock
-                .Setup(mapper => mapper.Map<User>(newUser))
+                .Setup(mapper => mapper.Map<UserData>(newUser))
                 .Returns(user);
             AuthenticationService service = MockAuthenticationService();
             await service.RegisterNewUserAsync(newUser);
@@ -100,7 +100,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
         public async Task SelfRegisterTestAsync()
         {
             NewUser newUser = UserConstants.NewUserInstance;
-            User user = UserConstants.UserInstance;
+            UserData user = UserConstants.UserInstance;
             _hasherMock
                 .Setup(hasher => hasher.HashPassword(user, UserConstants.password)) //has to hash the password
                 .Returns(UserConstants.hashedPassword);
@@ -108,7 +108,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 .Setup(service => service.CreateNewUserAsync(newUser, It.IsAny<UserContext>()))
                 .Verifiable();
             _mapperMock
-                .Setup(mapper => mapper.Map<User>(newUser))
+                .Setup(mapper => mapper.Map<UserData>(newUser))
                 .Returns(user);
 
             AuthenticationService service = MockAuthenticationService();

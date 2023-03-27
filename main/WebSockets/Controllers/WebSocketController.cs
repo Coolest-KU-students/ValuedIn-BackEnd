@@ -31,24 +31,31 @@ namespace ValuedInBE.WebSockets.Controllers
         [HttpGet]
         public async Task<ActionResult> EstablishAsync([FromQuery] string token)
         {
+            _logger.LogDebug("Received Request to establish a web socket");
             if (!HttpContext.WebSockets.IsWebSocketRequest || string.IsNullOrEmpty(token))
             {
+                _logger.LogTrace("Is not a web socket request or no token provided");
+                //TODO: differentiate what is the problem
                 return BadRequest();
             }
 
             UserContext userContext = _tokenService.GetUserContextFromToken(token, tokenType);
             if (userContext == null)
             {
+                _logger.LogTrace("Did not find any user context associated with the token");
+                //TODO: differentiate what is the problem
                 return Unauthorized();
             }
+
             using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+            _logger.LogTrace("Established a web socket");
             _socketTracker.Add(userContext.UserID, webSocket);
             do
             {
                 await Task.Delay(_connectionVerificationIntervals);
             } while (!webSocket.CloseStatus.HasValue);
 
-            webSocket.Dispose();
+            _logger.LogTrace("Web Socket has been closed");
             return NoContent();
         }
 
@@ -57,6 +64,7 @@ namespace ValuedInBE.WebSockets.Controllers
         public ActionResult<string> IssueTokenForWebSocket()
         {
             UserContext userContext = HttpContext.GetUserContext();
+            _logger.LogDebug("Issuing web socket token for user {userId}", userContext.UserID);
             return _tokenService.GenerateOneTimeUserAccessToken(userContext, tokenType);
         }
     }
