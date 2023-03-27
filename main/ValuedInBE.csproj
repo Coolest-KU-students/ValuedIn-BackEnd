@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Events\" />
+    <Folder Include="Services\Generic\" />
   </ItemGroup>
 
 </Project>

@@ -5,7 +5,7 @@ using ValuedInBE.Models.Users;
 using ValuedInBE.Repositories.Database;
 using ValuedInBE.Services.Users;
 
-namespace ValuedInBE.System
+namespace ValuedInBE.System.Middleware
 {
     public class UserContextMiddleware : IMiddleware
     {
@@ -22,10 +22,20 @@ namespace ValuedInBE.System
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             string jwtToken = context.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-            if (string.IsNullOrEmpty(jwtToken)) return;
-            UserCredentials credentials = await _authenticationService.GetUserFromToken(jwtToken);
-            UserContext user = _mapper.Map<UserContext>(credentials);
-            context.Items[userContextItemName] = user;
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                try
+                {
+                    UserCredentials credentials = await _authenticationService.GetUserFromToken(jwtToken);
+                    UserContext user = _mapper.Map<UserContext>(credentials);
+                    context.Items[userContextItemName] = user;
+                }
+                catch(Exception ex)
+                {
+                    //TODO: log this?
+                }
+            }
+            await next.Invoke(context);
         }
     }
 
@@ -36,5 +46,5 @@ namespace ValuedInBE.System
             return (UserContext)context.Items[UserContextMiddleware.userContextItemName];
         }
     }
-    
+
 }

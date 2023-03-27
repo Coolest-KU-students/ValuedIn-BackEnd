@@ -58,7 +58,7 @@ namespace ValuedInBETests.IntegrationTests.Config
                     await TestDataInitializer.Initialize(authenticationService);
                     context.SaveChanges();
                 }
-                services.Configure<TestAuthHandlerOptions>(options => options.DefaultUserId = UserRoleExtended.SYS_ADMIN);
+                services.Configure<TestAuthHandlerOptions>(options => options.DefaultLogin = UserRoleExtended.SYS_ADMIN);
 
                 services.AddAuthentication(TestAuthHandler.authenticationScheme)
                     .AddScheme<TestAuthHandlerOptions, TestAuthHandler>(TestAuthHandler.authenticationScheme, options => { });

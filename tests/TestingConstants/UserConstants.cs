@@ -8,10 +8,10 @@ namespace ValuedInBE
 {
     public static class UserConstants
     {
-        public const string login = "Test";
+        public const string login = "DEFAULT";
         public const string email = "Test@Test.test";
         public const string telephone = "9945123-5554";
-        public const string password = "Password";
+        public const string password = "DEFAULT";
         public const string hashedPassword = "This is Hashed";
         public const string userId = "This is faked";
 
@@ -128,9 +128,22 @@ namespace ValuedInBE
             {
                 return new()
                 {
-                    Login = "SetupUser",
-                    Password = "Password1",
+                    Login = "SYS_ADMIN",
+                    Password = "SYS_ADMIN",
                     RememberMe = false
+                };
+            }
+        }
+
+        public static UserContext UserContextInstance
+        {
+            get
+            {
+                return new UserContext()
+                {
+                    Login = login,
+                    Role = UserRole.DEFAULT,
+                    UserID = userId
                 };
             }
         }

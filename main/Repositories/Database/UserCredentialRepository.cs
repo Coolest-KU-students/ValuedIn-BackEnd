@@ -95,7 +95,6 @@ namespace ValuedInBE.Repositories.Database
             int total = credentialQuery.Count();
             credentialQuery.Skip(config.Page * config.Size);
             credentialQuery.Take(config.Size);
-
             List<UserCredentials> credentials = await credentialQuery.ToListAsync();
 
             return new Page<UserCredentials>(credentials, total, config.Page + 1);
@@ -121,6 +120,12 @@ namespace ValuedInBE.Repositories.Database
             _context.UserCredentials.Update(userCredentials);
             _context.ChangeTracker.CheckAuditing(updatedBy);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> VerifyUserIds(List<string> userIds)
+        {
+            int count = await _context.UserCredentials.CountAsync(c => userIds.Contains(c.UserID));
+            return count == userIds.Count; 
         }
     }
 }

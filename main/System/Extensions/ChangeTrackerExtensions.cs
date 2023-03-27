@@ -21,14 +21,14 @@ namespace ValuedInBE.System.Extensions
 
             foreach (EntityEntry entity in entities )
             {
-                if(entity is IAuditCreatedBase entityCreateBase && entity.State == EntityState.Added)
+                if(entity.Entity is IAuditCreatedBase entityCreateBase && entity.State == EntityState.Added)
                 {
-                    entityCreateBase.CreatedOn = DateTimeOffset.UtcNow;
+                    entityCreateBase.CreatedOn = DateTime.Now;
                     entityCreateBase.CreatedBy = userContext.UserID;
                 }
-                if(entity is IAuditCreateUpdateBase entityUpdateBase && entity.State == EntityState.Modified)
+                if(entity.Entity is IAuditCreateUpdateBase entityUpdateBase && entity.State == EntityState.Modified)
                 {
-                    entityUpdateBase.UpdatedOn = DateTimeOffset.UtcNow;
+                    entityUpdateBase.UpdatedOn = DateTime.Now;
                     entityUpdateBase.UpdatedBy = userContext.UserID;
                 }
             }

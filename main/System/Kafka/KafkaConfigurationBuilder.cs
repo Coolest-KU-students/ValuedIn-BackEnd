@@ -1,37 +1,34 @@
 ﻿using Confluent.Kafka;
+using ValuedInBE.System.Kafka.Serializers;
 
 namespace ValuedInBE.System.Kafka
 {
     public class KafkaConfigurationBuilder<TKey, TValue> : IKafkaConfigurationBuilder<TKey, TValue>
     {
-        private const string bootstrapServer = "localhost:9092";
-
-        private static ConsumerConfig consumerConfig = new()
-        {
-            BootstrapServers = bootstrapServer,
-            GroupId = "my-group",
-            AutoOffsetReset = AutoOffsetReset.Earliest
-        }; 
-        private static ProducerConfig producerConfig = new()
-        {
-            BootstrapServers = bootstrapServer
-        };
-
-        public const string newChatMessageTopic = "New-Chat-Message";
+        private const string bootstrapServer = "localhost:29092";
+        private readonly KafkaJsonSerializer<TValue> _serialization = new();
 
         public IConsumer<TKey, TValue> ConfigureConsumer()
         {
-            ConsumerBuilder<TKey, TValue> builder = new(consumerConfig);
-            var consumer = builder.Build();
-            return consumer;
+            return ConfigureConsumer(new());
         }
-
 
         public IProducer<TKey, TValue> ConfigureProducer()
         {
-            ProducerBuilder<TKey, TValue> builder = new(producerConfig);
-            return builder.Build();
+            return ConfigureProducer(new());
         }
 
+        public IConsumer<TKey, TValue> ConfigureConsumer(ConsumerConfig config)
+        {
+            config.BootstrapServers ??= bootstrapServer;
+            return new ConsumerBuilder<TKey, TValue>(config).SetValueDeserializer(_serialization).Build();
+        }
+
+        public IProducer<TKey, TValue> ConfigureProducer(ProducerConfig config)
+        {
+            config.BootstrapServers ??= bootstrapServer;
+            
+            return new ProducerBuilder<TKey, TValue>(config).SetValueSerializer(_serialization).Build();
+        }
     }
 }

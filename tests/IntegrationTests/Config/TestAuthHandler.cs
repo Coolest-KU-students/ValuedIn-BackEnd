@@ -5,43 +5,53 @@ using Microsoft.OpenApi.Extensions;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using ValuedInBE.Models;
+using ValuedInBE.Models.Users;
+using ValuedInBE.Repositories;
 using ValuedInBE.Security.Users;
 using ValuedInBE.System;
+using ValuedInBE.System.Middleware;
 
 namespace ValuedInBETests.IntegrationTests.Config
 {
     public class TestAuthHandlerOptions : AuthenticationSchemeOptions
     {
-        public string DefaultUserId { get; set; } = null!;
+        public string DefaultLogin { get; set; } = null!;
     }
 
     public class TestAuthHandler : AuthenticationHandler<TestAuthHandlerOptions>
     {
-        public const string userId = "UserId";
+        public const string userLoginHeader = "Login";
         public const string authenticationScheme = "Test";
-        private readonly string _defaultUserId;
+        private readonly string _defaultLogin;
+        private readonly IUserCredentialRepository _userCredentialRepository; //Needed to fake user context
 
         public TestAuthHandler(
             IOptionsMonitor<TestAuthHandlerOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
-            ISystemClock clock) : base(options, logger, encoder, clock)
+            ISystemClock clock,
+            IUserCredentialRepository userCredentialRepository) : base(options, logger, encoder, clock)
         {
-            _defaultUserId = options.CurrentValue.DefaultUserId;
+            _defaultLogin = options.CurrentValue.DefaultLogin;
+            _userCredentialRepository = userCredentialRepository;
         }
 
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            string userId = _defaultUserId;
-            // Extract User ID from the request headers if it exists,
-            // otherwise use the default User ID from the options.
-            if (Context.Request.Headers.TryGetValue(TestAuthHandler.userId, out var userIdValues))
+           string login = _defaultLogin;
+            
+            if (Context.Request.Headers.TryGetValue(userLoginHeader, out var userIdValues))
             {
-                userId = userIdValues[0];
+                //we're gonna assume a single value until something that requires more comes along
+                login = userIdValues[0]; 
             }
-            AddUserContextIfMissing(userId);
-            List<Claim> claims = new() { new Claim(ClaimTypes.Name, userId) };
-            foreach (string role in GetRoleNamesBasedOnUser(userId))
+
+            UserCredentials userCredentials = await _userCredentialRepository.GetByLoginWithDetails(login);
+
+            AddUserContextIfMissing(userCredentials);
+
+            List<Claim> claims = new() { new Claim(ClaimTypes.Name, login) };
+            foreach (string role in GetRoleNamesBasedOnUser(userCredentials))
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
@@ -49,38 +59,30 @@ namespace ValuedInBETests.IntegrationTests.Config
             var identity = new ClaimsIdentity(claims, authenticationScheme);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, authenticationScheme);
-
             var result = AuthenticateResult.Success(ticket);
-
-            return Task.FromResult(result);
+            return result;
         }
 
-        private static List<string> GetRoleNamesBasedOnUser(string user)
+        private static List<string> GetRoleNamesBasedOnUser(UserCredentials user)
         {
-            UserRoleExtended userRole =
-                user switch
-                {
-                    "SYS_ADMIN" => UserRoleExtended.SYS_ADMIN,
-                    "HR" => UserRoleExtended.HR,
-                    "ORG_ADMIN" => UserRoleExtended.ORG_ADMIN,
-                    _ => UserRoleExtended.DEFAULT
-                };
-
-            return userRole.FlattenRoleHierarchy()
-                           .Select(role => role.GetDisplayName())
-                           .ToList();
-
+            return UserRoleExtended
+                    .GetExtended(user.Role)
+                    .FlattenRoleHierarchy()
+                    .Select(role => role.GetDisplayName())
+                    .ToList();
         }
 
-        private void AddUserContextIfMissing(string user)
+        private void AddUserContextIfMissing(UserCredentials credentials)
         {
             Context.Items[UserContextMiddleware.userContextItemName] ??=
                 new UserContext()
                 {
-                    UserID = user,
-                    Login = user,
-                    Role = UserRoleExtended.FromString(user) ?? UserRole.DEFAULT,
+                    UserID = credentials.UserID,
+                    Login = credentials.Login,
+                    Role = credentials.Role,
                 };
         }
+
+        
     }
 }

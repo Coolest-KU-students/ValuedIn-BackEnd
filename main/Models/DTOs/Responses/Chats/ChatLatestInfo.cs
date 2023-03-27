@@ -1,6 +1,6 @@
 ﻿namespace ValuedInBE.Models.DTOs.Responses.Chats
 {
-    public class ChatLatestInfo
+    public class ChatInfo
     {
         public long Id { get; set; }
         public string ChatName { get; set; }

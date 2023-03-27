@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Net.WebSockets;
 using System.Text;
 using ValuedInBE;
 using ValuedInBE.Contexts;
@@ -11,25 +13,27 @@ namespace ValuedInBETests.IntegrationTests
 {
     public class IntegrationTestBase : IClassFixture<IntegrationTestWebApplicationFactory<Program>>
     {
+        protected readonly Uri _clientBaseAdress;
         protected readonly HttpClient _client;
         protected readonly ValuedInContext _valuedInContext;
 
         public IntegrationTestBase(IntegrationTestWebApplicationFactory<Program> factory)
         {
             _client = factory.CreateClient();
+            _clientBaseAdress = factory.ClientOptions.BaseAddress;
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(TestAuthHandler.authenticationScheme);
             IServiceScopeFactory scopeFactory = factory.Services.GetRequiredService<IServiceScopeFactory>();
             _valuedInContext = scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ValuedInContext>();
         }
 
-        protected void AddUserIdToClient(string user)
+        protected void AddLoginHeaderToHttpClient(string user)
         {
-            _client.DefaultRequestHeaders.Add(TestAuthHandler.userId, user);
+            _client.DefaultRequestHeaders.Add(TestAuthHandler.userLoginHeader, user);
         }
 
-        protected void RemoveUserIdFromClient()
+        protected void RemoveLoginHeaderFromHttpClient()
         {
-            _client.DefaultRequestHeaders.Remove(TestAuthHandler.userId);
+            _client.DefaultRequestHeaders.Remove(TestAuthHandler.userLoginHeader);
         }
 
         protected static StringContent SerializeIntoJsonHttpContent<T>(T target)

@@ -16,5 +16,6 @@ namespace ValuedInBE.Services.Users
         Task UpdateLastActiveByLogin(string login);
         Task UpdateLastActiveByUserID(string userID);
         Task CreateNewUser(NewUser newUser, UserContext userContext = null);
+        Task<bool> VerifyUserIdExistenceAsync(List<string> userIds);
     }
 }

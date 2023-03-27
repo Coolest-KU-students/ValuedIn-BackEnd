@@ -1,5 +1,7 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using ValuedInBE.Models.Users;
 
 namespace ValuedInBE.Models.Entities.Messaging
 {
@@ -10,11 +12,8 @@ namespace ValuedInBE.Models.Entities.Messaging
         }
 
         [Key]
-        public long ID { get; set; }
-        public long ChatID { get; set; }
-        public string FirstName { get; set; }
-        public string SecondName { get; set; }
+        public long Id { get; set; }
+        public long ChatId { get; set; }
         public string Message { get; set; }
-        public DateTime Created { get; set; }
     }
 }
