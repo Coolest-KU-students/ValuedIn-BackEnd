@@ -3,15 +3,14 @@ using ValuedInBE.System.Exceptions;
 
 namespace ValuedInBE.Users.Exceptions
 {
-    public class IncorrectCredentialsException : Exception, IHttpStatusException
+    public class IncorrectCredentialsException : HttpStatusCarryingException
     {
-        public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.Unauthorized;
-        public IncorrectCredentialsException(string? message) : base(message)
+        private const HttpStatusCode statusCode = HttpStatusCode.Unauthorized;
+
+        public IncorrectCredentialsException(string? message) : base(message, statusCode)
         {
         }
 
-        public IncorrectCredentialsException() : base("Incorrect Credentials") { }
-
-
+        public IncorrectCredentialsException() : this("Incorrect Credentials") { }
     }
 }

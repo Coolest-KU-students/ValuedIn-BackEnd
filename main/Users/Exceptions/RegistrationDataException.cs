@@ -3,12 +3,12 @@ using ValuedInBE.System.Exceptions;
 
 namespace ValuedInBE.Users.Exceptions
 {
-    public class RegistrationDataException : Exception, IHttpStatusException
+    public class RegistrationDataException : HttpStatusCarryingException
     {
-        public RegistrationDataException(string? message) : base(message)
+        private const HttpStatusCode statusCode = HttpStatusCode.UnprocessableEntity;
+        public RegistrationDataException(string? message) : base(message, statusCode)
         {
         }
 
-        public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.UnprocessableEntity;
     }
 }

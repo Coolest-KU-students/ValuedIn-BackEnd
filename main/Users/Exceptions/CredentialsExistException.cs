@@ -3,12 +3,12 @@ using ValuedInBE.System.Exceptions;
 
 namespace ValuedInBE.Users.Exceptions
 {
-    public class CredentialsExistException : Exception, IHttpStatusException
+    public class CredentialsExistException : HttpStatusCarryingException
     {
-        public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.UnprocessableEntity;
+        private const HttpStatusCode statusCode = HttpStatusCode.UnprocessableEntity;
 
         public CredentialsExistException(string credentialType, string? existingValue) 
-            : base($"{credentialType} {$"'{existingValue}' " ?? ""}is already taken") { }
+            : base($"{credentialType} {$"'{existingValue}' " ?? ""}is already taken", statusCode) { }
 
     }
 }

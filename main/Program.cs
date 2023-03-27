@@ -64,6 +64,7 @@ namespace ValuedInBE
             #endregion
 
             builder.Services.AddTransient<UserContextMiddleware>();
+            builder.Services.AddTransient<ExceptionTranslationMiddleware>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -103,6 +104,7 @@ namespace ValuedInBE
 
             app.UseHttpsRedirection();
             app.UseWebSockets();
+            app.UseMiddleware<ExceptionTranslationMiddleware>();
             app.UseMiddleware<UserContextMiddleware>();
             app.UseCors(corsConfigugration.CorsConfigName);
             app.UseAuthentication();
