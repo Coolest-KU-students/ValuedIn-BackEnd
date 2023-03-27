@@ -21,7 +21,7 @@ namespace ValuedInBE.Controllers.Tests
         }
 
         [Fact]
-        public async void GetUserPageReturnsAPage()
+        public async Task GetUserPageReturnsAPage()
         {
             UserPageRequest userPageRequest = new(0, 10, new(), true);
             Page<UserSystemInfo> pageExpected = Page<UserSystemInfo>.Empty();
@@ -38,7 +38,7 @@ namespace ValuedInBE.Controllers.Tests
         }
 
         [Fact]
-        public async void GetUserSystemInfoByLoginReturnsObjectCorrectly()
+        public async Task GetUserSystemInfoByLoginReturnsObjectCorrectly()
         {
             string nonExistingLogin = "Non-ExistingLogin";
             UserSystemInfo userExpected = UserConstants.UserSystemInfoInstance;
@@ -78,7 +78,6 @@ namespace ValuedInBE.Controllers.Tests
         [Fact]
         public async Task ExpireUserCallsService()
         {
-            UserSystemInfo userExpected = UserConstants.UserSystemInfoInstance;
             _userServiceMock.Setup(mock => mock.ExpireUserAsync(UserConstants.login)).Verifiable();
 
             UserCredentialsController controller = MockUserCredentialsController();

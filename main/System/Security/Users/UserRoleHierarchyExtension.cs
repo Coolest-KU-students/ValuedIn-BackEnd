@@ -1,4 +1,6 @@
-﻿namespace ValuedInBE.System.Security.Users
+﻿using ValuedInBE.System.Exceptions;
+
+namespace ValuedInBE.System.Security.Users
 {
     internal static class UserRoleHierarchyExtension
     {
@@ -7,7 +9,7 @@
         private static void Inherits(UserRoleExtended userRoleThatInherits, params UserRoleExtended[] inheritedRoles)
         {
             if (inheritedRoles.Contains(userRoleThatInherits))
-                throw new ApplicationException($"User Role {userRoleThatInherits} cannot inherit itself");
+                throw new SystemSetupException($"User Role {userRoleThatInherits} cannot inherit itself");
             _hierarchy.Add(userRoleThatInherits, inheritedRoles.ToHashSet());
         }
 

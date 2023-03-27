@@ -38,7 +38,7 @@ namespace ValuedInBE.Events.Chats.Tests
         }
 
         [Fact()]
-        public async void TestHandleSentMessageEvent()
+        public async Task TestHandleSentMessageEvent()
         {
             ChatMessage chatMessage = ChatConstants.ChatMessage;
             NewMessageEvent newMessageEvent = new() { OtherParticipantIDs = new List<string>(), ChatMessage = chatMessage };
@@ -51,10 +51,11 @@ namespace ValuedInBE.Events.Chats.Tests
             _producer
                 .Setup(procuder =>
                     procuder.ProduceAsync(newChatMessageTopic, It.Is<Message<long, NewMessageEvent>>(exp => exp.Key.Equals(chatMessage.Id)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(deliveryResult);
+                .ReturnsAsync(deliveryResult).Verifiable();
 
             MessageEventHandler messageEventHandler = MockMessageEventHandler();
             await messageEventHandler.HandleSentMessageEventAsync(newMessageEvent);
+            Mock.Verify();
         }
 
         [Fact()]
@@ -91,7 +92,6 @@ namespace ValuedInBE.Events.Chats.Tests
             ChatMessage chatMessage = ChatConstants.ChatMessage;
             string firstUserId = "first";
             string secondUserId = "second";
-            long chatId = chatMessage.Id;
 
             NewMessageEvent newMessageEvent = new()
             {
@@ -124,7 +124,7 @@ namespace ValuedInBE.Events.Chats.Tests
             MessageEventHandler messageEventHandler = MockMessageEventHandler();
             Task startedEventHandler = messageEventHandler.StartAsync(tokenSource.Token);
 
-            Mock.Verify(); //verify that the sockets were called;
+            Mock.Verify(); //verify that the sockets were called
             Assert.True(startedEventHandler.IsCompleted, "The request did not cancel if the task is not completed");
         }
 

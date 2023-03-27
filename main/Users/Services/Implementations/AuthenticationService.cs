@@ -9,6 +9,7 @@ using System.Text;
 using ValuedInBE.System.Security.Users;
 using ValuedInBE.System.WebConfigs;
 using ValuedInBE.System.WebConfigs.Middleware;
+using ValuedInBE.Users.Exceptions;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.DTOs.Request;
 using ValuedInBE.Users.Models.DTOs.Response;
@@ -43,7 +44,7 @@ namespace ValuedInBE.Users.Services.Implementations
             if (credentials == null)
             {
                 _logger.LogError("Did not find any credentials with login {login} when trying to authenticate", auth.Login);
-                throw new Exception("Incorrect credentials");
+                throw new IncorrectCredentialsException();
             }
 
             UserData user = _mapper.Map<UserData>(credentials);
@@ -53,7 +54,7 @@ namespace ValuedInBE.Users.Services.Implementations
             {
                 case PasswordVerificationResult.Failed:
                     _logger.LogError("Incorrect password provided for {login}", auth.Login);
-                    throw new Exception("Incorrect credentials");
+                    throw new IncorrectCredentialsException();
                 case PasswordVerificationResult.SuccessRehashNeeded:
                     //TODO: implement
                     _logger.LogError("Password for user {auth.Login} needs to be rehashed", auth.Login);
@@ -92,7 +93,7 @@ namespace ValuedInBE.Users.Services.Implementations
             if (newUser.Role != UserRoleExtended.DEFAULT)
             {
                 _logger.LogError("Attempter to Self Register a user with {login}, but role {Role} was not allowed", newUser.Login, newUser.Role);
-                throw new Exception("Unallowed User role");
+                throw new RegistrationDataException($"Unallowed User role {newUser.Role}");
             }
             UserContext userContext = new()
             {
@@ -116,10 +117,10 @@ namespace ValuedInBE.Users.Services.Implementations
         {
             UserCredentials credentials =
                 await GetUserFromTokenAsync(token)
-                ?? throw new Exception("Could not get User from a token");
+                ?? throw new IncorrectCredentialsException("Could not extract User from a token");
 
             if (credentials.IsExpired) 
-                throw new Exception("User is expired");
+                throw new IncorrectCredentialsException("User is expired");
 
             Task updatLastActiveTask = _userService.UpdateLastActiveAsync(credentials);
             TokenAndRole tokenAndRole = new()

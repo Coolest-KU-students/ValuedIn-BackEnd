@@ -1,4 +1,5 @@
 ﻿using ValuedInBE.Chats.EventHandlers;
+using ValuedInBE.Chats.Exceptions;
 using ValuedInBE.Chats.Models.DTOs.Request;
 using ValuedInBE.Chats.Models.DTOs.Response;
 using ValuedInBE.Chats.Models.Entities;
@@ -64,13 +65,13 @@ namespace ValuedInBE.Chats.Services
         {
             UserContext userContext = _contextAccessor.HttpContext!.GetMandatoryUserContext();
             if (newChatRequest.Participants.Count == (newChatRequest.Participants.Contains(userContext.UserID) ? 1 : 0))
-                throw new Exception("No other participants but you");
+                throw new ChatParticipantsMissingException("No participants");
 
             Task<bool> usersExistTask = _userService.VerifyUserIdExistenceAsync(newChatRequest.Participants);
 
             if (!await usersExistTask)
             {
-                throw new Exception("Not all participants exist");
+                throw new ChatParticipantsMissingException("Not all participants exist");
             }
 
             List<string> allParticipants = newChatRequest.Participants;

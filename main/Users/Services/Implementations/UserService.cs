@@ -3,6 +3,7 @@ using Microsoft.OpenApi.Extensions;
 using ValuedInBE.System.DataControls.Paging;
 using ValuedInBE.System.Security.Users;
 using ValuedInBE.System.WebConfigs.Middleware;
+using ValuedInBE.Users.Exceptions;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.DTOs.Request;
 using ValuedInBE.Users.Models.DTOs.Response;
@@ -48,7 +49,7 @@ namespace ValuedInBE.Users.Services.Implementations
             if (await _userCredentialRepository.LoginExistsAsync(newUser.Login))
             {
                 _logger.LogTrace("Tried to create a new user, but {login} was already taken", newUser.Login);
-                throw new Exception("Login already exists");
+                throw new CredentialsExistException("login", newUser.Login);
             }
 
             int sameNameUserCount = await _userCredentialRepository.CountWithSameNamesAsync(newUser.FirstName, newUser.LastName);
