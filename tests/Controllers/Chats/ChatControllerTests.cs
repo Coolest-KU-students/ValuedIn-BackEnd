@@ -36,7 +36,7 @@ namespace ValuedInBE.Controllers.Chats.Tests
 
 
         [Fact()]
-        public async void TestGetChatPages()
+        public async Task TestGetChatPages()
         {
             ChatPageRequest chatPageRequest = new()
             {

@@ -136,7 +136,7 @@ namespace ValuedInBE.Services.Chats.Implementations.Tests
         }
 
         [Fact()]
-        public async void TestFetchOrCreateChatAsyncWhenChatNotExists()
+        public async Task TestFetchOrCreateChatAsyncWhenChatNotExists()
         {
             string userId = UserConstants.userId;
             string receiverId = "receiver";
@@ -174,8 +174,8 @@ namespace ValuedInBE.Services.Chats.Implementations.Tests
             Mock.Verify();
             Assert.NotNull(chat);
             Assert.Equal(chatId, chat.Id);
-            Assert.Null(chat.Participants);
-            Assert.Null(chat.Messages);
+            Assert.Empty(chat.Participants);
+            Assert.Empty(chat.Messages);
         }
 
 
