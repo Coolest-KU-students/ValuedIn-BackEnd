@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using NuGet.Versioning;
 using ValuedInBE.Contexts;
 using ValuedInBE.Models;
 using ValuedInBE.Models.Entities.Messaging;
@@ -44,6 +42,8 @@ namespace ValuedInBE.Repositories.Database
 
         public async Task<Chat> GetChatFromParticipantsAsync(List<string> allParticipants)
         {
+            if(!allParticipants.Any()) { return null; }
+
             var a = from c in _context.Chats
                                 .Where(c => c.Participants.Any() &&
                                          c.Participants.All(p => allParticipants.Contains(p.UserId))
@@ -102,7 +102,7 @@ namespace ValuedInBE.Repositories.Database
                             .ThenInclude(p => p.User)
                         .Include(c => c.Messages
                                         .Take(size)
-                                        .Where(m => m.CreatedOn > createdSince)
+                                        .Where(m => createdSince.HasValue && m.CreatedOn > createdSince)
                                         .OrderByDescending(m => m.CreatedOn)
                         ).FirstOrDefaultAsync(c => c.Id == chatId && c.Participants.Any(p => p.UserId == userContext.UserID));
 
