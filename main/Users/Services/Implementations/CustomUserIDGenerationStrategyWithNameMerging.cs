@@ -35,7 +35,9 @@ namespace ValuedInBE.Users.Services.Implementations
             string calculatedSegment = calculatedSymbols.ToString();
             for (int i = 0; calculatedSegment.Length > userIDCalculatedSegmentLength; i++)
             {
-                if (i > calculatedSegment.Length) i = 0;
+                if (i > calculatedSegment.Length) 
+                    i = 0;
+
                 char firstSymbol = calculatedSegment[i];
                 char lastSymbol = calculatedSegment[^1];
                 calculatedSegment = calculatedSegment.Remove(i, 1);

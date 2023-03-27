@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using ValuedInBE.System.Security.Users;
 using ValuedInBE.System.WebConfigs;
+using ValuedInBE.System.WebConfigs.Middleware;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.DTOs.Request;
 using ValuedInBE.Users.Models.DTOs.Response;
@@ -18,13 +19,14 @@ namespace ValuedInBE.Users.Services.Implementations
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IUserService _userService;
-        private readonly IPasswordHasher<User> _hasher;
+        private readonly IPasswordHasher<UserData> _hasher;
         private readonly ILogger<AuthenticationService> _logger;
         private readonly IMapper _mapper;
         private readonly JwtConfiguration _jwtConfigurer;
+        private readonly IHttpContextAccessor _contextAccessor;
 
 
-        public AuthenticationService(ILogger<AuthenticationService> logger, IUserService userService,  IPasswordHasher<User> passwordHasher, IMapper mapper, JwtConfiguration jwtConfigurer)
+        public AuthenticationService(ILogger<AuthenticationService> logger, IUserService userService,  IPasswordHasher<UserData> passwordHasher, IMapper mapper, JwtConfiguration jwtConfigurer)
         {
             _userService = userService;
             _hasher = passwordHasher;
@@ -35,6 +37,7 @@ namespace ValuedInBE.Users.Services.Implementations
 
         public async Task<TokenAndRole> AuthenticateUserAsync(AuthRequest auth)
         {
+            _logger.LogTrace("Authenticating user with login {login}", auth.Login);
             UserCredentials credentials = await _userService.GetUserCredentialsByLoginAsync(auth.Login);
             if (credentials == null)
             {
@@ -42,7 +45,7 @@ namespace ValuedInBE.Users.Services.Implementations
                 throw new Exception("Incorrect credentials");
             }
 
-            User user = _mapper.Map<User>(credentials);
+            UserData user = _mapper.Map<UserData>(credentials);
 
             PasswordVerificationResult passwordVerification = _hasher.VerifyHashedPassword(user, credentials.Password, auth.Password);
             switch (passwordVerification)
@@ -56,18 +59,31 @@ namespace ValuedInBE.Users.Services.Implementations
                     break;
             }
 
-            await _userService.UpdateLastActiveByLoginAsync(credentials.Login);
+            Task updateLastActiveTask = _userService.UpdateLastActiveAsync(credentials);
 
-            return new()
+            TokenAndRole tokenAndRole =  new()
             {
                 Token = GenerateJWT(user),
                 Role = credentials.Role.GetDisplayName()
             };
+
+            await updateLastActiveTask;
+            return tokenAndRole;
         }
 
         public async Task RegisterNewUserAsync(NewUser newUser)
         {
-            await HashPasswordAndSave(newUser);
+            UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
+
+            if(userContext != null && userContext.Role == UserRole.SYS_ADMIN)
+            {
+                _logger.LogDebug("Request to register {newUser.Login} is authenticated", newUser.Login);
+                await HashPasswordAndSave(newUser);
+                return;
+            }
+
+            _logger.LogDebug("Request to register {newUser.Login} is from {role}", newUser.Login, userContext?.Role.GetDisplayName() ?? "Unauthenticated");
+            await SelfRegisterAsync(newUser);
         }
 
         public async Task SelfRegisterAsync(NewUser newUser)
@@ -94,33 +110,38 @@ namespace ValuedInBE.Users.Services.Implementations
             _logger.LogDebug("Extracted login {login} from token ", login);
             return await _userService.GetUserCredentialsByLoginAsync(login);
         }
-        public async Task<TokenAndRole> VerifyTokenAsync(string token)
+
+        public async Task<TokenAndRole> VerifyAndIssueNewTokenAsync(string token)
         {
             UserCredentials credentials = await GetUserFromTokenAsync(token);
-            if (credentials.IsExpired) throw new Exception("User is expired");
-            await _userService.UpdateLastActiveByLoginAsync(credentials.Login);
-            return new()
+            if (credentials.IsExpired) 
+                throw new Exception("User is expired");
+
+            Task updatLastActiveTask = _userService.UpdateLastActiveAsync(credentials);
+            TokenAndRole tokenAndRole = new()
             {
-                Token = GenerateJWT(_mapper.Map<User>(credentials)),
+                Token = GenerateJWT(_mapper.Map<UserData>(credentials)),
                 Role = credentials.Role.GetDisplayName()
             };
+            await updatLastActiveTask;
+            return tokenAndRole;
         }
 
         private async Task HashPasswordAndSave(NewUser newUser, UserContext creatorContext = null)
         {
-            User user = _mapper.Map<User>(newUser);
+            UserData user = _mapper.Map<UserData>(newUser);
             newUser.Password = HashPassword(user, newUser.Password);
             _logger.LogTrace("Hashing a password for login {login}", newUser.Login);
             await _userService.CreateNewUserAsync(newUser, creatorContext);
         }
 
-        private string HashPassword(User user, string password)
+        private string HashPassword(UserData user, string password)
         {
             string hashPassword = _hasher.HashPassword(user, password);
             return hashPassword;
         }
 
-        private string GenerateJWT(User user)
+        private string GenerateJWT(UserData user)
         {
             List<Claim> claims = new()
             {

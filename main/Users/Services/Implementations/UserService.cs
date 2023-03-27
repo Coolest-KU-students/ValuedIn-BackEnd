@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.OpenApi.Extensions;
-using ValuedInBE.DataControls.Memory;
 using ValuedInBE.System.DataControls.Paging;
 using ValuedInBE.System.Security.Users;
 using ValuedInBE.System.WebConfigs.Middleware;
@@ -12,23 +11,19 @@ using ValuedInBE.Users.Repositories;
 
 namespace ValuedInBE.Users.Services.Implementations
 {
-
     public class UserService : IUserService
     {
         private readonly ILogger<UserService> _logger;
         private readonly IUserCredentialRepository _userCredentialRepository;
         private readonly IUserIDGenerationStrategy _userIDGeneration;
         private readonly IHttpContextAccessor _contextAccessor;
-        private readonly IMemoizationEngine _memoizationEngine;
         private readonly IMapper _mapper;
 
-
-        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository, IUserIDGenerationStrategy userIDGeneration, IMemoizationEngine memoizationEngine, IHttpContextAccessor contextAccessor, IMapper mapper)
+        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository, IUserIDGenerationStrategy userIDGeneration, IHttpContextAccessor contextAccessor, IMapper mapper)
         {
             _logger = logger;
             _userCredentialRepository = userCredentialRepository;
             _userIDGeneration = userIDGeneration;
-            _memoizationEngine = memoizationEngine;
             _contextAccessor = contextAccessor;
             _mapper = mapper;
         }
@@ -49,7 +44,6 @@ namespace ValuedInBE.Users.Services.Implementations
         public async Task CreateNewUserAsync(NewUser newUser, UserContext userContext = null)
         {
             _logger.LogDebug("Creating new user with login {login}", newUser.Login);
-            userContext ??= _contextAccessor.HttpContext?.GetUserContext();
 
             if (await _userCredentialRepository.LoginExistsAsync(newUser.Login))
             {
@@ -57,9 +51,9 @@ namespace ValuedInBE.Users.Services.Implementations
                 throw new Exception("Login already exists");
             }
 
-            int sameNameUserCount = await _userCredentialRepository.CountWithNamesAsync(newUser.FirstName, newUser.LastName);
+            int sameNameUserCount = await _userCredentialRepository.CountWithSameNamesAsync(newUser.FirstName, newUser.LastName);
             string generatedUserID = await _userIDGeneration.GenerateUserIDForNewUserAsync(newUser, sameNameUserCount);
-            UserRoleExtended role = UserRoleExtended.FromString(newUser.Role) ?? UserRole.DEFAULT;
+            UserRoleExtended role = UserRoleExtended.FromString(newUser.Role) ?? UserRoleExtended.DEFAULT;
             UserDetails userDetails = new()
             {
                 UserID = generatedUserID,
@@ -79,9 +73,11 @@ namespace ValuedInBE.Users.Services.Implementations
                 Role = role,
                 UserDetails = userDetails
             };
+
+            userContext ??= _contextAccessor.HttpContext?.GetUserContext();
             if (userContext == null)
             {
-                //TODO: I question this security myself, should throw an error, but then initial Seed will break
+                //TODO: I question this security myself, should throw an error, but then initial Seed will break... Maybe I should try attaching a context there
                 _logger.LogWarning("User is being created with Login {login}, ID {userId} and Role {role}, but there is no User Context present. ", newUser.Login, generatedUserID, role);
                 userContext = new()
                 {
@@ -127,7 +123,7 @@ namespace ValuedInBE.Users.Services.Implementations
             UserCredentials credentials = await _userCredentialRepository.GetByLoginAsync(login);
             if (credentials == null)
             {
-                _logger.LogTrace("Did not find a user wiht login {login}", login);
+                _logger.LogTrace("Did not find a user with login {login}", login);
                 throw new KeyNotFoundException("Login does not exist");
             }
 
@@ -156,12 +152,17 @@ namespace ValuedInBE.Users.Services.Implementations
             await _userCredentialRepository.UpdateAsync(credentials, userContext);
         }
 
-        public async Task UpdateLastActiveByLoginAsync(string login)
+        public async Task UpdateLastActiveAsync(string login)
         {
             UserCredentials credentials = await _userCredentialRepository.GetByLoginAsync(login);
-            UserContext userContext = _mapper.Map<UserContext>(credentials);
-            credentials.LastActive = DateTime.Now;
-            await _userCredentialRepository.UpdateAsync(credentials, userContext);
+            await UpdateLastActiveAsync(credentials);
+        }
+
+        public async Task UpdateLastActiveAsync(UserCredentials userCredentials)
+        {
+            UserContext userContext = _mapper.Map<UserContext>(userCredentials);
+            userCredentials.LastActive = DateTime.Now;
+            await _userCredentialRepository.UpdateAsync(userCredentials, userContext);
         }
 
         public async Task UpdateLastActiveByUserIDAsync(string userID)

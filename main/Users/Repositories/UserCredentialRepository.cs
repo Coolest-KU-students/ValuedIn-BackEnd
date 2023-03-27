@@ -27,9 +27,9 @@ namespace ValuedInBE.Users.Repositories
             _logger = logger;
         }
 
-        public async Task<int> CountWithNamesAsync(string firstName, string lastName)
+        public async Task<int> CountWithSameNamesAsync(string firstName, string lastName)
         {
-            _logger.LogTrace("Requested user with First Name '{firstName}', Last Name '{lastName}'", firstName, lastName);
+            _logger.LogTrace("Requested user count with First Name '{firstName}', Last Name '{lastName}'", firstName, lastName);
             return await _context.UserDetails.CountAsync(a => a.FirstName == firstName && a.LastName == lastName);
         }
 
@@ -93,13 +93,13 @@ namespace ValuedInBE.Users.Repositories
                                             .Where(a => a.IsExpired == config.ShowExpired)
                                   select c;
 
+            await credentialQuery.LoadAsync();
             int total = credentialQuery.Count();
             credentialQuery.Skip(config.Page * config.Size);
             credentialQuery.Take(config.Size);
-            List<UserCredentials> credentials = await credentialQuery.ToListAsync();
 
             return new Page<UserCredentials> { 
-                Results = credentials, 
+                Results = credentialQuery, 
                 Total = total, 
                 PageNo = config.Page + 1 };
         }
@@ -126,10 +126,10 @@ namespace ValuedInBE.Users.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> VerifyUserIdsAsync(List<string> userIds)
+        public async Task<bool> VerifyUserIdsAsync(IEnumerable<string> userIds)
         {
             int count = await _context.UserCredentials.CountAsync(c => userIds.Contains(c.UserID));
-            return count == userIds.Count;
+            return count == userIds.Count();
         }
     }
 }

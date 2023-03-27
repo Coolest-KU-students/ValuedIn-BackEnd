@@ -65,11 +65,11 @@ namespace ValuedInBE
                 };
             }
         }
-        public static User UserInstance
+        public static UserData UserInstance
         {
             get
             {
-                User user = new()
+                UserData user = new()
                 {
                     UserID = userId,
                     Login = login,

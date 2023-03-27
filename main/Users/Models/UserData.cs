@@ -2,7 +2,7 @@
 
 namespace ValuedInBE.Users.Models
 {
-    public class User
+    public class UserData
     {
         public string UserID { get; set; }
         public string Login { get; set; }

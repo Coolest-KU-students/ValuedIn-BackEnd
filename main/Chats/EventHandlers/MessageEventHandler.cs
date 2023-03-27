@@ -101,7 +101,7 @@ namespace ValuedInBE.Chats.EventHandlers
 
         private async Task SendMessageAsync(string userId, ChatMessage chatMessage, CancellationToken cancellationToken)
         {
-            IEnumerable<WebSocket> sockets = _webSocketTracker.GetSockets(userId);
+            IEnumerable<WebSocket> sockets = _webSocketTracker.GetUserSockets(userId);
             _logger.LogTrace("User {userId} was found to have {amount} of sockets active when sending a message", userId, sockets.Count());
             string messageJson = JsonConvert.SerializeObject(chatMessage);
             await _webSocketTracker.SendMessageAsync(messageJson, userId, cancellationToken);

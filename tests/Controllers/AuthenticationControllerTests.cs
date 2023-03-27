@@ -41,7 +41,7 @@ namespace ValuedInBE.Controllers.Tests
             _mockAuthenticationService.Setup(service => service.SelfRegisterAsync(newUser)).Verifiable();
             AuthenticationController controller = MockAuthenticationController();
 
-            ActionResult actionResult = await controller.SelfRegisterUserAsync(newUser);
+            ActionResult actionResult = await controller.RegisterUserAsync(newUser);
             Assert.IsType<OkResult>(actionResult);
             _mockAuthenticationService.Verify();
         }

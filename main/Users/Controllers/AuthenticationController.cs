@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Extensions;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.System.WebConfigs.Middleware;
+using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.DTOs.Request;
 using ValuedInBE.Users.Models.DTOs.Response;
 using ValuedInBE.Users.Services;
@@ -19,21 +23,12 @@ namespace ValuedInBE.Users.Controllers
             _logger = logger;
         }
 
-        [Authorize(Roles = "SYS_ADMIN")]
-        [HttpPost("registerUser")]
-        public async Task<ActionResult> RegisterUserAsync(NewUser newUser)
-        {
-            _logger.LogTrace("Got a request to RegisterUser with Login: {newUser.Login}; and Role: {newUser.Role}", newUser.Login, newUser.Role);
-            await _authenticationService.RegisterNewUserAsync(newUser);
-            return Ok();
-        }
-
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<ActionResult> SelfRegisterUserAsync(NewUser newUser) //TODO: need a differentiation
+        public async Task<ActionResult> RegisterUserAsync(NewUser newUser) 
         {
-            _logger.LogTrace("Got a request to SelfRegisterUser with Login: {newUser.Login}", newUser.Login);
-            await _authenticationService.SelfRegisterAsync(newUser);
+            _logger.LogTrace("Got a request to register Login: {newUser.Login}", newUser.Login);
+            await _authenticationService.RegisterNewUserAsync(newUser);
             return Ok();
         }
 
@@ -50,7 +45,7 @@ namespace ValuedInBE.Users.Controllers
         {
             string jwtToken = HttpContext.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
             _logger.LogTrace("Got a request to check Authentication with token: {jwtToken}", jwtToken);
-            return await _authenticationService.VerifyTokenAsync(jwtToken);
+            return await _authenticationService.VerifyAndIssueNewTokenAsync(jwtToken);
         }
     }
 }

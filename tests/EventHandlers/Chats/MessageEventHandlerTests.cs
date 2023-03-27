@@ -102,9 +102,9 @@ namespace ValuedInBE.Events.Chats.Tests
 
             /** Web Socket Tracker setup **/
 
-            _webSocketTracker.Setup(tracker => tracker.GetSockets(firstUserId))
+            _webSocketTracker.Setup(tracker => tracker.GetUserSockets(firstUserId))
                 .Returns(firstUserSockets);
-            _webSocketTracker.Setup(tracker => tracker.GetSockets(secondUserId))
+            _webSocketTracker.Setup(tracker => tracker.GetUserSockets(secondUserId))
                 .Returns(secondUserSockets);
 
             /** Consumer Setup **/

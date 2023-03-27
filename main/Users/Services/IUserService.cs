@@ -13,7 +13,8 @@ namespace ValuedInBE.Users.Services
         public Task<UserSystemInfo> GetUserSystemInfoByLoginAsync(string login);
         Task ExpireUserAsync(string login);
         Task UpdateUserAsync(UpdatedUser updatedUser);
-        Task UpdateLastActiveByLoginAsync(string login);
+        Task UpdateLastActiveAsync(string login);
+        Task UpdateLastActiveAsync(UserCredentials userCredentials);
         Task UpdateLastActiveByUserIDAsync(string userID);
         Task CreateNewUserAsync(NewUser newUser, UserContext userContext = null);
         Task<bool> VerifyUserIdExistenceAsync(List<string> userIds);

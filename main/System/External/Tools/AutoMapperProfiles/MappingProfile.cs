@@ -9,8 +9,8 @@ namespace ValuedInBE.System.External.Tools.AutoMapperProfiles
     {
         public MappingProfile()
         {
-            CreateMap<UserCredentials, User>();
-            CreateMap<NewUser, User>();
+            CreateMap<UserCredentials, UserData>();
+            CreateMap<NewUser, UserData>();
             CreateMap<UserCredentials, UserContext>();
         }
     }

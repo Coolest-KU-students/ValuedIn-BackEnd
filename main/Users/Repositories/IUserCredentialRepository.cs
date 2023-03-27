@@ -15,8 +15,8 @@ namespace ValuedInBE.Users.Repositories
         Task InsertAsync(UserCredentials userCredentials, UserContext createdBy);
         Task<bool> LoginExistsAsync(string login);
         Task<UserCredentials> GetByLoginWithDetailsAsync(string login);
-        Task<int> CountWithNamesAsync(string firstName, string lastName);
+        Task<int> CountWithSameNamesAsync(string firstName, string lastName);
         Task<UserCredentials> GetByUserIdWithDetailsAsync(string userID);
-        Task<bool> VerifyUserIdsAsync(List<string> userIds);
+        Task<bool> VerifyUserIdsAsync(IEnumerable<string> userIds);
     }
 }
