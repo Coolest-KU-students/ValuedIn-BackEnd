@@ -1,17 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-<<<<<<< HEAD:main/Chats/Repositories/ChatRepository.cs
 using ValuedInBE.Chats.Models.Entities;
 using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.PersistenceLayer.Extensions;
 using ValuedInBE.System.WebConfigs.Middleware;
 using ValuedInBE.Users.Models;
-=======
-using ValuedInBE.Contexts;
-using ValuedInBE.Models;
-using ValuedInBE.Models.Entities.Messaging;
-using ValuedInBE.System.Extensions;
-using ValuedInBE.System.Middleware;
->>>>>>> 2ecd31958fe05cc9588a0b3ec184f67cffc729d2:main/Repositories/Database/ChatRepository.cs
 
 namespace ValuedInBE.Chats.Repositories
 {
@@ -50,10 +42,6 @@ namespace ValuedInBE.Chats.Repositories
         public async Task<Chat> GetChatFromParticipantsAsync(IEnumerable<string> allParticipants)
         {
             if(!allParticipants.Any()) { return null; }
-<<<<<<< HEAD:main/Chats/Repositories/ChatRepository.cs
-=======
-
->>>>>>> 2ecd31958fe05cc9588a0b3ec184f67cffc729d2:main/Repositories/Database/ChatRepository.cs
             var a = from c in _context.Chats
                                 .Where(c => c.Participants.Any() &&
                                          c.Participants.All(p => allParticipants.Contains(p.UserId))
