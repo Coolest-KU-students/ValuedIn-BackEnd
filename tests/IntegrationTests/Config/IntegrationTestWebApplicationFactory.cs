@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
@@ -55,7 +56,8 @@ namespace ValuedInBETests.IntegrationTests.Config
                     context.Database.EnsureCreated();
 
                     IAuthenticationService authenticationService = scopedServices.GetRequiredService<IAuthenticationService>();
-                    await TestDataInitializer.Initialize(authenticationService);
+                    IHttpContextAccessor httpContextAccessor = scopedServices.GetRequiredService<IHttpContextAccessor>();
+                    await TestDataInitializer.Initialize(authenticationService, httpContextAccessor);
                     context.SaveChanges();
                 }
                 services.Configure<TestAuthHandlerOptions>(options => options.DefaultLogin = UserRoleExtended.SYS_ADMIN);

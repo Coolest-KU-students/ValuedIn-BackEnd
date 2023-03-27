@@ -41,7 +41,7 @@ namespace ValuedInBE.System.WebConfigs.Middleware
     {
         public static UserContext GetUserContext(this HttpContext context)
         {
-            return (UserContext)context.Items[UserContextMiddleware.userContextItemName] ?? null;
+            return (UserContext)context?.Items[UserContextMiddleware.userContextItemName] ?? null;
         }
     }
 }

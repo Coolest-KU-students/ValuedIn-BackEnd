@@ -26,13 +26,14 @@ namespace ValuedInBE.Users.Services.Implementations
         private readonly IHttpContextAccessor _contextAccessor;
 
 
-        public AuthenticationService(ILogger<AuthenticationService> logger, IUserService userService,  IPasswordHasher<UserData> passwordHasher, IMapper mapper, JwtConfiguration jwtConfigurer)
+        public AuthenticationService(ILogger<AuthenticationService> logger, IUserService userService, IPasswordHasher<UserData> passwordHasher, IMapper mapper, JwtConfiguration jwtConfigurer, IHttpContextAccessor contextAccessor)
         {
             _userService = userService;
             _hasher = passwordHasher;
             _logger = logger;
             _mapper = mapper;
             _jwtConfigurer = jwtConfigurer;
+            _contextAccessor = contextAccessor;
         }
 
         public async Task<TokenAndRole> AuthenticateUserAsync(AuthRequest auth)

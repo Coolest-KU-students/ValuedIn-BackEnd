@@ -67,7 +67,7 @@ namespace ValuedInBETests.IntegrationTests.Config
             return UserRoleExtended
                     .GetExtended(user.Role)
                     .FlattenRoleHierarchy()
-                    .Select(role => role.GetDisplayName())
+                    .Select(role => role.ToString())
                     .ToList();
         }
 

@@ -15,13 +15,9 @@ namespace ValuedInBETests.IntegrationTests.Users
         : IntegrationTestBase
     {
         private readonly string _sysAdmin = UserRoleExtended.SYS_ADMIN;
-        private readonly string[] _rolesThatAreNotSysAdmin =
-            UserRoleExtended.ExtendedRoles
-            .Where(role => role != UserRoleExtended.SYS_ADMIN)
-            .Select(role => role.ToString()).ToArray();
+        private readonly string[] _rolesThatAreNotSysAdmin = { UserRoleExtended.DEFAULT, UserRoleExtended.HR, UserRoleExtended.ORG_ADMIN };
 
-        private const string registerUserRoute = "/api/auth/registerUser";
-        private const string selfRegisterRoute = "/api/auth/register";
+        private const string registerUserRoute = "/api/auth/register";
         private const string logInRoute = "/api/auth/login";
         private const string reAuthRoute = "/api/auth";
 
@@ -34,12 +30,13 @@ namespace ValuedInBETests.IntegrationTests.Users
         {
             NewUser newUser = UserConstants.NewUserInstance;
             newUser.Login = "RegisteringUserAsSysAdmin"; //unique name
+            newUser.Role = UserRoleExtended.SYS_ADMIN; //so that only sysadmins could register
             StringContent requestContent = SerializeIntoJsonHttpContent(newUser);
             foreach (string user in _rolesThatAreNotSysAdmin) //check if others are restricted
             {
                 AddLoginHeaderToHttpClient(user);
                 HttpResponseMessage httpResponse = await _client.PostAsync(registerUserRoute, requestContent);
-                Assert.Equal(HttpStatusCode.Forbidden, httpResponse.StatusCode);
+                Assert.Equal(HttpStatusCode.Unauthorized, httpResponse.StatusCode);
                 RemoveLoginHeaderFromHttpClient();
             }
             AddLoginHeaderToHttpClient(_sysAdmin);
@@ -55,7 +52,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             NewUser newUser = UserConstants.NewUserInstance;
             newUser.Login = "SelfRegisteringUser"; //unique name
             StringContent content = SerializeIntoJsonHttpContent(newUser);
-            HttpResponseMessage response = await _client.PostAsync(selfRegisterRoute, content);
+            HttpResponseMessage response = await _client.PostAsync(registerUserRoute, content);
             Assert.True(response.IsSuccessStatusCode, $"Status code should be ok, but is: {response.StatusCode}");
             Task<bool> credentialsExistTask = _valuedInContext.UserCredentials.AnyAsync(creds => creds.Login == newUser.Login && creds.UserDetails != null);
             Assert.True(await credentialsExistTask);

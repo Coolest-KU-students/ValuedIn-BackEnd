@@ -35,18 +35,6 @@ namespace ValuedInBE.Controllers.Tests
         }
 
         [Fact()]
-        public async Task SelfRegisterUserShouldReturnOk()
-        {
-            NewUser newUser = UserConstants.NewUserInstance;
-            _mockAuthenticationService.Setup(service => service.SelfRegisterAsync(newUser)).Verifiable();
-            AuthenticationController controller = MockAuthenticationController();
-
-            ActionResult actionResult = await controller.RegisterUserAsync(newUser);
-            Assert.IsType<OkResult>(actionResult);
-            _mockAuthenticationService.Verify();
-        }
-
-        [Fact()]
         public async Task LogInShouldReturnJwtToken()
         {
             TokenAndRole tokenAndRole = new()

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -35,7 +36,9 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
         private readonly Mock<IUserService> _userServiceMock = new();
         private readonly Mock<IPasswordHasher<UserData>> _hasherMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
+        private readonly Mock<IHttpContextAccessor> _contextAccessorMcok = new();
         private readonly IConfiguration _fakedConfiguration = new ConfigurationBuilder().AddInMemoryCollection(_inMemoryJWTConfig).Build();
+
 
         private AuthenticationService MockAuthenticationService()
         {
@@ -44,7 +47,8 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 _userServiceMock.Object,
                 _hasherMock.Object,
                 _mapperMock.Object,
-                 new(_fakedConfiguration)
+                 new(_fakedConfiguration),
+                 _contextAccessorMcok.Object
                 );
         }
 
@@ -86,7 +90,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 .Setup(hasher => hasher.HashPassword(user, UserConstants.password)) //has to hash the password
                 .Returns(UserConstants.hashedPassword);
             _userServiceMock
-                .Setup(service => service.CreateNewUserAsync(newUser, null))
+                .Setup(service => service.CreateNewUserAsync(newUser, It.IsAny<UserContext>()))
                 .Verifiable();
             _mapperMock
                 .Setup(mapper => mapper.Map<UserData>(newUser))

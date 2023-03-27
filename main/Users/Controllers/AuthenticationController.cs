@@ -28,7 +28,15 @@ namespace ValuedInBE.Users.Controllers
         public async Task<ActionResult> RegisterUserAsync(NewUser newUser) 
         {
             _logger.LogTrace("Got a request to register Login: {newUser.Login}", newUser.Login);
-            await _authenticationService.RegisterNewUserAsync(newUser);
+            try
+            {
+                await _authenticationService.RegisterNewUserAsync(newUser);
+            }
+            catch (Exception ex) // TODO: should be auth exception
+            {
+                return Unauthorized(ex.Message);
+            }
+            
             return Ok();
         }
 

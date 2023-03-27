@@ -132,11 +132,12 @@ namespace ValuedInBETests.IntegrationTests.Chats
             ArraySegment<byte> buffer = new(Encoding.UTF8.GetBytes(pingMessage));
             byte[] buffer2 = new byte[1024 * 4];
             ArraySegment<byte> socketResponse = new(buffer2);
-            await webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
             WebSocketReceiveResult firstResults = await webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
             Assert.False(firstResults.CloseStatus.HasValue);
             Assert.NotNull(socketResponse.Array);
             Assert.Equal(pingMessage, Encoding.UTF8.GetString(socketResponse.Array!).Trim('\0'));
+            await webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+            Assert.False(firstResults.CloseStatus.HasValue);
         }
 
         private async Task<WebSocket> EstablishWebSocketConnection()

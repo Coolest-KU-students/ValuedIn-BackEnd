@@ -20,10 +20,7 @@ namespace ValuedInBETests.IntegrationTests.Users
         private const string expireUserRoute = "/api/users/expire/{login}";
         private const string updateTargetUser = "GetUserInfoThenUpdateInfoAndThenExpire";
 
-        private static readonly string[] _rolesThatAreNotSysAdmin =
-            UserRoleExtended.ExtendedRoles
-            .Where(role => role != UserRoleExtended.SYS_ADMIN)
-            .Select(role => role.ToString()).ToArray();
+        private static readonly string[] _rolesThatAreNotSysAdmin = { UserRoleExtended.DEFAULT, UserRoleExtended.HR, UserRoleExtended.ORG_ADMIN };
 
         private static readonly string _sysAdminRoleName = UserRole.SYS_ADMIN.GetDisplayName();
 
@@ -65,7 +62,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             string targetLogin = updateTargetUser;
             string getLoginPath = getByLoginRoute.Replace("{login}", targetLogin);
             string updateUserPath = updateUserRoute;
-            string expireUserRoute = UserAPIIntegrationTests.expireUserRoute.Replace("{login}", targetLogin);
+            string specificExpireUserRoute = expireUserRoute.Replace("{login}", targetLogin);
             string updatedSuffix = "_updated";
 
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access
@@ -87,7 +84,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             Assert.Equal(user!.Login, targetLogin);
             Assert.False(user.IsExpired);
 
-            RemoveLoginHeaderFromHttpClient(); ; //reset
+            RemoveLoginHeaderFromHttpClient(); //reset
             UpdatedUser updatedUser = new()
             {
                 UserID = user.UserID,
@@ -117,17 +114,17 @@ namespace ValuedInBETests.IntegrationTests.Users
                     .Any()
                 );
 
-            RemoveLoginHeaderFromHttpClient(); ; //reset
+            RemoveLoginHeaderFromHttpClient(); //reset
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access
             {
                 AddLoginHeaderToHttpClient(role);
-                HttpResponseMessage httpResponse = await _client.DeleteAsync(expireUserRoute);
+                HttpResponseMessage httpResponse = await _client.DeleteAsync(specificExpireUserRoute);
                 Assert.Equal(HttpStatusCode.Forbidden, httpResponse.StatusCode);
                 RemoveLoginHeaderFromHttpClient();
             }
 
             AddLoginHeaderToHttpClient(_sysAdminRoleName);
-            HttpResponseMessage expirationResponse = await _client.DeleteAsync(expireUserRoute);
+            HttpResponseMessage expirationResponse = await _client.DeleteAsync(specificExpireUserRoute);
             Assert.True(expirationResponse.IsSuccessStatusCode);
             Assert.True(
                 _valuedInContext.UserCredentials
