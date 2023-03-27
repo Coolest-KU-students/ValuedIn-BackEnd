@@ -54,10 +54,10 @@ namespace ValuedInBE.WebSockets.Services
             await Task.WhenAll(closingTasks);
         }
 
-        public IEnumerable<WebSocket> GetUserSockets(string userId)
+        public List<WebSocket> GetUserSockets(string userId)
         {
             _logger.LogTrace("Getting sockets for user ID: {userId}", userId);
-            return UserWebSocketDictionary.TryGetValue(userId, out List<WebSocket> sockets)
+            return UserWebSocketDictionary.TryGetValue(userId, out List<WebSocket>? sockets)
                     ? sockets
                     : new List<WebSocket>();
         }
@@ -65,12 +65,12 @@ namespace ValuedInBE.WebSockets.Services
         private Func<string, List<WebSocket>, List<WebSocket>> UpdateExistingSocketList =>
             (userId, newList) =>
             {
-                IEnumerable<WebSocket> currentList = GetUserSockets(userId);
+                List<WebSocket> currentList = GetUserSockets(userId);
                 newList.AddRange(currentList);
                 return newList; 
             };
 
-        private async void CheckHeartbeat(object state)
+        private async void CheckHeartbeat(object? state)
         {
             if (_stillInCheck) { return; } //skip if it hasn't finished?
             _stillInCheck = true;

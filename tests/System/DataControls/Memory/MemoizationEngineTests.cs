@@ -28,10 +28,11 @@ namespace ValuedInBETests.System.DataControls.Memory
             _memoizationEngine.Memoize(_listAsKey, _functionThatReturnsTheInput, _timeout);
 
             Assert.Single(_memoizationEngine.InnerDictionary);
-            Func<string, string> retrieved =
+            Func<string, string>? retrieved =
                 _memoizationEngine.GetValue<List<string>, Func<string, string>>(_listAsKey);
+            Assert.NotNull(retrieved);
 
-            Assert.Equal(testingValue, retrieved.Invoke(testingValue));
+            Assert.Equal(testingValue, retrieved!.Invoke(testingValue));
 
             await Task.Delay(_timeout);
             await Task.Delay(stressTestAsyncTimePillow);

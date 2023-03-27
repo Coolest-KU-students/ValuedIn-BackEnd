@@ -2,8 +2,8 @@
 {
     public class OffsetPage<TEntity, T>
     {
-        public IEnumerable<TEntity> Results { get; set; }
-        public T NextOffset { get; set; }
+        public IEnumerable<TEntity> Results { get; set; } = null!;
+        public T? NextOffset { get; set; } 
         public bool Last { get; set; }
     }
 }

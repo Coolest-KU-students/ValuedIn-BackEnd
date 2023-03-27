@@ -6,13 +6,13 @@ namespace ValuedInBE.Chats.Models.DTOs.Response
     {
         [Required]
         public long Id { get; set; }
-        public string ChatName { get; set; }
+        public string ChatName { get; set; } = string.Empty;
         [Required]
-        public ICollection<string> ParticipatingUsers { get; set; }
+        public ICollection<string> ParticipatingUsers { get; set; } = null!;
         [Required]
         public DateTime LastMessage { get; set; }
         [Required]
-        public string LastMessageContent { get; set; }
-        public bool Unread { get; set; }
+        public string LastMessageContent { get; set; } = null!;
+        public bool Unread { get; set; } = false;
     }
 }

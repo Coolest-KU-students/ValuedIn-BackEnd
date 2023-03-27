@@ -1,13 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.ComponentModel.DataAnnotations;
 
 namespace ValuedInBE.Chats.Models.DTOs.Request
 {
     public class NewChatRequest
     {
-        [Required]
-        public List<string> Participants { get; set; }
+        [BindRequired]
+        public List<string> Participants { get; set; } = null!;
 
-        [Required]
-        public string MessageContent { get; set; }
+        [BindRequired]
+        public string MessageContent { get; set; } = null!;
     }
 }

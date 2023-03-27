@@ -1,8 +1,10 @@
-﻿namespace ValuedInBE.System.PersistenceLayer.Entities
+﻿using Microsoft.Build.Framework;
+
+namespace ValuedInBE.System.PersistenceLayer.Entities
 {
     public class AuditCreatedUpdateBase : AuditCreatedBase, IAuditCreateUpdateBase
     {
-        public DateTime UpdatedOn { get; set; }
-        public string UpdatedBy { get; set; }
+        public DateTime? UpdatedOn { get; set; }
+        public string? UpdatedBy { get; set; }
     }
 }

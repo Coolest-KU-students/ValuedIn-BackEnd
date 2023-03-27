@@ -24,9 +24,11 @@ namespace ValuedInBE.System.WebConfigs.Middleware
             {
                 try
                 {
-                    UserCredentials credentials = await _authenticationService.GetUserFromTokenAsync(jwtToken);
-                    UserContext user = _mapper.Map<UserContext>(credentials);
-                    context.Items[userContextItemName] = user;
+                    UserCredentials? credentials = await _authenticationService.GetUserFromTokenAsync(jwtToken);
+                    if (credentials != null) { 
+                        UserContext user = _mapper.Map<UserContext>(credentials);
+                        context.Items[userContextItemName] = user;
+                    }
                 }
                 catch (Exception)
                 {
@@ -39,9 +41,14 @@ namespace ValuedInBE.System.WebConfigs.Middleware
 
     public static class UserContextMiddlewareExtensions
     {
-        public static UserContext GetUserContext(this HttpContext context)
+        public static UserContext? GetUserContext(this HttpContext? context)
         {
-            return (UserContext)context?.Items[UserContextMiddleware.userContextItemName] ?? null;
+            return (UserContext?) context?.Items[UserContextMiddleware.userContextItemName] ?? null;
+        }
+
+        public static UserContext GetMandatoryUserContext(this HttpContext? context)
+        {
+            return GetUserContext(context) ?? throw new Exception("Authentication not found");
         }
     }
 }

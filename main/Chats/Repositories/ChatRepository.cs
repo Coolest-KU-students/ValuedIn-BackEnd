@@ -54,7 +54,7 @@ namespace ValuedInBE.Chats.Repositories
 
         public async Task<IEnumerable<Chat>> GetChatsWithLastMessageAndParticipantsAsync(string userId, int pageSize, DateTime? createdSince)
         {
-            UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
+            UserContext userContext = _contextAccessor.HttpContext!.GetMandatoryUserContext();
             var a = from c in _context.Chats
                                 .Include(c => c.Messages.OrderByDescending(m => m.CreatedOn).Take(1))
                                 .Include(c => c.Participants)
@@ -91,7 +91,7 @@ namespace ValuedInBE.Chats.Repositories
 
         public async Task<Chat?> GetChatMessagesWithParticipantsDetailsAsync(long chatId, int size, DateTime? createdSince)
         {
-            UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
+            UserContext userContext = _contextAccessor.HttpContext.GetMandatoryUserContext();
             var a = _context.Chats
                         .Include(c => c.Participants)
                             .ThenInclude(p => p.User)
@@ -106,7 +106,7 @@ namespace ValuedInBE.Chats.Repositories
 
         private void CheckEntityAuditing()
         {
-            UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
+            UserContext userContext = _contextAccessor.HttpContext.GetMandatoryUserContext();
             _context.ChangeTracker.CheckAuditing(userContext);
         }
     }

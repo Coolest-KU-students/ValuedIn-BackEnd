@@ -10,8 +10,8 @@ namespace ValuedInBE.Chats.Models.Entities
         [Key]
         public long Id { get; set; }
         [Required]
-        public List<ChatMessage> Messages { get; set; }
+        public List<ChatMessage> Messages { get; set; } = new();
         [Required]
-        public List<ChatParticipant> Participants { get; set; }
+        public List<ChatParticipant> Participants { get; set; } = new();
     }
 }

@@ -10,6 +10,6 @@ namespace ValuedInBE.Users.Services
         Task RegisterNewUserAsync(NewUser newUser);
         Task SelfRegisterAsync(NewUser newUser);
         Task<TokenAndRole> VerifyAndIssueNewTokenAsync(string token);
-        Task<UserCredentials> GetUserFromTokenAsync(string token);
+        Task<UserCredentials?> GetUserFromTokenAsync(string token);
     }
 }

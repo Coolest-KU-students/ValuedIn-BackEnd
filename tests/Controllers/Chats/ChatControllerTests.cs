@@ -28,7 +28,7 @@ namespace ValuedInBE.Controllers.Chats.Tests
         private ChatController MockChatController()
         {
             _httpContext.SetupGet(context => context.Items)
-                .Returns(new Dictionary<object, object?>() { { UserContextMiddleware.userContextItemName, UserConstants.UserContextInstance } }); ;
+                .Returns(new Dictionary<object, object?>() { { UserContextMiddleware.userContextItemName, UserConstants.UserContextInstance } });
             ChatController controller = new(_chatService.Object, _logger.Object);
             controller.ControllerContext.HttpContext = _httpContext.Object; 
             return controller;
@@ -80,7 +80,7 @@ namespace ValuedInBE.Controllers.Chats.Tests
             _chatService.Setup(service => service.FetchOrCreateChatAsync(newChatRequest))
                 .ReturnsAsync(chat);
             ChatController controller = MockChatController();
-            ActionResult<Chat> receivedActionResult = await controller.CreateNewChatAsync(newChatRequest);
+            ActionResult<Chat?> receivedActionResult = await controller.CreateNewChatAsync(newChatRequest);
             Assert.NotNull(receivedActionResult.Value);
             Chat receivedChat = receivedActionResult.Value!;
             Assert.Equal(chat, receivedChat);

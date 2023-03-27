@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 using ValuedInBE.Chats.Models.Entities;
 using ValuedInBE.System.PersistenceLayer.Entities;
 
@@ -8,11 +9,16 @@ namespace ValuedInBE.Users.Models.Entities
     {
         [Key]
         [MaxLength(128)]
-        public string UserID { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public string Telephone { get; set; }
-        public IEnumerable<ChatParticipant> ChatParticipants { get; set; }
+        [Required]
+        public string UserID { get; set; } = null!;
+        [Required]
+        public string FirstName { get; set; } = "";
+        [Required]
+        public string LastName { get; set; } = "";
+        [Required]
+        public string Email { get; set; } = "";
+        [Required]
+        public string Telephone { get; set; } = "";
+        public IEnumerable<ChatParticipant>? ChatParticipants { get; set; }
     }
 }

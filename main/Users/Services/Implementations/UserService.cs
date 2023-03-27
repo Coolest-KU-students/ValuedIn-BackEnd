@@ -36,12 +36,12 @@ namespace ValuedInBE.Users.Services.Implementations
 
             return new Page<UserSystemInfo> {
                 Results = credentialPage.Results
-                    .Select(MapSystemInfoFromCredentials).ToList(),
+                    .Select(MapSystemInfoFromCredentials),
                 Total = credentialPage.Total,
                 PageNo = credentialPage.PageNo};
         }
 
-        public async Task CreateNewUserAsync(NewUser newUser, UserContext userContext = null)
+        public async Task CreateNewUserAsync(NewUser newUser, UserContext? userContext = null)
         {
             _logger.LogDebug("Creating new user with login {login}", newUser.Login);
 
@@ -89,16 +89,16 @@ namespace ValuedInBE.Users.Services.Implementations
             await _userCredentialRepository.InsertAsync(userCredentials, userContext);
         }
 
-        public async Task<UserCredentials> GetUserCredentialsByLoginAsync(string login)
+        public async Task<UserCredentials?> GetUserCredentialsByLoginAsync(string login)
         {
             _logger.LogDebug("Fetching user credentials for login {login} ", login);
             return await _userCredentialRepository.GetByLoginAsync(login);
         }
 
-        public async Task<UserSystemInfo> GetUserSystemInfoByLoginAsync(string login)
+        public async Task<UserSystemInfo?> GetUserSystemInfoByLoginAsync(string login)
         {
             _logger.LogDebug("Fetching user system info for login {login} ", login);
-            UserCredentials credentials = await _userCredentialRepository.GetByLoginWithDetailsAsync(login);
+            UserCredentials? credentials = await _userCredentialRepository.GetByLoginWithDetailsAsync(login);
             return credentials != null ? MapSystemInfoFromCredentials(credentials) : null;
         }
 
@@ -110,7 +110,7 @@ namespace ValuedInBE.Users.Services.Implementations
                 IsExpired = credentials.IsExpired,
                 LastActive = credentials.LastActive,
                 Role = credentials.Role.GetDisplayName(),
-                FirstName = credentials.UserDetails.FirstName,
+                FirstName = credentials.UserDetails?.FirstName ?? throw new Exception("Did not retrieve user details"),
                 LastName = credentials.UserDetails.LastName,
                 Email = credentials.UserDetails.Email,
                 Telephone = credentials.UserDetails.Telephone
@@ -120,7 +120,7 @@ namespace ValuedInBE.Users.Services.Implementations
         {
             _logger.LogDebug("Tying to expired user with {login} ", login);
             UserContext userContext = GetUserContextFromHttpOrThrowException();
-            UserCredentials credentials = await _userCredentialRepository.GetByLoginAsync(login);
+            UserCredentials? credentials = await _userCredentialRepository.GetByLoginAsync(login);
             if (credentials == null)
             {
                 _logger.LogTrace("Did not find a user with login {login}", login);
@@ -136,15 +136,15 @@ namespace ValuedInBE.Users.Services.Implementations
         {
             _logger.LogDebug("Tying to update user with userId {userId} ", updatedUser.UserID);
             UserContext userContext = GetUserContextFromHttpOrThrowException();
-            UserCredentials credentials = await _userCredentialRepository.GetByUserIdWithDetailsAsync(updatedUser.UserID);
+            UserCredentials? credentials = await _userCredentialRepository.GetByUserIdWithDetailsAsync(updatedUser.UserID);
             if (credentials == null)
             {
                 _logger.LogTrace("Did not find a user with userId {login}", updatedUser.UserID);
                 throw new KeyNotFoundException("Login does not exist");
             }
 
-            credentials.Role = UserRoleExtended.FromString(updatedUser.Role);
-            credentials.UserDetails.FirstName = updatedUser.FirstName;
+            credentials.Role = UserRoleExtended.FromString(updatedUser.Role) ?? throw new Exception("Role was not recognized");
+            credentials.UserDetails!.FirstName = updatedUser.FirstName;
             credentials.UserDetails.LastName = updatedUser.LastName;
             credentials.UserDetails.Email = updatedUser.Email;
             credentials.UserDetails.Telephone = updatedUser.Telephone;
@@ -154,7 +154,9 @@ namespace ValuedInBE.Users.Services.Implementations
 
         public async Task UpdateLastActiveAsync(string login)
         {
-            UserCredentials credentials = await _userCredentialRepository.GetByLoginAsync(login);
+            UserCredentials credentials =
+                await _userCredentialRepository.GetByLoginAsync(login)
+                ?? throw new Exception("Login was not find");
             await UpdateLastActiveAsync(credentials);
         }
 
@@ -167,7 +169,9 @@ namespace ValuedInBE.Users.Services.Implementations
 
         public async Task UpdateLastActiveByUserIDAsync(string userID)
         {
-            UserCredentials credentials = await _userCredentialRepository.GetByUserIDAsync(userID);
+            UserCredentials credentials = 
+                await _userCredentialRepository.GetByUserIDAsync(userID)
+                ?? throw new Exception("UserID was not found");
             UserContext userContext = _mapper.Map<UserContext>(credentials);
             credentials.LastActive = DateTime.Now;
             await _userCredentialRepository.UpdateAsync(credentials, userContext);

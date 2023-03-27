@@ -6,7 +6,7 @@ namespace ValuedInBE.WebSockets.Services
     {
         void Add(string userId, WebSocket webSocket);
 
-        IEnumerable<WebSocket> GetUserSockets(string userId);
+        List<WebSocket> GetUserSockets(string userId);
 
         Task SendMessageAsync(string message, string userId, CancellationToken token);
     }

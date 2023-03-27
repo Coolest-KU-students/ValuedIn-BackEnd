@@ -6,8 +6,8 @@ namespace ValuedInBE.Chats.Models.Events
     public class NewMessageEvent
     {
         [Required]
-        public IEnumerable<string> OtherParticipantIDs { get; set; }
+        public IEnumerable<string> OtherParticipantIDs { get; set; } = null!;
         [Required]
-        public ChatMessage ChatMessage { get; set; }
+        public ChatMessage ChatMessage { get; set; } = null!;
     }
 }

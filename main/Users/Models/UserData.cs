@@ -1,12 +1,17 @@
-﻿using ValuedInBE.System.Security.Users;
+﻿using System.ComponentModel.DataAnnotations;
+using ValuedInBE.System.Security.Users;
 
 namespace ValuedInBE.Users.Models
 {
     public class UserData
     {
-        public string UserID { get; set; }
-        public string Login { get; set; }
-        public string Password { get; set; }
+        [Required]
+        public string UserID { get; set; } = null!;
+        [Required]
+        public string Login { get; set; } = null!;
+        [Required]
+        public string Password { get; set; } = null!;
+        [Required]
         public UserRole Role { get; set; }
     }
 }

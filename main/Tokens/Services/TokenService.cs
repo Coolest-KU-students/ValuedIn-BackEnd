@@ -32,10 +32,10 @@ namespace ValuedInBE.Tokens.Services
             return token;
         }
 
-        public UserContext GetUserContextFromToken(string token, string type)
+        public UserContext? GetUserContextFromToken(string token, string type)
         {
             _logger.LogDebug("Extracting user from {type} token ", token);
-            TokenData<UserContext> tokenData = _memoizationEngine.Extract<string, TokenData<UserContext>>(token);
+            TokenData<UserContext>? tokenData = _memoizationEngine.Extract<string, TokenData<UserContext>>(token);
             if (tokenData?.Type == type)
             {
                 return tokenData.Value;

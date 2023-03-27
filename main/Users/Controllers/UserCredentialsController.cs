@@ -34,7 +34,7 @@ namespace ValuedInBE.Users.Controllers
         public async Task<ActionResult<UserSystemInfo>> GetUserSystemInfoAsync(string login)
         {
             _logger.LogTrace("Got a request to fetch a User with Login: {login}", login);
-            UserSystemInfo user = await _userService.GetUserSystemInfoByLoginAsync(login);
+            UserSystemInfo? user = await _userService.GetUserSystemInfoByLoginAsync(login);
             return user != null ? user : NoContent();
         }
 

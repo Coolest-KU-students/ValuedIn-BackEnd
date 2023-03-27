@@ -10,7 +10,7 @@ namespace ValuedInBE.System.External.Services.Kafka.Serializers
             using MemoryStream ms = new(data.ToArray());
             StreamReader reader = new(ms);
             string json = reader.ReadToEnd();
-            return JsonConvert.DeserializeObject<TModel>(json);
+            return JsonConvert.DeserializeObject<TModel>(json) ?? throw new Exception("Could not serialize value");
         }
 
         public byte[] Serialize(TModel data, SerializationContext context)

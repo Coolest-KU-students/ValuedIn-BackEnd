@@ -1,8 +1,13 @@
-﻿namespace ValuedInBE.Users.Models.DTOs.Response
+﻿
+using System.ComponentModel.DataAnnotations;
+
+namespace ValuedInBE.Users.Models.DTOs.Response
 {
     public class TokenAndRole
     {
-        public string Token { get; init; }
-        public string Role { get; init; }
+        [Required]
+        public string Token { get; init; } = null!;
+        [Required]
+        public string Role { get; init; } = null!;
     }
 }

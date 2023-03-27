@@ -6,6 +6,12 @@ namespace ValuedInBE.System.PersistenceLayer.Contexts
 {
     public class ValuedInContext : DbContext
     {
+        public DbSet<UserCredentials> UserCredentials { get; set; } = null!;
+        public DbSet<UserDetails> UserDetails { get; set; } = null!;
+        public DbSet<Chat> Chats { get; set; } = null!;
+        public DbSet<ChatMessage> ChatMessages { get; set; } = null!;
+        public DbSet<ChatParticipant> ChatParticipants { get; set; } = null!;
+
         public ValuedInContext()
         {
         }
@@ -14,11 +20,6 @@ namespace ValuedInBE.System.PersistenceLayer.Contexts
         {
         }
 
-        public DbSet<UserCredentials> UserCredentials { get; set; }
-        public DbSet<UserDetails> UserDetails { get; set; }
-        public DbSet<Chat> Chats { get; set; }
-        public DbSet<ChatMessage> ChatMessages { get; set; }
-        public DbSet<ChatParticipant> ChatParticipants { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

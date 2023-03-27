@@ -17,7 +17,7 @@ namespace ValuedInBE.Chats.EventHandlers
         private readonly IConsumer<long, NewMessageEvent> _consumer;
         private readonly IProducer<long, NewMessageEvent> _producer;
         private CancellationToken _cancellationToken;
-        private Timer _timer;
+        private Timer? _timer;
 
         public MessageEventHandler(ILogger<MessageEventHandler> logger, IWebSocketTracker webSocketTracker, IKafkaConfigurationBuilder<long, NewMessageEvent> configurationBuilder)
         {
@@ -66,12 +66,12 @@ namespace ValuedInBE.Chats.EventHandlers
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _timer.Dispose();
+            _timer!.Dispose();
             _logger.LogInformation("Message event handler has stopped");
             return Task.CompletedTask;
         }
 
-        private async void MessageProcessingAsync(object state)
+        private async void MessageProcessingAsync(object? state)
         {
             while (!_cancellationToken.IsCancellationRequested)
             {

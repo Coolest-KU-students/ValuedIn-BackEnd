@@ -31,7 +31,8 @@ namespace ValuedInBE.Chats.Services
         public async Task<OffsetPage<ChatInfo, DateTime>> GetChatsAsync(ChatPageRequest chatPage)
         {
             DateTime? createdSince = chatPage.Offset;
-            UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
+            UserContext userContext = _contextAccessor.HttpContext.GetMandatoryUserContext();
+
             _logger.LogDebug("User {user} has requested Chat Page with Offset {offset}", userContext.UserID, createdSince);
             IEnumerable<Chat> chats = await _chatRepository.GetChatsWithLastMessageAndParticipantsAsync(userContext.UserID, chatPage.Size, chatPage.Offset);
             DateTime newOffset = chats.LastOrDefault()?.CreatedOn ?? createdSince ?? DateTime.Now;
@@ -61,7 +62,7 @@ namespace ValuedInBE.Chats.Services
 
         public async Task<Chat> FetchOrCreateChatAsync(NewChatRequest newChatRequest)
         {
-            UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
+            UserContext userContext = _contextAccessor.HttpContext!.GetMandatoryUserContext();
             if (newChatRequest.Participants.Count == (newChatRequest.Participants.Contains(userContext.UserID) ? 1 : 0))
                 throw new Exception("No other participants but you");
 
@@ -127,7 +128,7 @@ namespace ValuedInBE.Chats.Services
         public async Task<OffsetPage<MessageDTO, DateTime>> GetMessagesAsync(MessagePageRequest messagePage, long chatId)
         {
             DateTime? createdSince = messagePage.Offset;
-            Chat? chat = await _chatRepository.GetChatMessagesWithParticipantsDetailsAsync(chatId, messagePage.Size, createdSince) 
+            Chat chat = await _chatRepository.GetChatMessagesWithParticipantsDetailsAsync(chatId, messagePage.Size, createdSince) 
                         ?? throw new Exception("Chat not found");
             List<ChatMessage> messages = chat.Messages;
             DateTime newOffset = messages.LastOrDefault()?.CreatedOn ?? createdSince ?? DateTime.Now;
@@ -138,8 +139,8 @@ namespace ValuedInBE.Chats.Services
                     message => new MessageDTO()
                     {
                         Id = message.Id,
-                        SentByFirstName = chat.Participants.Find(p => p.UserId == message.CreatedBy)!.User.FirstName,
-                        SentByLastName = chat.Participants.Find(p => p.UserId == message.CreatedBy)!.User.LastName,
+                        SentByFirstName = chat.Participants.Find(p => p.UserId == message.CreatedBy)!.User!.FirstName,
+                        SentByLastName = chat.Participants.Find(p => p.UserId == message.CreatedBy)!.User!.LastName,
                         Content = message.Message,
                         Sent = message.CreatedOn
                     });

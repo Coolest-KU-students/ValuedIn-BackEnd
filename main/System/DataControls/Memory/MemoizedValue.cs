@@ -4,6 +4,6 @@
 
     public class MemoizedValue<TEntity> : MemoizedValue
     {
-        public TEntity Value { get; init; }
+        public TEntity? Value { get; init; }
     }
 }

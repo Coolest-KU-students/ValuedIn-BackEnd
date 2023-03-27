@@ -12,7 +12,7 @@ namespace ValuedInBE.DataControls.Paging
         public int Size { get; set; }
 
         [BindRequired]
-        public OrderByColumnList OrderByColumns { get; set; }
+        public OrderByColumnList OrderByColumns { get; set; } = null!;
 
         public PageConfig() { }
 

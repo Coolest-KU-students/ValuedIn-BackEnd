@@ -37,7 +37,12 @@ namespace ValuedInBE.System.Security.Users
         public static implicit operator UserRoleExtended(UserRole role) => GetExtended(role);
         public static implicit operator UserRole(UserRoleExtended extended) => extended.UserRole;
 
-        public static UserRoleExtended FromString(string role) => _nameMapping[role];
+        public static UserRoleExtended? FromString(string role)
+        {
+            if(_nameMapping.ContainsKey(role)) return _nameMapping[role];
+
+            return null;
+        } 
 
         private UserRoleExtended(UserRole userRole, int index)
         {
@@ -45,7 +50,7 @@ namespace ValuedInBE.System.Security.Users
             Index = index;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return (obj is UserRoleExtended extended
                     && UserRole == extended.UserRole

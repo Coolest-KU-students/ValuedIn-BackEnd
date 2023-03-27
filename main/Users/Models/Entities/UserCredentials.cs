@@ -9,13 +9,18 @@ namespace ValuedInBE.Users.Models.Entities
     {
         [Key]
         [MaxLength(128)]
-        public string UserID { get; set; }
+        [Required]
+        public string UserID { get; set; } = null!;
         [MaxLength(128)]
-        public string Login { get; set; }
-        public string Password { get; set; }
+        [Required]
+        public string Login { get; set; } = null!;
+        [Required]
+        public string Password { get; set; } = null!;
+        [Required]
         public bool IsExpired { get; set; }
         public DateTime? LastActive { get; set; }
+        [Required]
         public UserRole Role { get; set; }
-        public UserDetails UserDetails { get; set; }
+        public UserDetails? UserDetails { get; set; }
     }
 }

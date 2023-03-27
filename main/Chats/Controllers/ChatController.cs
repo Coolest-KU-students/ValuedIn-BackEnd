@@ -24,28 +24,28 @@ namespace ValuedInBE.Chats.Controllers
         [HttpGet]
         public async Task<ActionResult<OffsetPage<ChatInfo, DateTime>>> GetChatPagesAsync([FromQuery] ChatPageRequest chatPageRequest)
         {
-            _logger.LogTrace("Received request from user {userId} to load {size} chats since {offset}", HttpContext.GetUserContext().UserID, chatPageRequest.Size, chatPageRequest.Offset);
+            _logger.LogTrace("Received request from user {userId} to load {size} chats since {offset}", HttpContext.GetMandatoryUserContext().UserID, chatPageRequest.Size, chatPageRequest.Offset);
             return await _chatService.GetChatsAsync(chatPageRequest);
         }
 
         [HttpPost]
         public async Task<ActionResult<Chat?>> CreateNewChatAsync(NewChatRequest newChatRequest)
         {
-            _logger.LogTrace("Received request from user {userId} to create new chat with these participants: {userIds}", HttpContext.GetUserContext().UserID, string.Join(", ", newChatRequest.Participants));
+            _logger.LogTrace("Received request from user {userId} to create new chat with these participants: {userIds}", HttpContext.GetMandatoryUserContext().UserID, string.Join(", ", newChatRequest.Participants));
             return await _chatService.FetchOrCreateChatAsync(newChatRequest);
         }
 
         [HttpGet("{chatId}")]
         public async Task<ActionResult<OffsetPage<MessageDTO, DateTime>>> GetMessagesAsync(long chatId, [FromQuery] MessagePageRequest messagePageRequest)
         {
-            _logger.LogTrace("Received request from user {userId} to load {size} messages from chat {chatId} since {offset}", HttpContext.GetUserContext().UserID, messagePageRequest.Size, chatId, messagePageRequest.Offset);
+            _logger.LogTrace("Received request from user {userId} to load {size} messages from chat {chatId} since {offset}", HttpContext.GetMandatoryUserContext().UserID, messagePageRequest.Size, chatId, messagePageRequest.Offset);
             return await _chatService.GetMessagesAsync(messagePageRequest, chatId);
         }
 
         [HttpPost("{chatId}")]
         public async Task<ActionResult<ChatMessage>> SendNewMessageAsync(long chatId, NewMessage newMessage)
         {
-            _logger.LogTrace("Received request from user {userId} to create new message in chat {chatId}", HttpContext.GetUserContext().UserID, chatId);
+            _logger.LogTrace("Received request from user {userId} to create new message in chat {chatId}", HttpContext.GetMandatoryUserContext().UserID, chatId);
             return await _chatService.CreateNewMessageAsync(chatId, newMessage.Content);
         }
     }

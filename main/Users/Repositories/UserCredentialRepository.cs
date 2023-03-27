@@ -15,7 +15,7 @@ namespace ValuedInBE.Users.Repositories
     {
         private readonly CustomColumnMapping<UserCredentials> _customColumnMapping = new()
         {
-            {"LastName",  new OrderingExpression<UserCredentials>(creds => creds.UserDetails.LastName + creds.UserDetails.FirstName) }
+            {"LastName",  new OrderingExpression<UserCredentials>(creds => creds.UserDetails!.LastName + creds.UserDetails.FirstName) }
         };
 
         private readonly ValuedInContext _context;
@@ -43,7 +43,7 @@ namespace ValuedInBE.Users.Repositories
             return credentialQuery;
         }
 
-        public async Task<UserCredentials> GetByLoginAsync(string login)
+        public async Task<UserCredentials?> GetByLoginAsync(string login)
         {
             _logger.LogTrace("Request user credentials with login {login}", login);
             var credentialQuery = from c in _context.UserCredentials
@@ -51,7 +51,7 @@ namespace ValuedInBE.Users.Repositories
                                   select c;
             return await credentialQuery.FirstOrDefaultAsync();
         }
-        public async Task<UserCredentials> GetByUserIDAsync(string userID)
+        public async Task<UserCredentials?> GetByUserIDAsync(string userID)
         {
             _logger.LogTrace("Request user credentials with userID {userID}", userID);
             var credentialQuery = from c in _context.UserCredentials
@@ -60,7 +60,7 @@ namespace ValuedInBE.Users.Repositories
             return await credentialQuery.FirstOrDefaultAsync();
         }
 
-        public async Task<UserCredentials> GetByLoginWithDetailsAsync(string login)
+        public async Task<UserCredentials?> GetByLoginWithDetailsAsync(string login)
         {
             _logger.LogTrace("Request user credentials and details with login {login}", login);
             var credentialQuery = from c in _context.UserCredentials
@@ -71,7 +71,7 @@ namespace ValuedInBE.Users.Repositories
             return await credentialQuery.FirstOrDefaultAsync();
         }
 
-        public async Task<UserCredentials> GetByUserIdWithDetailsAsync(string userID)
+        public async Task<UserCredentials?> GetByUserIdWithDetailsAsync(string userID)
         {
             _logger.LogTrace("Request user credentials and details with user ID {userId}", userID);
             var credentialQuery = from c in _context.UserCredentials

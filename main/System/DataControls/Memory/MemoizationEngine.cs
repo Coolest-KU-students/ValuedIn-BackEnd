@@ -34,29 +34,29 @@ namespace ValuedInBE.DataControls.Memory
             RemoveKeyAfterSpecifiedTime(key, timeSpan); //discard so it does not wait till task executes
         }
 
-        public TValue GetValue<TKey, TValue>(TKey key)
+        public TValue? GetValue<TKey, TValue>(TKey key)
         {
             _logger.LogDebug("Attempting to find memoized value with Key({key})", key);
-            bool exists =  _memoized.TryGetValue(MemKey(key), out MemoizedValue memoizedValue);
+            bool exists =  _memoized.TryGetValue(MemKey(key), out MemoizedValue? memoizedValue);
 
-            if (!exists)
+            if (!exists || memoizedValue == null)
             {
-                throw new KeyNotFoundException();
+                return default;
             }
             _logger.LogTrace("Found memoized value with Key({key}) which will is being cast to {TValue} type", key, typeof(TValue));
             MemoizedValue<TValue> specifiedTypeValue = (MemoizedValue<TValue>)memoizedValue;
             return specifiedTypeValue.Value;
         }
 
-        public TValue Extract<TKey, TValue>(TKey key)
+        public TValue? Extract<TKey, TValue>(TKey key)
         {
             _logger.LogTrace("Attempting to remove a memoized value with Key({key})", key);
-            if (_memoized.TryRemove(MemKey(key), out MemoizedValue value))
+            if (_memoized.TryRemove(MemKey(key), out MemoizedValue? value) && value != null)
             {
                 MemoizedValue<TValue> specifiedTypeValue = (MemoizedValue<TValue>)value;
                 return specifiedTypeValue.Value;
             }
-            throw new KeyNotFoundException();
+            return default;
         }
 
         public void RemoveByKey<TKey>(TKey key)

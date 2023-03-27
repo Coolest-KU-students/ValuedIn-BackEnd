@@ -11,8 +11,8 @@ namespace ValuedInBE.System.WebConfigs
                 AllowedOrigins = new string[] { "http://localhost:3000" }
             };
 
-        public string CorsConfigName { get; init; }
-        public string[] AllowedOrigins { get; init; }
+        public string CorsConfigName { get; init; } = string.Empty;
+        public string[] AllowedOrigins { get; init; } = Array.Empty<string>();
 
         internal Action<CorsOptions> Configure() =>
             options => options.AddPolicy(

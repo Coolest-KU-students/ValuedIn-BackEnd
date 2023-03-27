@@ -11,6 +11,6 @@ namespace ValuedInBE.Chats.Models.Entities
         [Required]
         public long ChatId { get; set; }
         [Required]
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
     }
 }

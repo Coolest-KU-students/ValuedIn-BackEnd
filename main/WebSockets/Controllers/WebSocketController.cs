@@ -39,7 +39,7 @@ namespace ValuedInBE.WebSockets.Controllers
                 return BadRequest();
             }
 
-            UserContext userContext = _tokenService.GetUserContextFromToken(token, tokenType);
+            UserContext? userContext = _tokenService.GetUserContextFromToken(token, tokenType);
             if (userContext == null)
             {
                 _logger.LogTrace("Did not find any user context associated with the token");
@@ -63,7 +63,7 @@ namespace ValuedInBE.WebSockets.Controllers
         [HttpGet("token")]
         public ActionResult<string> IssueTokenForWebSocket()
         {
-            UserContext userContext = HttpContext.GetUserContext();
+            UserContext userContext = HttpContext.GetMandatoryUserContext();
             _logger.LogDebug("Issuing web socket token for user {userId}", userContext.UserID);
             return _tokenService.GenerateOneTimeUserAccessToken(userContext, tokenType);
         }
