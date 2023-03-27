@@ -8,7 +8,9 @@ namespace ValuedInBE.Chats.Models.Entities
     {
         [Key]
         public long Id { get; set; }
+        [Required]
         public long ChatId { get; set; }
+        [Required]
         public string Message { get; set; }
     }
 }

@@ -46,7 +46,7 @@ namespace ValuedInBE.Chats.Services
                     Id = chat.Id,
                     ChatName = "Lorem Ipsum", //TODO: this is not represented in DB model, need to address with team
                     LastMessage = chat.Messages.First().CreatedOn,
-                    LastMessageContent = chat.Messages.First()?.Message,
+                    LastMessageContent = chat.Messages.First().Message,
                     ParticipatingUsers = chat.Participants.Select(p => p.UserId).ToList(),
                     Unread = true
                 });
@@ -75,7 +75,7 @@ namespace ValuedInBE.Chats.Services
             List<string> allParticipants = newChatRequest.Participants;
             allParticipants.Add(userContext.UserID);
 
-            Chat existingChat = await _chatRepository.GetChatFromParticipantsAsync(allParticipants);
+            Chat? existingChat = await _chatRepository.GetChatFromParticipantsAsync(allParticipants);
 
             if (existingChat != null) return existingChat;
 
@@ -112,7 +112,7 @@ namespace ValuedInBE.Chats.Services
             return chatMessage;
         }
 
-        public async Task SendMessageEvent(ChatMessage chatMessage, IEnumerable<string> otherParticipants = null)
+        public async Task SendMessageEvent(ChatMessage chatMessage, IEnumerable<string>? otherParticipants = null)
         {
             otherParticipants ??= await _chatRepository.GetParticipantIdsFromChatAsync(chatMessage.ChatId);
             NewMessageEvent messageEvent = new()
@@ -127,12 +127,8 @@ namespace ValuedInBE.Chats.Services
         public async Task<OffsetPage<MessageDTO, DateTime>> GetMessagesAsync(MessagePageRequest messagePage, long chatId)
         {
             DateTime? createdSince = messagePage.Offset;
-            Chat chat = await _chatRepository.GetChatMessagesWithParticipantsDetailsAsync(chatId, messagePage.Size, createdSince);
-            if (chat == null)
-            {
-                throw new Exception("Chat not found");
-            }
-
+            Chat? chat = await _chatRepository.GetChatMessagesWithParticipantsDetailsAsync(chatId, messagePage.Size, createdSince) 
+                        ?? throw new Exception("Chat not found");
             List<ChatMessage> messages = chat.Messages;
             DateTime newOffset = messages.LastOrDefault()?.CreatedOn ?? createdSince ?? DateTime.Now;
             bool isLast = messages.Count != messagePage.Size;
@@ -142,8 +138,8 @@ namespace ValuedInBE.Chats.Services
                     message => new MessageDTO()
                     {
                         Id = message.Id,
-                        SentByFirstName = chat.Participants.Find(p => p.UserId == message.CreatedBy).User.FirstName,
-                        SentByLastName = chat.Participants.Find(p => p.UserId == message.CreatedBy).User.LastName,
+                        SentByFirstName = chat.Participants.Find(p => p.UserId == message.CreatedBy)!.User.FirstName,
+                        SentByLastName = chat.Participants.Find(p => p.UserId == message.CreatedBy)!.User.LastName,
                         Content = message.Message,
                         Sent = message.CreatedOn
                     });

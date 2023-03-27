@@ -8,6 +8,7 @@ namespace ValuedInBE.Chats.Models.Entities
     {
         [MaxLength(128)]
         public string UserId { get; set; }
+        [Required]
         public long ChatId { get; set; }
         public UserDetails User { get; set; }
         public Chat Chat { get; set; }

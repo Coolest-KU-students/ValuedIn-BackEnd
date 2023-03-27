@@ -1,4 +1,5 @@
-﻿using ValuedInBE.System.DataControls.Paging;
+﻿using System;
+using ValuedInBE.System.DataControls.Paging;
 
 namespace ValuedInBE.Chats.Models.DTOs.Request
 {

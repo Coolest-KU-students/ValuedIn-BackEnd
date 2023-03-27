@@ -29,7 +29,7 @@ namespace ValuedInBE.Chats.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Chat>> CreateNewChatAsync(NewChatRequest newChatRequest)
+        public async Task<ActionResult<Chat?>> CreateNewChatAsync(NewChatRequest newChatRequest)
         {
             _logger.LogTrace("Received request from user {userId} to create new chat with these participants: {userIds}", HttpContext.GetUserContext().UserID, string.Join(", ", newChatRequest.Participants));
             return await _chatService.FetchOrCreateChatAsync(newChatRequest);

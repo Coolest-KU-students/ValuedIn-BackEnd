@@ -6,7 +6,7 @@
         private static readonly bool _isTestingEnvironment =
                 AppDomain.CurrentDomain
                     .GetAssemblies()
-                    .Any(a => a.FullName.ToLowerInvariant().StartsWith(testAssemblyName));
+                    .Any(a => a.FullName!.ToLowerInvariant().StartsWith(testAssemblyName));
         public static bool IsTestingEnvironment => _isTestingEnvironment;
     }
 }

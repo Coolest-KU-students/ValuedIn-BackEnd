@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 using ValuedInBE.Chats.Models.Entities;
 using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.PersistenceLayer.Extensions;
@@ -39,7 +40,7 @@ namespace ValuedInBE.Chats.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Chat> GetChatFromParticipantsAsync(IEnumerable<string> allParticipants)
+        public async Task<Chat?> GetChatFromParticipantsAsync(IEnumerable<string> allParticipants)
         {
             if(!allParticipants.Any()) { return null; }
             var a = from c in _context.Chats
@@ -88,7 +89,7 @@ namespace ValuedInBE.Chats.Repositories
         }
 
 
-        public async Task<Chat> GetChatMessagesWithParticipantsDetailsAsync(long chatId, int size, DateTime? createdSince)
+        public async Task<Chat?> GetChatMessagesWithParticipantsDetailsAsync(long chatId, int size, DateTime? createdSince)
         {
             UserContext userContext = _contextAccessor.HttpContext.GetUserContext();
             var a = _context.Chats

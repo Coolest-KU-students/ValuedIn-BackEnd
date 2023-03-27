@@ -9,7 +9,9 @@ namespace ValuedInBE.Chats.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public long Id { get; set; }
+        [Required]
         public List<ChatMessage> Messages { get; set; }
+        [Required]
         public List<ChatParticipant> Participants { get; set; }
     }
 }
