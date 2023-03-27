@@ -67,8 +67,6 @@ namespace ValuedInBETests.IntegrationTests.Chats
             string secondMessageContent = "This is different content";
             string receiver = await GetUserIdFromLoginAsync(receiverLogin);
             string sender = await GetUserIdFromLoginAsync(senderLogin);
-            byte[] buffer = new byte[1024 * 4];
-            ArraySegment<byte> socketResponse = new(buffer);
             NewMessage newMessage = new() { Content = secondMessageContent };
             NewChatRequest request = new()
             {
@@ -81,16 +79,13 @@ namespace ValuedInBETests.IntegrationTests.Chats
 
             HttpResponseMessage chatResponse = await _client.PostAsync(chatsRoute, chatRequestContent);
 
-            var WebSocketReceiveTask = webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
+            var WebSocketReceiveTask = GetWebSocketResponseWhileIgnoringPinging(webSocket);
             Assert.True(chatResponse.IsSuccessStatusCode);
             Assert.NotNull(chatResponse.Content);
             string chatResponseString = await chatResponse.Content.ReadAsStringAsync();
             Chat? createdChat = JsonConvert.DeserializeObject<Chat>(chatResponseString);
             Assert.NotNull(createdChat);
-            WebSocketReceiveResult firstResults = await WebSocketReceiveTask;
-            Assert.False(firstResults.CloseStatus.HasValue, "Should not have closed the socekt");
-            Assert.NotNull(socketResponse.Array);
-            string socketResponseAsString = Encoding.UTF8.GetString(socketResponse.Array!).Trim('\0');
+            string socketResponseAsString = await WebSocketReceiveTask;
             ChatMessage? chatMessage = JsonConvert.DeserializeObject<ChatMessage>(socketResponseAsString);
 
             Assert.NotNull(chatMessage);
@@ -105,12 +100,7 @@ namespace ValuedInBETests.IntegrationTests.Chats
             Assert.True(messageResponse.IsSuccessStatusCode, messageResponse.StatusCode.ToString());
             Assert.NotNull(messageResponse.Content);
 
-            byte[] buffer3 = new byte[1024 * 4];
-            socketResponse = new(buffer3);
-            WebSocketReceiveResult results = await webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
-            Assert.False(results.CloseStatus.HasValue, "Should not have closed the socket 2");
-            Assert.NotNull(socketResponse.Array);
-            string secondSocketResponseAsString = Encoding.UTF8.GetString(socketResponse.Array!);
+            string secondSocketResponseAsString = await GetWebSocketResponseWhileIgnoringPinging(webSocket);
             ChatMessage? secondChatMessage = JsonConvert.DeserializeObject<ChatMessage>(secondSocketResponseAsString);
             Assert.NotNull(secondChatMessage);
             Assert.Equal(secondChatMessage!.CreatedBy, sender);
@@ -138,6 +128,27 @@ namespace ValuedInBETests.IntegrationTests.Chats
             Assert.Equal(pingMessage, Encoding.UTF8.GetString(socketResponse.Array!).Trim('\0'));
             await webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
             Assert.False(firstResults.CloseStatus.HasValue);
+        }
+
+        private async Task<string> GetWebSocketResponseWhileIgnoringPinging(WebSocket webSocket)
+        {
+            int repeatable = 2; //how many time to repeat without getting a response
+            ArraySegment<byte> buffer = new(Encoding.UTF8.GetBytes(pingMessage));
+            for (int i = 0; i<repeatable; i++)
+            {
+                Assert.False(webSocket.CloseStatus.HasValue);
+                byte[] buffer2 = new byte[1024 * 4];
+                ArraySegment<byte> socketResponse = new(buffer2);
+                WebSocketReceiveResult firstResults = await webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
+                Assert.False(firstResults.CloseStatus.HasValue);
+                Assert.NotNull(socketResponse.Array);
+                string response = Encoding.UTF8.GetString(socketResponse.Array!).Trim('\0');
+                if (response != pingMessage) return response;
+                //if it was a ping message, need to send it back
+                await webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                Assert.False(firstResults.CloseStatus.HasValue);
+            }
+            throw new Exception("did not manage it in repeatable time");
         }
 
         private async Task<WebSocket> EstablishWebSocketConnection()
