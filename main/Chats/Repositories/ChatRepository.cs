@@ -41,6 +41,7 @@ namespace ValuedInBE.Chats.Repositories
 
         public async Task<Chat> GetChatFromParticipantsAsync(IEnumerable<string> allParticipants)
         {
+            if(!allParticipants.Any()) { return null; }
             var a = from c in _context.Chats
                                 .Where(c => c.Participants.Any() &&
                                          c.Participants.All(p => allParticipants.Contains(p.UserId))
@@ -95,7 +96,7 @@ namespace ValuedInBE.Chats.Repositories
                             .ThenInclude(p => p.User)
                         .Include(c => c.Messages
                                         .Take(size)
-                                        .Where(m => m.CreatedOn > createdSince)
+                                        .Where(m => createdSince.HasValue && m.CreatedOn > createdSince)
                                         .OrderByDescending(m => m.CreatedOn)
                         ).FirstOrDefaultAsync(c => c.Id == chatId && c.Participants.Any(p => p.UserId == userContext.UserID));
 
