@@ -1,8 +1,8 @@
-﻿using ValuedInBE.Models;
-using ValuedInBE.Models.DTOs.Requests.Users;
-using ValuedInBE.Models.DTOs.Responses.Users;
-using ValuedInBE.Models.Users;
-using ValuedInBE.Security.Users;
+﻿using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Models;
+using ValuedInBE.Users.Models.DTOs.Request;
+using ValuedInBE.Users.Models.DTOs.Response;
+using ValuedInBE.Users.Models.Entities;
 
 namespace ValuedInBE
 {
@@ -65,11 +65,11 @@ namespace ValuedInBE
                 };
             }
         }
-        public static User UserInstance
+        public static UserData UserInstance
         {
             get
             {
-                User user = new()
+                UserData user = new()
                 {
                     UserID = userId,
                     Login = login,

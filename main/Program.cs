@@ -1,31 +1,24 @@
 
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using PostSharp.Extensibility;
-using System.Text;
 using System.Text.Json.Serialization;
-using ValuedInBE.AutoMapperProfiles;
-using ValuedInBE.Contexts;
+using ValuedInBE.Chats.EventHandlers;
+using ValuedInBE.Chats.Repositories;
+using ValuedInBE.Chats.Services;
 using ValuedInBE.DataControls.Memory;
-using ValuedInBE.Events.Handlers;
-using ValuedInBE.Models;
-using ValuedInBE.Models.Entities.Messaging;
-using ValuedInBE.Models.Events;
-using ValuedInBE.Repositories;
-using ValuedInBE.Repositories.Database;
-using ValuedInBE.Services.Chats;
-using ValuedInBE.Services.Chats.Implementations;
-using ValuedInBE.Services.Tokens;
-using ValuedInBE.Services.Users;
-using ValuedInBE.Services.Users.Implementations;
 using ValuedInBE.System;
-using ValuedInBE.System.Kafka;
-using ValuedInBE.System.Middleware;
+using ValuedInBE.System.External.Services.Kafka;
+using ValuedInBE.System.External.Tools.AutoMapperProfiles;
+using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.WebConfigs;
+using ValuedInBE.System.WebConfigs.Middleware;
+using ValuedInBE.Tokens.Services;
+using ValuedInBE.Users.Models;
+using ValuedInBE.Users.Repositories;
+using ValuedInBE.Users.Services;
+using ValuedInBE.Users.Services.Implementations;
+using ValuedInBE.WebSockets.Services;
 
 namespace ValuedInBE
 {
@@ -35,37 +28,40 @@ namespace ValuedInBE
         public static async Task Main(string[] args)
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-            // Add services to the container.
-
-            CorsConfig corsConfig = CorsConfig.LocalHostConfig;
-
-            builder.Services.AddCors(corsConfig.Configure());
+            JwtConfiguration jwtConfiguration = new(builder.Configuration);
+            CorsConfig corsConfigugration = CorsConfig.LocalHostConfig;
+            builder.Services.AddCors(corsConfigugration.Configure());
 
             builder.Services.AddControllers();
             builder.Services.AddDbContext<ValuedInContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ValuedIn")));
 
-            //Adding Repositories
+            #region Scoped
             builder.Services.AddScoped<IUserCredentialRepository, UserCredentialRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            builder.Services.AddScoped<IPasswordHasher<UserData>, PasswordHasher<UserData>>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             builder.Services.AddScoped<IUserIDGenerationStrategy, CustomUserIDGenerationStrategyWithNameMerging>();
             builder.Services.AddScoped<IChatRepository, ChatRepository>();
             builder.Services.AddScoped<IChatService, ChatService>();
-           
+            #endregion
 
-            builder.Services.AddSingleton(new MapperConfiguration(c => c.AddProfile(new MappingProfile())).CreateMapper());
-            builder.Services.AddSingleton<IMemoizationEngine, MemoizationEngine>();     
-            builder.Services.AddSingleton<IKafkaConfigurationBuilder<long, NewMessageEvent>, KafkaConfigurationBuilder<long, NewMessageEvent>>();
+            #region Singletons  
+            builder.Services.AddSingleton(jwtConfiguration);
+            builder.Services.AddSingleton(typeof(IKafkaConfigurationBuilder<,>), typeof(KafkaConfigurationBuilder<,>));
             builder.Services.AddSingleton<ActiveWebSocketTracker>();
             builder.Services.AddSingleton<MessageEventHandler>();
+            builder.Services.AddSingleton(new MapperConfiguration(c => c.AddProfile(new MappingProfile())).CreateMapper());
+            builder.Services.AddSingleton<IMemoizationEngine, MemoizationEngine>();
             builder.Services.AddSingleton<IWebSocketTracker>(x => x.GetRequiredService<ActiveWebSocketTracker>());
             builder.Services.AddSingleton<IMessageEventHandler>(x => x.GetRequiredService<MessageEventHandler>());
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<ITokenService, TokenService>();
+            #endregion
 
+            #region Hosted Services
             builder.Services.AddHostedService(x => x.GetRequiredService<ActiveWebSocketTracker>());
             builder.Services.AddHostedService(x => x.GetRequiredService<MessageEventHandler>());
+            #endregion
 
             builder.Services.AddTransient<UserContextMiddleware>();
 
@@ -75,35 +71,19 @@ namespace ValuedInBE
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-                //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
             });
-#if DEBUG
-            if (!TestRecognizer.IsTestingEnvironment)
-            {  //Testing will add its own Authentication layer
-#endif
-                builder.Services.AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                }).AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new()
-                    {
-                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                        ValidAudience = builder.Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = false, //TODO: investigate
-                        ValidateIssuerSigningKey = false
-                    };
-                });
+            #region JWT Configurer
 
+#if DEBUG   //Testing will add its own Authentication layer
+            if (!TestRecognizer.IsTestingEnvironment)
+            {
+#endif
+                builder.Services.ConfigureJwt(jwtConfiguration);
                 builder.Services.AddAuthorization();
 #if DEBUG
             }
 #endif
+            #endregion
             WebApplication app = builder.Build();
             if (app.Environment.IsDevelopment())
             {
@@ -118,13 +98,13 @@ namespace ValuedInBE
                 IAuthenticationService authenticationService = services.GetRequiredService<IAuthenticationService>();
 
                 context.Database.EnsureCreated();
-                await DataInitializer.Initialize(context, authenticationService);
+                await DataInitializer.InitializeAsync(context, authenticationService);
             }
 
             app.UseHttpsRedirection();
             app.UseWebSockets();
             app.UseMiddleware<UserContextMiddleware>();
-            app.UseCors(corsConfig.CorsConfigName);
+            app.UseCors(corsConfigugration.CorsConfigName);
             app.UseAuthentication();
             app.UseRouting();
             app.UseAuthorization();

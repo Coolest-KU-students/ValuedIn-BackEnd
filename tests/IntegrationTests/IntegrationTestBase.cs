@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
-using System.Net.WebSockets;
 using System.Text;
 using ValuedInBE;
-using ValuedInBE.Contexts;
+using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBETests.IntegrationTests.Config;
 using Xunit;
 

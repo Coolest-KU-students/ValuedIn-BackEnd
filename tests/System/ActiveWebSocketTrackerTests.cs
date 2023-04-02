@@ -1,15 +1,8 @@
-﻿using Xunit;
-using ValuedInBE.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 using Moq;
-using Castle.Core.Logging;
-using Microsoft.Extensions.Logging;
 using System.Net.WebSockets;
-using NuGet.Common;
+using ValuedInBE.WebSockets.Services;
+using Xunit;
 
 namespace ValuedInBE.System.Tests
 {
@@ -27,8 +20,8 @@ namespace ValuedInBE.System.Tests
         private ActiveWebSocketTracker MockActiveWebSocketTracker()
         {
             ActiveWebSocketTracker tracker = new(_logger.Object);
-            tracker.AddOrUpdate(firstUserId, new List<WebSocket>(){ _mockedFirstSocket.Object }, (userId, newList) => newList);
-            tracker.AddOrUpdate(secondUserId, new List<WebSocket>() { _mockedSecondSocket.Object }, (userId, newList) => newList);
+            tracker.UserWebSocketDictionary.AddOrUpdate(firstUserId, new List<WebSocket>() { _mockedFirstSocket.Object }, (userId, newList) => newList);
+            tracker.UserWebSocketDictionary.AddOrUpdate(secondUserId, new List<WebSocket>() { _mockedSecondSocket.Object }, (userId, newList) => newList);
             return tracker;
         }
 
@@ -38,9 +31,9 @@ namespace ValuedInBE.System.Tests
         {
             ActiveWebSocketTracker tracker = MockActiveWebSocketTracker();
 
-            List<WebSocket> emptySockets = tracker.GetSockets(unregisteredId);
-            List<WebSocket> firstUserSockets = tracker.GetSockets(firstUserId);
-            List<WebSocket> secondUserSockets = tracker.GetSockets(secondUserId);
+            IEnumerable<WebSocket> emptySockets = tracker.GetUserSockets(unregisteredId);
+            IEnumerable<WebSocket> firstUserSockets = tracker.GetUserSockets(firstUserId);
+            IEnumerable<WebSocket> secondUserSockets = tracker.GetUserSockets(secondUserId);
 
             Assert.Empty(emptySockets);
             Assert.NotEmpty(firstUserSockets);
@@ -57,16 +50,16 @@ namespace ValuedInBE.System.Tests
             tracker.Add(firstUserId, _mockedUnregisteredSocket.Object); //And tehse should not change anything
             tracker.Add(secondUserId, _mockedUnregisteredSocket.Object);
 
-            Assert.Equal(3, tracker.Count);
+            Assert.Equal(3, tracker.UserWebSocketDictionary.Count);
         }
 
         [Fact()]
-        public async void TestStartAsync()
+        public async Task TestStartAsync()
         {
             WebSocketReceiveResult receiveResult = new(0, WebSocketMessageType.Text, true);
-            
+
             //First socket is alive, retuns correctly
-            _mockedFirstSocket.Setup(socket => 
+            _mockedFirstSocket.Setup(socket =>
                 socket.ReceiveAsync(
                     It.IsAny<ArraySegment<byte>>(),
                     It.IsAny<CancellationToken>()
@@ -95,7 +88,8 @@ namespace ValuedInBE.System.Tests
                 )
             ).Returns(
                 Task.Run(
-                    async () => {
+                    async () =>
+                    {
                         wasCalled = true;
                         await Task.Delay(_toTimeout);
                         return receiveResult;
@@ -137,11 +131,9 @@ namespace ValuedInBE.System.Tests
             Task stopTask = tracker.StopAsync(token);
 
             Assert.True(stopTask.IsCompleted); //No actual IO processes, should complete immediately
-            Assert.Empty(tracker);
-
-
+            Assert.Empty(tracker.UserWebSocketDictionary);
         }
 
-        
+
     }
 }

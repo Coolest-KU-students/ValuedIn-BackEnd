@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Common;
-using ValuedInBE.Contexts;
-using ValuedInBE.Security.Users;
-using ValuedInBE.Services.Users;
+using ValuedInBE.System.PersistenceLayer.Contexts;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Services;
 using ValuedInBETests.IntegrationTests.Data;
 
 namespace ValuedInBETests.IntegrationTests.Config
@@ -55,7 +56,8 @@ namespace ValuedInBETests.IntegrationTests.Config
                     context.Database.EnsureCreated();
 
                     IAuthenticationService authenticationService = scopedServices.GetRequiredService<IAuthenticationService>();
-                    await TestDataInitializer.Initialize(authenticationService);
+                    IHttpContextAccessor httpContextAccessor = scopedServices.GetRequiredService<IHttpContextAccessor>();
+                    await TestDataInitializer.Initialize(authenticationService, httpContextAccessor);
                     context.SaveChanges();
                 }
                 services.Configure<TestAuthHandlerOptions>(options => options.DefaultLogin = UserRoleExtended.SYS_ADMIN);

@@ -1,15 +1,15 @@
-﻿using Xunit;
-using Moq;
+﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
-using Confluent.Kafka;
-using ValuedInBE.Models.Entities.Messaging;
-using ValuedInBE.System;
-using ValuedInBE.System.Kafka;
-using ValuedInBETests.TestingConstants;
-using System.Net.WebSockets;
+using Moq;
 using System.Linq.Expressions;
-using ValuedInBE.Events.Handlers;
-using ValuedInBE.Models.Events;
+using System.Net.WebSockets;
+using ValuedInBE.Chats.EventHandlers;
+using ValuedInBE.Chats.Models.Entities;
+using ValuedInBE.Chats.Models.Events;
+using ValuedInBE.System.External.Services.Kafka;
+using ValuedInBE.WebSockets.Services;
+using ValuedInBETests.TestingConstants;
+using Xunit;
 
 namespace ValuedInBE.Events.Chats.Tests
 {
@@ -41,7 +41,7 @@ namespace ValuedInBE.Events.Chats.Tests
         public async void TestHandleSentMessageEvent()
         {
             ChatMessage chatMessage = ChatConstants.ChatMessage;
-            NewMessageEvent newMessageEvent = new(){ OtherParticipantIDs = new List<string>(), ChatMessage = chatMessage };
+            NewMessageEvent newMessageEvent = new() { OtherParticipantIDs = new List<string>(), ChatMessage = chatMessage };
             Message<long, NewMessageEvent> message = new() { Key = chatMessage.Id, Value = newMessageEvent };
             DeliveryResult<long, NewMessageEvent> deliveryResult = new()
             {
@@ -49,12 +49,12 @@ namespace ValuedInBE.Events.Chats.Tests
                 Status = PersistenceStatus.Persisted
             };
             _producer
-                .Setup(procuder => 
+                .Setup(procuder =>
                     procuder.ProduceAsync(newChatMessageTopic, It.Is<Message<long, NewMessageEvent>>(exp => exp.Key.Equals(chatMessage.Id)), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(deliveryResult);
 
             MessageEventHandler messageEventHandler = MockMessageEventHandler();
-            await messageEventHandler.HandleSentMessageEvent(newMessageEvent);
+            await messageEventHandler.HandleSentMessageEventAsync(newMessageEvent);
         }
 
         [Fact()]
@@ -95,15 +95,16 @@ namespace ValuedInBE.Events.Chats.Tests
 
             NewMessageEvent newMessageEvent = new()
             {
-                OtherParticipantIDs = new() { firstUserId, secondUserId }
-                , ChatMessage = chatMessage
+                OtherParticipantIDs = new List<string>() { firstUserId, secondUserId }
+                ,
+                ChatMessage = chatMessage
             };
 
             /** Web Socket Tracker setup **/
 
-            _webSocketTracker.Setup(tracker => tracker.GetSockets(firstUserId))
+            _webSocketTracker.Setup(tracker => tracker.GetUserSockets(firstUserId))
                 .Returns(firstUserSockets);
-            _webSocketTracker.Setup(tracker => tracker.GetSockets(secondUserId))
+            _webSocketTracker.Setup(tracker => tracker.GetUserSockets(secondUserId))
                 .Returns(secondUserSockets);
 
             /** Consumer Setup **/
@@ -119,13 +120,12 @@ namespace ValuedInBE.Events.Chats.Tests
                 .Returns(consumeResult)
                 .Callback(tokenSource.Cancel);
 
-
             /** Test */
             MessageEventHandler messageEventHandler = MockMessageEventHandler();
             Task startedEventHandler = messageEventHandler.StartAsync(tokenSource.Token);
 
             Mock.Verify(); //verify that the sockets were called;
-            Assert.True(startedEventHandler.IsCompleted, "The request did not cancel if the task is not completed"); 
+            Assert.True(startedEventHandler.IsCompleted, "The request did not cancel if the task is not completed");
         }
 
         private static Expression<Func<WebSocket, Task>> MockedSendAsyncExpression()

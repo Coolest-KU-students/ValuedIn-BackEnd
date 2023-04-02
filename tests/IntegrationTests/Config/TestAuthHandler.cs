@@ -4,12 +4,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Extensions;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using ValuedInBE.Models;
-using ValuedInBE.Models.Users;
-using ValuedInBE.Repositories;
-using ValuedInBE.Security.Users;
-using ValuedInBE.System;
-using ValuedInBE.System.Middleware;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.System.WebConfigs.Middleware;
+using ValuedInBE.Users.Models;
+using ValuedInBE.Users.Models.Entities;
+using ValuedInBE.Users.Repositories;
 
 namespace ValuedInBETests.IntegrationTests.Config
 {
@@ -46,7 +45,7 @@ namespace ValuedInBETests.IntegrationTests.Config
                 login = userIdValues[0]; 
             }
 
-            UserCredentials userCredentials = await _userCredentialRepository.GetByLoginWithDetails(login);
+            UserCredentials userCredentials = await _userCredentialRepository.GetByLoginWithDetailsAsync(login);
 
             AddUserContextIfMissing(userCredentials);
 
@@ -68,7 +67,7 @@ namespace ValuedInBETests.IntegrationTests.Config
             return UserRoleExtended
                     .GetExtended(user.Role)
                     .FlattenRoleHierarchy()
-                    .Select(role => role.GetDisplayName())
+                    .Select(role => role.ToString())
                     .ToList();
         }
 

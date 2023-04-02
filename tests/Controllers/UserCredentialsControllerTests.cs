@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using ValuedInBE.Controllers.Users;
-using ValuedInBE.DataControls.Paging;
-using ValuedInBE.Models.DTOs.Requests.Users;
-using ValuedInBE.Models.DTOs.Responses.Users;
-using ValuedInBE.Services.Users;
+using ValuedInBE.System.DataControls.Paging;
+using ValuedInBE.Users.Controllers;
+using ValuedInBE.Users.Models.DTOs.Request;
+using ValuedInBE.Users.Models.DTOs.Response;
+using ValuedInBE.Users.Services;
 using Xunit;
 
 namespace ValuedInBE.Controllers.Tests
@@ -26,11 +26,11 @@ namespace ValuedInBE.Controllers.Tests
             UserPageRequest userPageRequest = new(0, 10, new(), true);
             Page<UserSystemInfo> pageExpected = Page<UserSystemInfo>.Empty();
             _userServiceMock
-                .Setup(mock => mock.GetUserPage(userPageRequest))
+                .Setup(mock => mock.GetUserPageAsync(userPageRequest))
                 .ReturnsAsync(pageExpected);
 
             UserCredentialsController controller = MockUserCredentialsController();
-            var actionResult = await controller.GetUserPage(userPageRequest);
+            var actionResult = await controller.GetUserPageAsync(userPageRequest);
             Assert.NotNull(actionResult);
             Page<UserSystemInfo> pageReturned = actionResult.Value ?? throw new();
             Assert.NotNull(pageReturned);
@@ -43,22 +43,22 @@ namespace ValuedInBE.Controllers.Tests
             string nonExistingLogin = "Non-ExistingLogin";
             UserSystemInfo userExpected = UserConstants.UserSystemInfoInstance;
             _userServiceMock
-                .Setup(mock => mock.GetUserSystemInfoByLogin(UserConstants.login))
+                .Setup(mock => mock.GetUserSystemInfoByLoginAsync(UserConstants.login))
                 .ReturnsAsync(userExpected);
             _userServiceMock
-                .Setup(mock => mock.GetUserSystemInfoByLogin(nonExistingLogin))
+                .Setup(mock => mock.GetUserSystemInfoByLoginAsync(nonExistingLogin))
                 .ReturnsAsync(null as UserSystemInfo);
 
 
             UserCredentialsController controller = MockUserCredentialsController();
-            ActionResult<UserSystemInfo> actionResultOnExisting = await controller.GetUserSystemInfo(UserConstants.login);
+            ActionResult<UserSystemInfo> actionResultOnExisting = await controller.GetUserSystemInfoAsync(UserConstants.login);
             Assert.NotNull(actionResultOnExisting);
             Assert.NotNull(actionResultOnExisting.Value);
             UserSystemInfo userReturned = actionResultOnExisting.Value ?? throw new();
             Assert.NotNull(userReturned);
             Assert.Same(userExpected, userReturned);
 
-            ActionResult<UserSystemInfo> actionResulstOnNonExisting = await controller.GetUserSystemInfo(nonExistingLogin);
+            ActionResult<UserSystemInfo> actionResulstOnNonExisting = await controller.GetUserSystemInfoAsync(nonExistingLogin);
             Assert.NotNull(actionResulstOnNonExisting);
             Assert.Null(actionResulstOnNonExisting.Value);
             Assert.IsType<NoContentResult>(actionResulstOnNonExisting.Result);
@@ -68,10 +68,10 @@ namespace ValuedInBE.Controllers.Tests
         public async Task UpdateUserCallsServiceToUpdate()
         {
             UpdatedUser userExpected = UserConstants.UpdatedUserInstance;
-            _userServiceMock.Setup(mock => mock.UpdateUser(userExpected)).Verifiable();
+            _userServiceMock.Setup(mock => mock.UpdateUserAsync(userExpected)).Verifiable();
 
             UserCredentialsController controller = MockUserCredentialsController();
-            await controller.UpdateUser(userExpected);
+            await controller.UpdateUserAsync(userExpected);
             _userServiceMock.Verify();
         }
 
@@ -79,10 +79,10 @@ namespace ValuedInBE.Controllers.Tests
         public async Task ExpireUserCallsService()
         {
             UserSystemInfo userExpected = UserConstants.UserSystemInfoInstance;
-            _userServiceMock.Setup(mock => mock.ExpireUser(UserConstants.login)).Verifiable();
+            _userServiceMock.Setup(mock => mock.ExpireUserAsync(UserConstants.login)).Verifiable();
 
             UserCredentialsController controller = MockUserCredentialsController();
-            await controller.ExpireUser(UserConstants.login);
+            await controller.ExpireUserAsync(UserConstants.login);
             _userServiceMock.Verify();
         }
     }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ValuedInBE.Models.Entities.Messaging;
+﻿using ValuedInBE.Chats.Models.Entities;
 
 namespace ValuedInBETests.TestingConstants
 {
@@ -15,8 +10,10 @@ namespace ValuedInBETests.TestingConstants
         public static string message = "This is a message";
         public static string senderUserId = "sender";
 
-        public static ChatMessage ChatMessage { 
-            get{
+        public static ChatMessage ChatMessage
+        {
+            get
+            {
                 var chatMessage = new ChatMessage()
                 {
                     Id = messageID,
@@ -26,6 +23,7 @@ namespace ValuedInBETests.TestingConstants
                     CreatedBy = senderUserId
                 };
                 return chatMessage;
-            } }
+            }
+        }
     }
 }

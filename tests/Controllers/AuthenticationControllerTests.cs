@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using ValuedInBE.Controllers.Users;
-using ValuedInBE.Models.DTOs.Requests.Users;
-using ValuedInBE.Models.DTOs.Responses.Authentication;
-using ValuedInBE.Security.Users;
-using ValuedInBE.Services.Users;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Controllers;
+using ValuedInBE.Users.Models.DTOs.Request;
+using ValuedInBE.Users.Models.DTOs.Response;
+using ValuedInBE.Users.Services;
 using Xunit;
 
 namespace ValuedInBE.Controllers.Tests
@@ -23,25 +23,13 @@ namespace ValuedInBE.Controllers.Tests
         }
 
         [Fact()]
-        public async void RegisterUserShouldReturnOk()
+        public async Task RegisterUserShouldReturnOk()
         {
             NewUser newUser = UserConstants.NewUserInstance;
-            _mockAuthenticationService.Setup(service => service.RegisterNewUser(newUser)).Verifiable();
+            _mockAuthenticationService.Setup(service => service.RegisterNewUserAsync(newUser)).Verifiable();
             AuthenticationController controller = MockAuthenticationController();
 
-            ActionResult actionResult = await controller.RegisterUser(newUser);
-            Assert.IsType<OkResult>(actionResult);
-            _mockAuthenticationService.Verify();
-        }
-
-        [Fact()]
-        public async Task SelfRegisterUserShouldReturnOk()
-        {
-            NewUser newUser = UserConstants.NewUserInstance;
-            _mockAuthenticationService.Setup(service => service.SelfRegister(newUser)).Verifiable();
-            AuthenticationController controller = MockAuthenticationController();
-
-            ActionResult actionResult = await controller.SelfRegisterUser(newUser);
+            ActionResult actionResult = await controller.RegisterUserAsync(newUser);
             Assert.IsType<OkResult>(actionResult);
             _mockAuthenticationService.Verify();
         }
@@ -55,11 +43,11 @@ namespace ValuedInBE.Controllers.Tests
                 Role = UserRoleExtended.DEFAULT
             };
             AuthRequest authRequest = UserConstants.AuthRequestInstance;
-            _mockAuthenticationService.Setup(service => service.AuthenticateUser(authRequest))
+            _mockAuthenticationService.Setup(service => service.AuthenticateUserAsync(authRequest))
                 .ReturnsAsync(tokenAndRole);
             AuthenticationController controller = MockAuthenticationController();
 
-            ActionResult<TokenAndRole> actionResult = await controller.LogIn(authRequest);
+            ActionResult<TokenAndRole> actionResult = await controller.LogInAsync(authRequest);
             Assert.NotNull(actionResult.Value);
             Assert.Equal(fakeToken, actionResult.Value!.Token);
             Assert.Equal(UserRoleExtended.DEFAULT, actionResult.Value.Role);

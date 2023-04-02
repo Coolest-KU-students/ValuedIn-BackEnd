@@ -2,7 +2,7 @@
 
 namespace ValuedInBE.System.WebConfigs
 {
-    public class CorsConfig
+    public class CorsConfig //TODO: User secrets? Configuration? Adjust something
     {
         public static CorsConfig LocalHostConfig { get; } =
             new()

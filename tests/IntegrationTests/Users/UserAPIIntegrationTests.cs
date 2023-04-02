@@ -3,9 +3,10 @@ using Newtonsoft.Json;
 using System.Net;
 using ValuedInBE;
 using ValuedInBE.DataControls.Paging;
-using ValuedInBE.Models.DTOs.Requests.Users;
-using ValuedInBE.Models.DTOs.Responses.Users;
-using ValuedInBE.Security.Users;
+using ValuedInBE.System.DataControls.Paging;
+using ValuedInBE.System.Security.Users;
+using ValuedInBE.Users.Models.DTOs.Request;
+using ValuedInBE.Users.Models.DTOs.Response;
 using ValuedInBETests.IntegrationTests.Config;
 using Xunit;
 
@@ -19,10 +20,7 @@ namespace ValuedInBETests.IntegrationTests.Users
         private const string expireUserRoute = "/api/users/expire/{login}";
         private const string updateTargetUser = "GetUserInfoThenUpdateInfoAndThenExpire";
 
-        private static readonly string[] _rolesThatAreNotSysAdmin =
-            UserRoleExtended.ExtendedRoles
-            .Where(role => role != UserRoleExtended.SYS_ADMIN)
-            .Select(role => role.ToString()).ToArray();
+        private static readonly string[] _rolesThatAreNotSysAdmin = { UserRoleExtended.DEFAULT, UserRoleExtended.HR, UserRoleExtended.ORG_ADMIN };
 
         private static readonly string _sysAdminRoleName = UserRole.SYS_ADMIN.GetDisplayName();
 
@@ -33,7 +31,11 @@ namespace ValuedInBETests.IntegrationTests.Users
         [Fact]
         public async Task GetUserPageOnlyAsSysAdmin()
         {
-            PageConfig pageConfig = new(0, 10, new());
+            PageConfig pageConfig = new() { 
+                Page = 0, 
+                Size = 10, 
+                OrderByColumns = new() 
+            };
             StringContent requestContent = SerializeIntoJsonHttpContent(pageConfig);
 
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access
@@ -60,7 +62,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             string targetLogin = updateTargetUser;
             string getLoginPath = getByLoginRoute.Replace("{login}", targetLogin);
             string updateUserPath = updateUserRoute;
-            string expireUserRoute = UserAPIIntegrationTests.expireUserRoute.Replace("{login}", targetLogin);
+            string specificExpireUserRoute = expireUserRoute.Replace("{login}", targetLogin);
             string updatedSuffix = "_updated";
 
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access
@@ -82,7 +84,7 @@ namespace ValuedInBETests.IntegrationTests.Users
             Assert.Equal(user!.Login, targetLogin);
             Assert.False(user.IsExpired);
 
-            RemoveLoginHeaderFromHttpClient(); ; //reset
+            RemoveLoginHeaderFromHttpClient(); //reset
             UpdatedUser updatedUser = new()
             {
                 UserID = user.UserID,
@@ -112,17 +114,17 @@ namespace ValuedInBETests.IntegrationTests.Users
                     .Any()
                 );
 
-            RemoveLoginHeaderFromHttpClient(); ; //reset
+            RemoveLoginHeaderFromHttpClient(); //reset
             foreach (string role in _rolesThatAreNotSysAdmin) //Check that nobody else has access
             {
                 AddLoginHeaderToHttpClient(role);
-                HttpResponseMessage httpResponse = await _client.DeleteAsync(expireUserRoute);
+                HttpResponseMessage httpResponse = await _client.DeleteAsync(specificExpireUserRoute);
                 Assert.Equal(HttpStatusCode.Forbidden, httpResponse.StatusCode);
                 RemoveLoginHeaderFromHttpClient();
             }
 
             AddLoginHeaderToHttpClient(_sysAdminRoleName);
-            HttpResponseMessage expirationResponse = await _client.DeleteAsync(expireUserRoute);
+            HttpResponseMessage expirationResponse = await _client.DeleteAsync(specificExpireUserRoute);
             Assert.True(expirationResponse.IsSuccessStatusCode);
             Assert.True(
                 _valuedInContext.UserCredentials

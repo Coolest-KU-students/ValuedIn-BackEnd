@@ -1,18 +1,18 @@
 ﻿using Xunit;
-using ValuedInBE.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Moq;
-using ValuedInBE.System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ValuedInBE.Models;
 using System.Net.WebSockets;
 using Microsoft.Extensions.Logging;
-using ValuedInBE.Services.Tokens;
+using ValuedInBE.WebSockets.Controllers;
+using ValuedInBE.Tokens.Services;
+using ValuedInBE.Users.Models;
+using ValuedInBE.WebSockets.Services;
 
 namespace ValuedInBE.Controllers.Tests
 {
@@ -24,7 +24,7 @@ namespace ValuedInBE.Controllers.Tests
         private readonly Mock<HttpContext> _mockHttpContext = new();
         private readonly Mock<WebSocketManager> _mockWebSocketManager = new();
         private readonly Mock<WebSocket> _mockWebSocket = new();
-        private readonly UserContext testingContext = UserConstants.UserContextInstance;
+        private readonly UserContext _testingContext = UserConstants.UserContextInstance;
         private const string token = "token";
         private const string tokenType = "WebSocketToken";
 
@@ -33,13 +33,13 @@ namespace ValuedInBE.Controllers.Tests
         private WebSocketController MockWebSocketController()
         {
             _mockTokenService.Setup(service => service.GetUserContextFromToken(token, tokenType))
-                .Returns(testingContext);
+                .Returns(_testingContext);
             return new(_mockWebSocketTracker.Object, _mockLogger.Object, _mockTokenService.Object); 
         }
 
 
         [Fact()]
-        public async void FailsToEstablishWhenNotAWebSocket()
+        public async Task FailsToEstablishWhenNotAWebSocket()
         {
             _mockWebSocketManager.SetupGet(manager => manager.IsWebSocketRequest)
                 .Returns(true);
@@ -49,13 +49,14 @@ namespace ValuedInBE.Controllers.Tests
 
             WebSocketController socketController = MockWebSocketController();
             socketController.ControllerContext.HttpContext = _mockHttpContext.Object;
-            ActionResult emptyTokenEstablish = await socketController.Establish("");
+            ActionResult emptyTokenEstablish = await socketController.EstablishAsync("");
             Assert.NotNull(emptyTokenEstablish);
             Assert.IsType<BadRequestResult>(emptyTokenEstablish);
 
             socketController.ControllerContext.HttpContext = new DefaultHttpContext();
-            Task<ActionResult> establishTask = socketController.Establish("bad token");
-            await Task.Delay(1); //to ensure synchronisity;
+            Task<ActionResult> establishTask = socketController.EstablishAsync("bad token");
+            //ensure synchronisity:
+            await Task.Delay(1); 
             Assert.True(establishTask.IsCompleted);
             ActionResult result = await establishTask;
             Assert.NotNull(result);
@@ -63,7 +64,7 @@ namespace ValuedInBE.Controllers.Tests
         }
 
         [Fact]
-        public async void TestEstablishingAWebSocketAndCuttingItOff()
+        public async Task TestEstablishingAWebSocketAndCuttingItOff()
         {
             _mockWebSocket.SetupGet(socket => socket.CloseStatus)
                 .Returns(WebSocketCloseStatus.NormalClosure);
@@ -77,14 +78,14 @@ namespace ValuedInBE.Controllers.Tests
             _mockHttpContext.SetupGet(context => context.WebSockets)
                 .Returns(_mockWebSocketManager.Object);
 
-            _mockWebSocketTracker.Setup(tracker => tracker.Add(testingContext.UserID, It.IsAny<WebSocket>()))
+            _mockWebSocketTracker.Setup(tracker => tracker.Add(_testingContext.UserID, It.IsAny<WebSocket>()))
                 .Verifiable();
 
             WebSocketController socketController = MockWebSocketController();
             socketController.ControllerContext.HttpContext = _mockHttpContext.Object;
-            Task<ActionResult> establishTask = socketController.Establish(token);
+            Task<ActionResult> establishTask = socketController.EstablishAsync(token);
             
-            await Task.Delay(_connectionVerificationIntervals*0.1); //to ensure it ran at least one loop;
+            await Task.Delay(_connectionVerificationIntervals*0.1); //to ensure it ran at least one loop
             Assert.False(establishTask.IsCompleted);
 
             await Task.Delay(_connectionVerificationIntervals);

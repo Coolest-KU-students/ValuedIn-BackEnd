@@ -2,18 +2,12 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading.Tasks;
 using ValuedInBE;
-using ValuedInBE.Contexts;
-using ValuedInBE.Models.DTOs.Requests.Chats;
-using ValuedInBE.Models.Entities.Messaging;
-using ValuedInBE.Models.Users;
-using ValuedInBE.Repositories;
+using ValuedInBE.Chats.Models.DTOs.Request;
+using ValuedInBE.Chats.Models.Entities;
+using ValuedInBE.Users.Models.Entities;
 using ValuedInBETests.IntegrationTests.Config;
 using Xunit;
 
@@ -83,13 +77,10 @@ namespace ValuedInBETests.IntegrationTests.Chats
             };
             StringContent chatRequestContent = SerializeIntoJsonHttpContent(request);
             AddLoginHeaderToHttpClient(senderLogin);
-            DumbDebug($"Added Login to Header : {DateTime.Now}");
             WebSocket webSocket = await EstablishWebSocketConnection();
 
-            DumbDebug($"Posting : {DateTime.Now}");
             HttpResponseMessage chatResponse = await _client.PostAsync(chatsRoute, chatRequestContent);
 
-            DumbDebug($"Posted : {DateTime.Now}");
             var WebSocketReceiveTask = webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
             Assert.True(chatResponse.IsSuccessStatusCode);
             Assert.NotNull(chatResponse.Content);
@@ -135,22 +126,18 @@ namespace ValuedInBETests.IntegrationTests.Chats
             return user.UserID;
         }
 
-        private static async Task<WebSocket> ReceiveFromSocketAndIfTimerHasPassedEnsureReconnection(WebSocket webSocket, Timer timer)
-        {
-            throw new NotImplementedException();
-        }
-
         private async Task CheckWebSocketConnection(WebSocket webSocket)
         {
             Assert.False(webSocket.CloseStatus.HasValue);
             ArraySegment<byte> buffer = new(Encoding.UTF8.GetBytes(pingMessage));
             byte[] buffer2 = new byte[1024 * 4];
             ArraySegment<byte> socketResponse = new(buffer2);
-            await webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
             WebSocketReceiveResult firstResults = await webSocket.ReceiveAsync(socketResponse, CancellationToken.None);
             Assert.False(firstResults.CloseStatus.HasValue);
             Assert.NotNull(socketResponse.Array);
             Assert.Equal(pingMessage, Encoding.UTF8.GetString(socketResponse.Array!).Trim('\0'));
+            await webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+            Assert.False(firstResults.CloseStatus.HasValue);
         }
 
         private async Task<WebSocket> EstablishWebSocketConnection()
@@ -170,12 +157,6 @@ namespace ValuedInBETests.IntegrationTests.Chats
             string webSocketToken = await tokenResponse.Content.ReadAsStringAsync();
             Assert.False(string.IsNullOrEmpty(webSocketToken));
             return webSocketToken;
-        }
-
-        public static void DumbDebug(string message)
-        {
-            string file = @"C:\Users\Lukas\Source\Repos\ValuedInBE\tests\debug.txt";
-            File.AppendAllTextAsync(file, message+'\n'); 
         }
     }
 }
