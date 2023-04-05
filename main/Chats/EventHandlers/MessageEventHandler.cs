@@ -67,6 +67,9 @@ namespace ValuedInBE.Chats.EventHandlers
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _timer!.Dispose();
+            _consumer.Close();
+            _consumer.Dispose();
+            _producer.Dispose();
             _logger.LogInformation("Message event handler has stopped");
             return Task.CompletedTask;
         }
