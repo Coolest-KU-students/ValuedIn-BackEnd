@@ -14,7 +14,7 @@ namespace ValuedInBE.System.WebConfigs.Middleware
             {
                 context.Response.StatusCode = (int) ex.StatusCode;
                 context.Response.ContentType = "text/html";
-                context.Response.Body = new StringContent(ex.Message).ReadAsStream();
+                await context.Response.WriteAsync(ex.Message);
             }
         }
     }

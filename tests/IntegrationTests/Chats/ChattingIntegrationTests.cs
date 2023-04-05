@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using NuGet.Protocol.Plugins;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using ValuedInBE;
@@ -108,6 +110,35 @@ namespace ValuedInBETests.IntegrationTests.Chats
             Assert.Equal(secondChatMessage.ChatId, createdChat.Id);
 
             await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task TryingToCreateChatWithNoParticipantsShouldCauseProblems()
+        {
+            string sender = await GetUserIdFromLoginAsync(senderLogin);
+            AddLoginHeaderToHttpClient(senderLogin);
+            NewChatRequest requestWithoutParticipants = new()
+            {
+                MessageContent = sendableMessage,
+                Participants = new() {}
+            };
+            NewChatRequest requestWithNoOtherParticipants = new()
+            {
+                MessageContent = sendableMessage,
+                Participants = new() { sender }
+            };
+            StringContent requestWithoutParticipantsContent = SerializeIntoJsonHttpContent(requestWithoutParticipants);
+            StringContent requestWithNoOtherParticipantsContent = SerializeIntoJsonHttpContent(requestWithNoOtherParticipants);
+
+            HttpResponseMessage response1 = await _client.PostAsync(chatsRoute, requestWithoutParticipantsContent);
+            Assert.Equal(HttpStatusCode.UnprocessableEntity, response1.StatusCode);
+            Assert.NotNull(response1.Content);
+            Assert.Equal("No participants", await response1.Content.ReadAsStringAsync());
+
+            HttpResponseMessage response2 = await _client.PostAsync(chatsRoute, requestWithNoOtherParticipantsContent);
+            Assert.Equal(HttpStatusCode.UnprocessableEntity, response2.StatusCode);
+            Assert.NotNull(response2);
+            Assert.Equal("No participants", await response2.Content.ReadAsStringAsync());
         }
 
         private async Task<string> GetUserIdFromLoginAsync(string login)
