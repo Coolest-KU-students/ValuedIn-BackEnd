@@ -2,13 +2,13 @@
 
 namespace ValuedInBETests.TestingConstants
 {
-    internal class ChatConstants
+    public static class ChatConstants
     {
-        public static long messageID = 1;
-        public static long chatID = 3;
-        public static DateTime created = DateTime.Now;
-        public static string message = "This is a message";
-        public static string senderUserId = "sender";
+        public const long messageID = 1;
+        public const long chatID = 3;
+        public static readonly DateTime created = DateTime.Now;
+        public const string message = "This is a message";
+        public const string senderUserId = "sender";
 
         public static ChatMessage ChatMessage
         {

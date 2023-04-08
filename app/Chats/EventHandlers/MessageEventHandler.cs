@@ -67,8 +67,6 @@ namespace ValuedInBE.Chats.EventHandlers
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _timer!.Dispose();
-            _consumer.Close();
-            _consumer.Dispose();
             _producer.Dispose();
             _logger.LogInformation("Message event handler has stopped");
             return Task.CompletedTask;
@@ -84,6 +82,8 @@ namespace ValuedInBE.Chats.EventHandlers
                 _logger.LogTrace("Received new message in chat {chatID}, attempting to distribute to users {users}", chatId, string.Join(", ", participatingUsers));
                 await DistributeMessagesAsync(participatingUsers, result.Message.Value.ChatMessage, _cancellationToken);
             }
+            _consumer.Close();
+            _consumer.Dispose();
         }
 
         private ConsumeResult<long, NewMessageEvent> ConsumeNextMessage(CancellationToken? cancellationToken = null)

@@ -14,6 +14,7 @@ using ValuedInBE.Chats.Models.DTOs.Response;
 using ValuedInBE.Chats.Models.Entities;
 using ValuedInBE.Chats.Services;
 using ValuedInBE.DataControls.Paging;
+using ValuedInBE.TestingConstants;
 
 namespace ValuedInBE.Controllers.Chats.Tests
 {
@@ -111,7 +112,7 @@ namespace ValuedInBE.Controllers.Chats.Tests
         }
 
         [Fact()]
-        public async void TestSendNewMessage()
+        public async Task TestSendNewMessage()
         {
             long chatId = ChatConstants.chatID;
             NewMessage newMessage = new()

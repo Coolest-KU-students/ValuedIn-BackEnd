@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\main\ValuedInBE.csproj" />
+    <ProjectReference Include="..\..\app\ValuedInBE.csproj" />
   </ItemGroup>
 
 </Project>

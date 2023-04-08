@@ -15,6 +15,7 @@ using ValuedInBE.Chats.Models.Events;
 using ValuedInBE.Chats.Repositories;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Chats.Services;
+using ValuedInBE.TestingConstants;
 
 namespace ValuedInBE.Services.Chats.Implementations.Tests
 {
@@ -38,7 +39,7 @@ namespace ValuedInBE.Services.Chats.Implementations.Tests
         }
 
         [Fact()]
-        public async void TestGetChatsAsync()
+        public async Task TestGetChatsAsync()
         {
             DateTime lowerDateTime = DateTime.Now + TimeSpan.FromDays(2);
             DateTime higherDateTime = DateTime.Now;
@@ -74,7 +75,7 @@ namespace ValuedInBE.Services.Chats.Implementations.Tests
                     Id = 2,
                     CreatedOn = lowerDateTime,
                     Messages = messages.Select(mess => { mess.ChatId = 2; return mess; }).OrderByDescending(mess=>mess.CreatedOn).ToList(),
-                    Participants = new(){chatParticipant1}
+                    Participants = new(){chatParticipant2}
                 },
             };
 
@@ -180,7 +181,7 @@ namespace ValuedInBE.Services.Chats.Implementations.Tests
 
 
         [Fact()]
-        public async void TestGetMessagesAsync()
+        public async Task TestGetMessagesAsync()
         {
             long chatId = ChatConstants.chatID;
             string userId = UserConstants.userId;

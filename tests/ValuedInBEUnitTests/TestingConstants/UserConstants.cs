@@ -4,7 +4,7 @@ using ValuedInBE.Users.Models.DTOs.Request;
 using ValuedInBE.Users.Models.DTOs.Response;
 using ValuedInBE.Users.Models.Entities;
 
-namespace ValuedInBE
+namespace ValuedInBE.TestingConstants
 {
     public static class UserConstants
     {
