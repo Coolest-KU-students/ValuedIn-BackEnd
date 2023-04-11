@@ -47,3 +47,20 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29091 --list
       "
+
+  app:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
+    working_dir: /app
+    ports:
+      - '7229:80'
+      - '7229:443'
+    depends_on:
+      - kafka
+      - init-kafka
