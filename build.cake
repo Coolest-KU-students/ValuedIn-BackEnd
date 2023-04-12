@@ -3,34 +3,40 @@
 using Cake.Docker;
 using Cake.Common.Diagnostics;
 
-string listTasksTask = "ListTasks";
 
 var target = Argument("target", listTasksTask);
 var configuration = Argument("configuration", "Release");
+var DBServer = Argument("server", "localhost");
+var serverIsInDocker = Argument<bool>("dockerized", false)
 
 string appDirectory = "./app";
-
-string restoreNugetsTask = "Restore";
-
 string testingDirectory = "./tests";
-string integrationTestTask = "TestIntegration";
+string envFile = "./env";
+string exampleAppEnvironment = ".env.app";
 string integrationTestProject = testingDirectory + "/ValuedInBEIntegrationTests/ValuedInBEIntegrationTests.csproj";
-string unitTestTask = "TestUnits";
 string unitTestProject = testingDirectory + "/ValuedInBEUnitTests/ValuedInBEUnitTests.csproj";
+
+string listTasksTask = "ListTasks";
+string restoreNugetsTask = "Restore";
+string initAppEnvironmentTask = "InitializeEnvironment";
+
+string integrationTestTask = "TestIntegration";
+string unitTestTask = "TestUnits";
 string allTestTask = "Test";
 
 string kafkaTask = "StartKafka";
 string[] kafkaServices = { "zookeeper", "kafka", "init-kafka" };
 
 string startDBTask = "StartDB";
-string[] dbServices = { "init-db" };
+string dockerizedDBContainerName = "sql-db"
+string[] dbServices = { dockerizedDBContainerName" };
 
 string buildAndRunApplicationTask = "StartApp";
 string[] buildServices = { "app" };
 
 string stopAllTask = "Stop";
 
-string[] taskArray = {listTasksTask, restoreNugetsTask, integrationTestTask, unitTestTask, allTestTask, kafkaTask, startDBTask, buildAndRunApplicationTask, stopAllTask};
+string[] taskArray = {initAppEnvironmentTask, listTasksTask, restoreNugetsTask, integrationTestTask, unitTestTask, allTestTask, kafkaTask, startDBTask, buildAndRunApplicationTask, stopAllTask};
 
 target = taskArray.Contains(target) ? target : listTasksTask;
 
@@ -58,9 +64,26 @@ Task(restoreNugetsTask)
             DotNetRestore(appDirectory);
         });
 
+Task(initAppEnvironmentTask)
+    .Does(()=>{
+           Information("Initializing app environment...");
+           
+           DBServer = serverIsInDocker ? dockerizedDBContainerName : DBServer;
+           Information($"Setting the DB Server connection for {DBServer}");
+
+            // Write the updated connection string back to the .env file
+            System.IO.File.WriteAllText(
+                $"{appDirectory}/{envFile}",
+                System.IO.File.ReadAllText(exampleAppEnvironment)
+                               .Replace("{DB_Server}", DBServer)
+            );
+
+        });
+
 //Testing
 Task(integrationTestTask)
     .IsDependentOn(kafkaTask)
+    .IsDependentOn(initAppEnvironmentTask)
     .Does(() =>{
             DotNetTest(integrationTestProject);
         });
@@ -74,7 +97,7 @@ Task(allTestTask)
     .IsDependentOn(integrationTestTask)
     .IsDependentOn(unitTestTask);
 
-// Define the Cake tasks
+
 Task(kafkaTask)
     .Does(() => {
         DockerComposeUp(dockerComposeUpSettings, kafkaServices);

@@ -2,6 +2,7 @@
 version: '3'
 services:
   zookeeper:
+    restart: always
     image: confluentinc/cp-zookeeper:7.3.0
     hostname: zookeeper
     container_name: zookeeper
@@ -12,6 +13,7 @@ services:
       - 22181:2181
 
   kafka:
+    restart: always
     image: confluentinc/cp-kafka:7.3.0
     ports:
       - '29092:29092'
@@ -64,3 +66,24 @@ services:
     depends_on:
       - kafka
       - init-kafka
+
+  sql-db:
+    restart: always
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    user: root
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=VeryComplexPassword123
+    ports:
+      - 1435:1433
+    volumes:
+      - type: volume
+        source: sql_data
+        target: /var/opt/mssql
+    networks:
+      - sqlnetwork
+
+volumes:
+  sql_data:
+networks:
+  sqlnetwork:
