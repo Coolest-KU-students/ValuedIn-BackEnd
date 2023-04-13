@@ -15,6 +15,7 @@ using ValuedInBE.Chats.Models.Entities;
 using ValuedInBE.Chats.Services;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.TestingConstants;
+using ValuedInBE.System.UserContexts.Accessors;
 
 namespace ValuedInBE.Controllers.Chats.Tests
 {
@@ -23,15 +24,14 @@ namespace ValuedInBE.Controllers.Chats.Tests
     {
         private readonly Mock<ILogger<ChatController>> _logger = new();
         private readonly Mock<IChatService> _chatService = new();
-        private readonly Mock<HttpContext> _httpContext = new();
+        private readonly Mock<IUserContextAccessor> _mockUserContextAccessor = new();
 
 
         private ChatController MockChatController()
         {
-            _httpContext.SetupGet(context => context.Items)
-                .Returns(new Dictionary<object, object?>() { { UserContextMiddleware.userContextItemName, UserConstants.UserContextInstance } });
-            ChatController controller = new(_chatService.Object, _logger.Object);
-            controller.ControllerContext.HttpContext = _httpContext.Object; 
+            _mockUserContextAccessor.SetupGet(accessor => accessor.UserContext)
+                .Returns(UserConstants.UserContextInstance);
+            ChatController controller = new(_chatService.Object, _logger.Object, _mockUserContextAccessor.Object);
             return controller;
         }
 

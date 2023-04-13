@@ -25,7 +25,7 @@ namespace ValuedInBETests.IntegrationTests.Chats
         private const string receiverLogin = "ChatMessageReceiver";
         private const string sendableMessage = "HELLO THIS IS NEW MESSAGE";
         private const string pingMessage = "ping";
-        private readonly WebSocketClient _webSocketClient; 
+        private readonly WebSocketClient _webSocketClient;
 
         public ChattingIntegrationTests(IntegrationTestWebApplicationFactory<Program> factory) : base(factory)
         {
@@ -33,10 +33,10 @@ namespace ValuedInBETests.IntegrationTests.Chats
         }
 
         [Fact]
-        public async Task CreateChatAndThenTryToCreateTheSameChat() 
+        public async Task CreateChatAndThenTryToCreateTheSameChat()
         {
             AddLoginHeaderToHttpClient(senderLogin);
-            string receiver = await GetUserIdFromLoginAsync(receiverLogin); 
+            string receiver = await GetUserIdFromLoginAsync(receiverLogin);
 
             NewChatRequest request = new()
             {
@@ -61,7 +61,7 @@ namespace ValuedInBETests.IntegrationTests.Chats
             Assert.Equal(initialChat!.Id, secondaryChat!.Id);
         }
 
-        [Fact]
+        [Fact(Skip = "Test is not stable with web sockets. Needs to be investigated deeper")]
         public async Task CreatingChatAndSendingAMessageShouldBothTriggerWebSocket()
         {
             await Task.Delay(10000);

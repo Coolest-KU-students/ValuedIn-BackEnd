@@ -2,7 +2,7 @@
 using Microsoft.OpenApi.Extensions;
 using ValuedInBE.System.DataControls.Paging;
 using ValuedInBE.System.Security.Users;
-using ValuedInBE.System.WebConfigs.Middleware;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.Users.Exceptions;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.DTOs.Request;
@@ -17,16 +17,16 @@ namespace ValuedInBE.Users.Services.Implementations
         private readonly ILogger<UserService> _logger;
         private readonly IUserCredentialRepository _userCredentialRepository;
         private readonly IUserIDGenerationStrategy _userIDGeneration;
-        private readonly IHttpContextAccessor _contextAccessor;
         private readonly IMapper _mapper;
+        private readonly IUserContextAccessor _userContextAccessor;
 
-        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository, IUserIDGenerationStrategy userIDGeneration, IHttpContextAccessor contextAccessor, IMapper mapper)
+        public UserService(ILogger<UserService> logger, IUserCredentialRepository userCredentialRepository, IUserIDGenerationStrategy userIDGeneration, IMapper mapper, IUserContextAccessor userContextAccessor)
         {
             _logger = logger;
             _userCredentialRepository = userCredentialRepository;
             _userIDGeneration = userIDGeneration;
-            _contextAccessor = contextAccessor;
             _mapper = mapper;
+            _userContextAccessor = userContextAccessor;
         }
 
         public async Task<Page<UserSystemInfo>> GetUserPageAsync(UserPageRequest config)
@@ -75,7 +75,7 @@ namespace ValuedInBE.Users.Services.Implementations
                 UserDetails = userDetails
             };
 
-            userContext ??= _contextAccessor.HttpContext?.GetUserContext();
+            userContext ??= _userContextAccessor.UserContext;
             if (userContext == null)
             {
                 //TODO: I question this security myself, should throw an error, but then initial Seed will break... Maybe I should try attaching a context there
@@ -180,7 +180,7 @@ namespace ValuedInBE.Users.Services.Implementations
 
         private UserContext GetUserContextFromHttpOrThrowException()
         {
-            return _contextAccessor.HttpContext?.GetUserContext()
+            return _userContextAccessor.UserContext
                    ?? throw new Exception("User could not be recognized by the system; Cannot execute");
         }
 

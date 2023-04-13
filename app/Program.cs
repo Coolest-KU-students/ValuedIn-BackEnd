@@ -11,6 +11,7 @@ using ValuedInBE.System;
 using ValuedInBE.System.External.Services.Kafka;
 using ValuedInBE.System.External.Tools.AutoMapperProfiles;
 using ValuedInBE.System.PersistenceLayer.Contexts;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.System.WebConfigs;
 using ValuedInBE.System.WebConfigs.Middleware;
 using ValuedInBE.Tokens.Services;
@@ -43,6 +44,7 @@ namespace ValuedInBE
             builder.Services.AddScoped<IUserIDGenerationStrategy, CustomUserIDGenerationStrategyWithNameMerging>();
             builder.Services.AddScoped<IChatRepository, ChatRepository>();
             builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<IUserContextAccessor, UserContextAccessor>();
             #endregion
 
             #region Singletons  
@@ -54,7 +56,6 @@ namespace ValuedInBE
             builder.Services.AddSingleton<IMemoizationEngine, MemoizationEngine>();
             builder.Services.AddSingleton<IWebSocketTracker>(x => x.GetRequiredService<ActiveWebSocketTracker>());
             builder.Services.AddSingleton<IMessageEventHandler>(x => x.GetRequiredService<MessageEventHandler>());
-            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<ITokenService, TokenService>();
             #endregion
 
@@ -97,9 +98,10 @@ namespace ValuedInBE
                 var services = scope.ServiceProvider;
                 ValuedInContext context = services.GetRequiredService<ValuedInContext>();
                 IAuthenticationService authenticationService = services.GetRequiredService<IAuthenticationService>();
+                IUserContextAccessor userContextAccessor = services.GetRequiredService<IUserContextAccessor>();
 
                 context.Database.EnsureCreated();
-                await DataInitializer.InitializeAsync(context, authenticationService);
+                await DataInitializer.InitializeAsync(context, authenticationService, userContextAccessor);
             }
 
             app.UseHttpsRedirection();

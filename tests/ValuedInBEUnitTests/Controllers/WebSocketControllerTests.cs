@@ -14,6 +14,7 @@ using ValuedInBE.Tokens.Services;
 using ValuedInBE.Users.Models;
 using ValuedInBE.WebSockets.Services;
 using ValuedInBE.TestingConstants;
+using ValuedInBE.System.UserContexts.Accessors;
 
 namespace ValuedInBE.Controllers.Tests
 {
@@ -25,6 +26,7 @@ namespace ValuedInBE.Controllers.Tests
         private readonly Mock<HttpContext> _mockHttpContext = new();
         private readonly Mock<WebSocketManager> _mockWebSocketManager = new();
         private readonly Mock<WebSocket> _mockWebSocket = new();
+        private readonly Mock<IUserContextAccessor> _mockUserContextAccessor = new();
         private readonly UserContext _testingContext = UserConstants.UserContextInstance;
         private const string token = "token";
         private const string tokenType = "WebSocketToken";
@@ -35,7 +37,7 @@ namespace ValuedInBE.Controllers.Tests
         {
             _mockTokenService.Setup(service => service.GetUserContextFromToken(token, tokenType))
                 .Returns(_testingContext);
-            return new(_mockWebSocketTracker.Object, _mockLogger.Object, _mockTokenService.Object); 
+            return new(_mockWebSocketTracker.Object, _mockLogger.Object, _mockTokenService.Object, _mockUserContextAccessor.Object); 
         }
 
 

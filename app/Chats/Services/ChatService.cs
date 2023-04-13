@@ -6,6 +6,7 @@ using ValuedInBE.Chats.Models.Entities;
 using ValuedInBE.Chats.Models.Events;
 using ValuedInBE.Chats.Repositories;
 using ValuedInBE.DataControls.Paging;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.System.WebConfigs.Middleware;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Services;
@@ -17,22 +18,22 @@ namespace ValuedInBE.Chats.Services
         private readonly IChatRepository _chatRepository;
         private readonly IUserService _userService;
         private readonly ILogger<ChatService> _logger;
-        private readonly IHttpContextAccessor _contextAccessor;
         private readonly IMessageEventHandler _eventHandler;
+        private readonly IUserContextAccessor _userContextAccessor;
 
-        public ChatService(IChatRepository chatRepository, ILogger<ChatService> logger, IHttpContextAccessor contextAccessor, IMessageEventHandler eventHandler, IUserService userService)
+        public ChatService(IChatRepository chatRepository, ILogger<ChatService> logger, IMessageEventHandler eventHandler, IUserService userService, IUserContextAccessor userContextAccessor)
         {
             _chatRepository = chatRepository;
             _logger = logger;
-            _contextAccessor = contextAccessor;
             _eventHandler = eventHandler;
             _userService = userService;
+            _userContextAccessor = userContextAccessor;
         }
 
         public async Task<OffsetPage<ChatInfo, DateTime>> GetChatsAsync(ChatPageRequest chatPage)
         {
             DateTime? createdSince = chatPage.Offset;
-            UserContext userContext = _contextAccessor.HttpContext.GetMandatoryUserContext();
+            UserContext userContext = _userContextAccessor.UserContext ?? throw new Exception("User Context not found");
 
             _logger.LogDebug("User {user} has requested Chat Page with Offset {offset}", userContext.UserID, createdSince);
             IEnumerable<Chat> chats = await _chatRepository.GetChatsWithLastMessageAndParticipantsAsync(userContext.UserID, chatPage.Size, chatPage.Offset);
@@ -63,7 +64,7 @@ namespace ValuedInBE.Chats.Services
 
         public async Task<Chat> FetchOrCreateChatAsync(NewChatRequest newChatRequest)
         {
-            UserContext userContext = _contextAccessor.HttpContext!.GetMandatoryUserContext();
+            UserContext userContext = _userContextAccessor.UserContext ?? throw new Exception("User Context not found");
             if (newChatRequest.Participants.Count == (newChatRequest.Participants.Contains(userContext.UserID) ? 1 : 0))
                 throw new ChatParticipantsMissingException("No participants");
 

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.Entities;
 using ValuedInBE.Users.Services;
@@ -7,14 +8,15 @@ namespace ValuedInBE.System.WebConfigs.Middleware
 {
     public class UserContextMiddleware : IMiddleware
     {
-        public const string userContextItemName = "UserContext";
         private readonly IAuthenticationService _authenticationService;
         private readonly IMapper _mapper;
+        private readonly IUserContextAccessor _userContextAccessor;
 
-        public UserContextMiddleware(IAuthenticationService authenticationService, IMapper mapper)
+        public UserContextMiddleware(IAuthenticationService authenticationService, IMapper mapper, IUserContextAccessor userContextAccessor)
         {
             _authenticationService = authenticationService;
             _mapper = mapper;
+            _userContextAccessor = userContextAccessor;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -27,7 +29,7 @@ namespace ValuedInBE.System.WebConfigs.Middleware
                     UserCredentials? credentials = await _authenticationService.GetUserFromTokenAsync(jwtToken);
                     if (credentials != null) { 
                         UserContext user = _mapper.Map<UserContext>(credentials);
-                        context.Items[userContextItemName] = user;
+                        _userContextAccessor.UserContext = user;
                     }
                 }
                 catch (Exception)
@@ -36,19 +38,6 @@ namespace ValuedInBE.System.WebConfigs.Middleware
                 }
             }
             await next.Invoke(context);
-        }
-    }
-
-    public static class UserContextMiddlewareExtensions
-    {
-        public static UserContext? GetUserContext(this HttpContext? context)
-        {
-            return (UserContext?) context?.Items[UserContextMiddleware.userContextItemName] ?? null;
-        }
-
-        public static UserContext GetMandatoryUserContext(this HttpContext? context)
-        {
-            return GetUserContext(context) ?? throw new Exception("Authentication not found");
         }
     }
 }

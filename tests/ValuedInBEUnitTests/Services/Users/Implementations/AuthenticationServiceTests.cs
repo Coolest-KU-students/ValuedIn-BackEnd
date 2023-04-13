@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Extensions;
 using Moq;
 using System.IdentityModel.Tokens.Jwt;
 using ValuedInBE.System.Security.Users;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.TestingConstants;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.DTOs.Request;
@@ -37,7 +38,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
         private readonly Mock<IUserService> _userServiceMock = new();
         private readonly Mock<IPasswordHasher<UserData>> _hasherMock = new();
         private readonly Mock<IMapper> _mapperMock = new();
-        private readonly Mock<IHttpContextAccessor> _contextAccessorMcok = new();
+        private readonly Mock<IUserContextAccessor> _mockUserContextAccessor = new();
         private readonly IConfiguration _fakedConfiguration = new ConfigurationBuilder().AddInMemoryCollection(_inMemoryJWTConfig).Build();
 
 
@@ -49,7 +50,7 @@ namespace ValuedInBE.Services.Users.Implementations.Tests
                 _hasherMock.Object,
                 _mapperMock.Object,
                  new(_fakedConfiguration),
-                 _contextAccessorMcok.Object
+                 _mockUserContextAccessor.Object
                 );
         }
 

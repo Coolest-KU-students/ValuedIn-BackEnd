@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.System.WebConfigs.Middleware;
 using ValuedInBE.Tokens.Services;
 using ValuedInBE.Users.Models;
@@ -18,14 +19,17 @@ namespace ValuedInBE.WebSockets.Controllers
         private readonly IWebSocketTracker _socketTracker;
         private readonly ILogger<WebSocketController> _logger;
         private readonly ITokenService _tokenService;
+        private readonly IUserContextAccessor _userContextAccessor;
         private const string tokenType = "WebSocketToken";
 
 
-        public WebSocketController(IWebSocketTracker socketTracker, ILogger<WebSocketController> logger, ITokenService tokenService)
+
+        public WebSocketController(IWebSocketTracker socketTracker, ILogger<WebSocketController> logger, ITokenService tokenService, IUserContextAccessor userContextAccessor)
         {
             _socketTracker = socketTracker;
             _logger = logger;
             _tokenService = tokenService;
+            _userContextAccessor = userContextAccessor;
         }
 
         [HttpGet]
@@ -63,7 +67,7 @@ namespace ValuedInBE.WebSockets.Controllers
         [HttpGet("token")]
         public ActionResult<string> IssueTokenForWebSocket()
         {
-            UserContext userContext = HttpContext.GetMandatoryUserContext();
+            UserContext userContext = _userContextAccessor.UserContext;
             _logger.LogDebug("Issuing web socket token for user {userId}", userContext.UserID);
             return _tokenService.GenerateOneTimeUserAccessToken(userContext, tokenType);
         }

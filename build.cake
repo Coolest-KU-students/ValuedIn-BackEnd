@@ -3,11 +3,10 @@
 using Cake.Docker;
 using Cake.Common.Diagnostics;
 
-
 var target = Argument("target", listTasksTask);
 var configuration = Argument("configuration", "Release");
 var DBServer = Argument("server", "localhost");
-var serverIsInDocker = Argument<bool>("dockerized", false)
+var serverIsInDocker = Argument<bool>("dockerized", false);
 
 string appDirectory = "./app";
 string testingDirectory = "./tests";
@@ -28,8 +27,8 @@ string kafkaTask = "StartKafka";
 string[] kafkaServices = { "zookeeper", "kafka", "init-kafka" };
 
 string startDBTask = "StartDB";
-string dockerizedDBContainerName = "sql-db"
-string[] dbServices = { dockerizedDBContainerName" };
+string dockerizedDBContainerName = "sql-db";
+string[] dbServices = { dockerizedDBContainerName };
 
 string buildAndRunApplicationTask = "StartApp";
 string[] buildServices = { "app" };

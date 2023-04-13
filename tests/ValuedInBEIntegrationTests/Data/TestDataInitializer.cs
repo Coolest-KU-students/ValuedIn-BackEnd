@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using ValuedInBE.System.Security.Users;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.System.WebConfigs.Middleware;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.DTOs.Request;
@@ -10,14 +11,13 @@ namespace ValuedInBETests.IntegrationTests.Data
     public static class TestDataInitializer
     {
 
-        public static async Task Initialize(IAuthenticationService authenticationService, IHttpContextAccessor contextAccessor)
+        public static async Task Initialize(IAuthenticationService authenticationService, IUserContextAccessor contextAccessor)
         {
-            contextAccessor.HttpContext ??= new DefaultHttpContext();
-            MockUserContextInHttpRequest(contextAccessor.HttpContext);
+            MockUserContextInHttpRequest(contextAccessor);
             await RegisterAllTestingUsersAsync(authenticationService);
         }
 
-        private static void MockUserContextInHttpRequest(HttpContext context)
+        private static void MockUserContextInHttpRequest(IUserContextAccessor accessor)
         {
             UserContext userContext = new()
             {
@@ -26,7 +26,7 @@ namespace ValuedInBETests.IntegrationTests.Data
                 UserID = "TestingUser"
             };
 
-            context.Items[UserContextMiddleware.userContextItemName] = userContext;
+            accessor.UserContext = userContext;
         }
 
         private static async Task RegisterAllTestingUsersAsync(IAuthenticationService authenticationService)

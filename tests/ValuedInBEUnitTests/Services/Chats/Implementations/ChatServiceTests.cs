@@ -16,6 +16,7 @@ using ValuedInBE.Chats.Repositories;
 using ValuedInBE.DataControls.Paging;
 using ValuedInBE.Chats.Services;
 using ValuedInBE.TestingConstants;
+using ValuedInBE.System.UserContexts.Accessors;
 
 namespace ValuedInBE.Services.Chats.Implementations.Tests
 {
@@ -24,18 +25,14 @@ namespace ValuedInBE.Services.Chats.Implementations.Tests
         private readonly Mock<IChatRepository> _chatRepositoryMock = new();
         private readonly Mock<ILogger<ChatService>> _loggerMock = new();
         private readonly Mock<IUserService> _userServiceMock = new();
-        private readonly Mock<IHttpContextAccessor> _contextAccessorMock = new();
         private readonly Mock<IMessageEventHandler> _messageEventHandlerMock = new();
-        private readonly Mock<HttpContext> _httpContextMock = new();
+        private readonly Mock<IUserContextAccessor> _mockUserContextAccessor = new();
 
         private ChatService MockChatService()
         {
-            UserContext userContext = UserConstants.UserContextInstance;
-            _httpContextMock.SetupGet(context => context.Items)
-                .Returns(new Dictionary<object, object?>() { { UserContextMiddleware.userContextItemName, userContext } });
-            _contextAccessorMock.SetupGet(accessor => accessor.HttpContext)
-                .Returns(_httpContextMock.Object);
-            return new(_chatRepositoryMock.Object, _loggerMock.Object, _contextAccessorMock.Object, _messageEventHandlerMock.Object, _userServiceMock.Object);
+            _mockUserContextAccessor.SetupGet(accessor => accessor.UserContext)
+                .Returns(UserConstants.UserContextInstance);
+            return new(_chatRepositoryMock.Object, _loggerMock.Object,  _messageEventHandlerMock.Object, _userServiceMock.Object, _mockUserContextAccessor.Object);
         }
 
         [Fact()]

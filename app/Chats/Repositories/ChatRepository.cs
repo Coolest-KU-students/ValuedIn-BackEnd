@@ -3,7 +3,7 @@ using System;
 using ValuedInBE.Chats.Models.Entities;
 using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.PersistenceLayer.Extensions;
-using ValuedInBE.System.WebConfigs.Middleware;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.Users.Models;
 
 namespace ValuedInBE.Chats.Repositories
@@ -11,12 +11,12 @@ namespace ValuedInBE.Chats.Repositories
     public class ChatRepository : IChatRepository
     {
         private readonly ValuedInContext _context;
-        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IUserContextAccessor _userContextAccessor;
 
-        public ChatRepository(ValuedInContext context, IHttpContextAccessor contextAccessor)
+        public ChatRepository(ValuedInContext context,  IUserContextAccessor userContextAccessor)
         {
             _context = context;
-            _contextAccessor = contextAccessor;
+            _userContextAccessor = userContextAccessor;
         }
 
         public async Task AddChatParticipantsAsync(IEnumerable<ChatParticipant> participants)
@@ -54,7 +54,7 @@ namespace ValuedInBE.Chats.Repositories
 
         public async Task<IEnumerable<Chat>> GetChatsWithLastMessageAndParticipantsAsync(string userId, int pageSize, DateTime? createdSince)
         {
-            UserContext userContext = _contextAccessor.HttpContext!.GetMandatoryUserContext();
+            UserContext userContext = _userContextAccessor.UserContext;
             var a = from c in _context.Chats
                                 .Include(c => c.Messages.OrderByDescending(m => m.CreatedOn).Take(1))
                                 .Include(c => c.Participants)
@@ -91,7 +91,7 @@ namespace ValuedInBE.Chats.Repositories
 
         public async Task<Chat?> GetChatMessagesWithParticipantsDetailsAsync(long chatId, int size, DateTime? createdSince)
         {
-            UserContext userContext = _contextAccessor.HttpContext.GetMandatoryUserContext();
+            UserContext userContext = _userContextAccessor.UserContext;
             var a = _context.Chats
                         .Include(c => c.Participants)
                             .ThenInclude(p => p.User)
@@ -106,7 +106,7 @@ namespace ValuedInBE.Chats.Repositories
 
         private void CheckEntityAuditing()
         {
-            UserContext userContext = _contextAccessor.HttpContext.GetMandatoryUserContext();
+            UserContext userContext = _userContextAccessor.UserContext;
             _context.ChangeTracker.CheckAuditing(userContext);
         }
     }

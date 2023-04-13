@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Data.Common;
 using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.Security.Users;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.Users.Services;
 using ValuedInBETests.IntegrationTests.Data;
 
@@ -56,8 +57,8 @@ namespace ValuedInBETests.IntegrationTests.Config
                     context.Database.EnsureCreated();
 
                     IAuthenticationService authenticationService = scopedServices.GetRequiredService<IAuthenticationService>();
-                    IHttpContextAccessor httpContextAccessor = scopedServices.GetRequiredService<IHttpContextAccessor>();
-                    await TestDataInitializer.Initialize(authenticationService, httpContextAccessor);
+                    IUserContextAccessor userContextAccessor = scopedServices.GetRequiredService<IUserContextAccessor>();
+                    await TestDataInitializer.Initialize(authenticationService, userContextAccessor);
                     context.SaveChanges();
                 }
                 services.Configure<TestAuthHandlerOptions>(options => options.DefaultLogin = UserRoleExtended.SYS_ADMIN);

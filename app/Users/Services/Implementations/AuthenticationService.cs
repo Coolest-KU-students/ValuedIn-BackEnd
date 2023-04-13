@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using ValuedInBE.System.Security.Users;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.System.WebConfigs;
 using ValuedInBE.System.WebConfigs.Middleware;
 using ValuedInBE.Users.Exceptions;
@@ -24,17 +25,17 @@ namespace ValuedInBE.Users.Services.Implementations
         private readonly ILogger<AuthenticationService> _logger;
         private readonly IMapper _mapper;
         private readonly JwtConfiguration _jwtConfigurer;
-        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly IUserContextAccessor _userContextAccessor;
 
 
-        public AuthenticationService(ILogger<AuthenticationService> logger, IUserService userService, IPasswordHasher<UserData> passwordHasher, IMapper mapper, JwtConfiguration jwtConfigurer, IHttpContextAccessor contextAccessor)
+        public AuthenticationService(ILogger<AuthenticationService> logger, IUserService userService, IPasswordHasher<UserData> passwordHasher, IMapper mapper, JwtConfiguration jwtConfigurer, IUserContextAccessor userContextAccessor)
         {
             _userService = userService;
             _hasher = passwordHasher;
             _logger = logger;
             _mapper = mapper;
             _jwtConfigurer = jwtConfigurer;
-            _contextAccessor = contextAccessor;
+            _userContextAccessor = userContextAccessor;
         }
 
         public async Task<TokenAndRole> AuthenticateUserAsync(AuthRequest auth)
@@ -75,7 +76,8 @@ namespace ValuedInBE.Users.Services.Implementations
 
         public async Task RegisterNewUserAsync(NewUser newUser)
         {
-            UserContext? userContext = _contextAccessor.HttpContext.GetUserContext();
+
+            UserContext? userContext = _userContextAccessor.Exists ? _userContextAccessor.UserContext : null;
 
             if(userContext != null && userContext.Role == UserRole.SYS_ADMIN)
             {

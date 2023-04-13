@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Extensions;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using ValuedInBE.System.Security.Users;
+using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.System.WebConfigs.Middleware;
 using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.Entities;
@@ -23,16 +24,18 @@ namespace ValuedInBETests.IntegrationTests.Config
         public const string authenticationScheme = "Test";
         private readonly string _defaultLogin;
         private readonly IUserCredentialRepository _userCredentialRepository; //Needed to fake user context
-
+        private readonly IUserContextAccessor _userContextAccessor;
         public TestAuthHandler(
             IOptionsMonitor<TestAuthHandlerOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock,
-            IUserCredentialRepository userCredentialRepository) : base(options, logger, encoder, clock)
+            IUserCredentialRepository userCredentialRepository,
+            IUserContextAccessor userContextAccessor) : base(options, logger, encoder, clock)
         {
             _defaultLogin = options.CurrentValue.DefaultLogin;
             _userCredentialRepository = userCredentialRepository;
+            _userContextAccessor = userContextAccessor;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -75,7 +78,7 @@ namespace ValuedInBETests.IntegrationTests.Config
 
         private void AddUserContextIfMissing(UserCredentials credentials)
         {
-            Context.Items[UserContextMiddleware.userContextItemName] ??=
+            _userContextAccessor.UserContext =
                 new UserContext()
                 {
                     UserID = credentials.UserID,
