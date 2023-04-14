@@ -1,5 +1,5 @@
----
-version: '3'
+version: '3.4'
+
 services:
   zookeeper:
     restart: always
@@ -11,6 +11,8 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - 22181:2181
+    networks:
+      - kafkanetwork
 
   kafka:
     restart: always
@@ -31,6 +33,8 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CREATE_TOPICS: "New-Chat-Message:2:2"
+    networks:
+     - kafkanetwork
 
 
   init-kafka:
@@ -49,23 +53,25 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:29091 --list
       "
+    networks:
+      - kafkanetwork
 
   app:
-    restart: always
+    image: ${DOCKER_REGISTRY-}valuedinbe
     build:
       context: .
-      dockerfile: Dockerfile
-    volumes:
-      - type: bind
-        source: ./
-        target: /app
-    working_dir: /app
-    ports:
-      - '7229:80'
-      - '7229:443'
+      dockerfile: app/Dockerfile
     depends_on:
       - kafka
       - init-kafka
+    ports:
+      - '443:443'
+      - '80:80'
+    env_file:
+       app/env
+    networks:
+      - sqlnetwork
+      - kafkanetwork
 
   sql-db:
     restart: always
@@ -87,3 +93,4 @@ volumes:
   sql_data:
 networks:
   sqlnetwork:
+  kafkanetwork:  

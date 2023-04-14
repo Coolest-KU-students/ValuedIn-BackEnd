@@ -9,8 +9,9 @@ var DBServer = Argument("server", "localhost");
 var serverIsInDocker = Argument<bool>("dockerized", false);
 
 string appDirectory = "./app";
+string dockerComposeDirectory = "./";
 string testingDirectory = "./tests";
-string envFile = "./env";
+string envFile = "./.env";
 string exampleAppEnvironment = ".env.app";
 string integrationTestProject = testingDirectory + "/ValuedInBEIntegrationTests/ValuedInBEIntegrationTests.csproj";
 string unitTestProject = testingDirectory + "/ValuedInBEUnitTests/ValuedInBEUnitTests.csproj";
@@ -42,12 +43,12 @@ target = taskArray.Contains(target) ? target : listTasksTask;
 // Define the settings for docker-compose up command
 DockerComposeUpSettings dockerComposeUpSettings = new DockerComposeUpSettings {
     DetachedMode = true,
-    ProjectDirectory = appDirectory
+    ProjectDirectory = dockerComposeDirectory
 };
 
 // Define the settings for docker-compose down command
 DockerComposeDownSettings dockerComposeDownSettings = new DockerComposeDownSettings {
-    ProjectDirectory = appDirectory
+    ProjectDirectory = dockerComposeDirectory
 };
 
 

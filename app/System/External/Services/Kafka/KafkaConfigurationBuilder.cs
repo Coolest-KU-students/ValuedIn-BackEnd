@@ -5,7 +5,7 @@ namespace ValuedInBE.System.External.Services.Kafka
 {
     public class KafkaConfigurationBuilder<TKey, TValue> : IKafkaConfigurationBuilder<TKey, TValue>
     {
-        private const string bootstrapServer = "localhost:29092"; // TODO: user secrets or config file, can't have it like this
+        private const string bootstrapServer = "kafka:29091"; // TODO: user secrets or config file, can't have it like this
         private readonly KafkaJsonSerializer<TValue> _serialization = new();
 
         public IConsumer<TKey, TValue> ConfigureConsumer()
