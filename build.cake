@@ -110,7 +110,7 @@ Task(startDBTask)
 
 Task(buildAndRunApplicationTask)
     .IsDependentOn(kafkaTask)
-    .IsDependentOn(allTestTask)
+    .IsDependentOn(startDBTask)
     .IsDependentOn(restoreNugetsTask)
     .Does(() => {
         DockerComposeUp(dockerComposeUpSettings, buildServices);

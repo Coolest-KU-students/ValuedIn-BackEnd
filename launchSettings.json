@@ -3,8 +3,15 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
+      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchServiceName": "app",
+      "composeLaunchUrl": "http://localhost:80/swagger",
       "serviceActions": {
-        "valuedinbe": "StartDebugging"
+        "app": "StartDebugging",
+        "init-kafka": "StartWithoutDebugging",
+        "kafka": "StartWithoutDebugging",
+        "sql-db": "StartWithoutDebugging",
+        "zookeeper": "StartWithoutDebugging"
       }
     }
   }

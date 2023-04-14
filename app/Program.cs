@@ -8,6 +8,7 @@ using ValuedInBE.Chats.Repositories;
 using ValuedInBE.Chats.Services;
 using ValuedInBE.DataControls.Memory;
 using ValuedInBE.System;
+using ValuedInBE.System.Exceptions;
 using ValuedInBE.System.External.Services.Kafka;
 using ValuedInBE.System.External.Tools.AutoMapperProfiles;
 using ValuedInBE.System.PersistenceLayer.Contexts;
@@ -28,13 +29,20 @@ namespace ValuedInBE
 
         public static async Task Main(string[] args)
         {
+            DotNetEnv.Env.Load();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             JwtConfiguration jwtConfiguration = new(builder.Configuration);
             CorsConfig corsConfigugration = CorsConfig.LocalHostConfig;
             builder.Services.AddCors(corsConfigugration.Configure());
 
             builder.Services.AddControllers();
-            builder.Services.AddDbContext<ValuedInContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ValuedIn")));
+
+            string connectionString =
+               Environment.GetEnvironmentVariable("MSSQL_CONNECTION_STRING")
+                ?? throw new SystemSetupException("Could not find 'MSSQL_CONNECTION_STRING' in the environment. Ensure the variable is set or the environment file created");
+
+
+            builder.Services.AddDbContext<ValuedInContext>(options => options.UseSqlServer(connectionString));
 
             #region Scoped
             builder.Services.AddScoped<IUserCredentialRepository, UserCredentialRepository>();

@@ -5,6 +5,7 @@
     <DockerTargetOS>Linux</DockerTargetOS>
     <ProjectGuid>7caa2868-c178-439f-aaad-91029f80b500</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
+	<DockerComposeProjectName>valuedinbe</DockerComposeProjectName>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
     <DockerServiceName>valuedinbe</DockerServiceName>
   </PropertyGroup>

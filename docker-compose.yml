@@ -57,10 +57,10 @@ services:
       - kafkanetwork
 
   app:
-    image: ${DOCKER_REGISTRY-}valuedinbe
+    image: valuedinbe
     build:
-      context: .
-      dockerfile: app/Dockerfile
+      context: ./app
+      dockerfile: Dockerfile
     depends_on:
       - kafka
       - init-kafka
@@ -68,7 +68,7 @@ services:
       - '443:443'
       - '80:80'
     env_file:
-       app/env
+       app/.env
     networks:
       - sqlnetwork
       - kafkanetwork

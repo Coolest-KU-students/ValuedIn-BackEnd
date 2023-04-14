@@ -1,3 +1,3 @@
-CONNECTION_STRING=Server={DB_Server};Database=ValuedIn;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True
+MSSQL_CONNECTION_STRING=Server={DB_Server};Database=ValuedIn;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True
 ASPNETCORE_ENVIRONMENT=Development
 
