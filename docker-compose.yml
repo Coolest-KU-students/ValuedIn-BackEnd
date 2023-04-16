@@ -20,19 +20,20 @@ services:
     ports:
       - '29092:29092'
     expose:
-      - '29091'
+      - ${KAFKA_INTERNAL_PORT}
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT, PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29091, PLAINTEXT_HOST://localhost:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:${KAFKA_INTERNAL_PORT}, PLAINTEXT_HOST://localhost:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CREATE_TOPICS: "New-Chat-Message:2:2"
+    env_file:
+       .env
     networks:
      - kafkanetwork
 
@@ -45,14 +46,16 @@ services:
     command: |
       "
       # blocks until kafka is reachable
-      kafka-topics --bootstrap-server kafka:29091 --list
+      kafka-topics --bootstrap-server kafka:$KAFKA_INTERNAL_PORT --list
 
       echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka:29091 --create --if-not-exists --topic New-Chat-Message --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:$KAFKA_INTERNAL_PORT --create --if-not-exists --topic New-Chat-Message --replication-factor 1 --partitions 1
       
       echo -e 'Successfully created the following topics:'
-      kafka-topics --bootstrap-server kafka:29091 --list
+      kafka-topics --bootstrap-server kafka:$KAFKA_INTERNAL_PORT --list
       "
+    env_file:
+       .env
     networks:
       - kafkanetwork
 
@@ -79,7 +82,7 @@ services:
     user: root
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=VeryComplexPassword123
+      - SA_PASSWORD=${MSSQL_PASSWORD}
     ports:
       - 1435:1433
     volumes:
@@ -88,6 +91,8 @@ services:
         target: /var/opt/mssql
     networks:
       - sqlnetwork
+    env_file:
+       .env
 
 volumes:
   sql_data:

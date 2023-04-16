@@ -5,14 +5,13 @@ using Cake.Common.Diagnostics;
 
 var target = Argument("target", listTasksTask);
 var configuration = Argument("configuration", "Release");
-var DBServer = Argument("server", "localhost");
 var serverIsInDocker = Argument<bool>("dockerized", false);
 
 string appDirectory = "./app";
 string dockerComposeDirectory = "./";
 string testingDirectory = "./tests";
-string envFile = "./.env";
-string exampleAppEnvironment = ".env.app";
+string envFileName = "./.env";
+string exampleAppEnvironment = ".env.example";
 string integrationTestProject = testingDirectory + "/ValuedInBEIntegrationTests/ValuedInBEIntegrationTests.csproj";
 string unitTestProject = testingDirectory + "/ValuedInBEUnitTests/ValuedInBEUnitTests.csproj";
 
@@ -67,17 +66,15 @@ Task(restoreNugetsTask)
 Task(initAppEnvironmentTask)
     .Does(()=>{
            Information("Initializing app environment...");
+           Information($"Setting the DB Server connection for {dockerizedDBContainerName}");
            
-           DBServer = serverIsInDocker ? dockerizedDBContainerName : DBServer;
-           Information($"Setting the DB Server connection for {DBServer}");
-
             // Write the updated connection string back to the .env file
-            System.IO.File.WriteAllText(
-                $"{appDirectory}/{envFile}",
+           string adjustedEnvironment = 
                 System.IO.File.ReadAllText(exampleAppEnvironment)
-                               .Replace("{DB_Server}", DBServer)
-            );
+                .Replace("{DB_Server}", dockerizedDBContainerName);
 
+            System.IO.File.WriteAllText( $"{appDirectory}/{envFileName}", adjustedEnvironment);
+            System.IO.File.WriteAllText( $"{envFileName}", adjustedEnvironment);
         });
 
 //Testing

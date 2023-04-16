@@ -1,11 +1,13 @@
 ﻿using Confluent.Kafka;
+using ValuedInBE.System.Exceptions;
 using ValuedInBE.System.External.Services.Kafka.Serializers;
 
 namespace ValuedInBE.System.External.Services.Kafka
 {
     public class KafkaConfigurationBuilder<TKey, TValue> : IKafkaConfigurationBuilder<TKey, TValue>
     {
-        private const string bootstrapServer = "kafka:29091"; // TODO: user secrets or config file, can't have it like this
+        private const string kafkaPortVariableName = "KAFKA_INTERNAL_PORT";
+        private static readonly string _bootstrapServer = $"kafka:{Environment.GetEnvironmentVariable(kafkaPortVariableName) ?? throw new EnivronmentVariableMissingException(kafkaPortVariableName)}"; 
         private readonly KafkaJsonSerializer<TValue> _serialization = new();
 
         public IConsumer<TKey, TValue> ConfigureConsumer()
@@ -15,7 +17,7 @@ namespace ValuedInBE.System.External.Services.Kafka
 
         public IConsumer<TKey, TValue> ConfigureConsumer(ConsumerConfig config)
         {
-            config.BootstrapServers ??= bootstrapServer;
+            config.BootstrapServers ??= _bootstrapServer;
             return new ConsumerBuilder<TKey, TValue>(config).SetValueDeserializer(_serialization).Build();
         }
 
@@ -26,7 +28,7 @@ namespace ValuedInBE.System.External.Services.Kafka
 
         public IProducer<TKey, TValue> ConfigureProducer(ProducerConfig config)
         {
-            config.BootstrapServers ??= bootstrapServer;
+            config.BootstrapServers ??= _bootstrapServer;
             return new ProducerBuilder<TKey, TValue>(config).SetValueSerializer(_serialization).Build();
         }
     }

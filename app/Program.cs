@@ -11,6 +11,7 @@ using ValuedInBE.System;
 using ValuedInBE.System.Exceptions;
 using ValuedInBE.System.External.Services.Kafka;
 using ValuedInBE.System.External.Tools.AutoMapperProfiles;
+using ValuedInBE.System.PersistenceLayer.Configuration;
 using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.System.WebConfigs;
@@ -37,11 +38,7 @@ namespace ValuedInBE
 
             builder.Services.AddControllers();
 
-            string connectionString =
-               Environment.GetEnvironmentVariable("MSSQL_CONNECTION_STRING")
-                ?? throw new SystemSetupException("Could not find 'MSSQL_CONNECTION_STRING' in the environment. Ensure the variable is set or the environment file created");
-
-
+            string connectionString = EnvironmentalConnectionStringBuilder.BuildConnectionString();
             builder.Services.AddDbContext<ValuedInContext>(options => options.UseSqlServer(connectionString));
 
             #region Scoped
