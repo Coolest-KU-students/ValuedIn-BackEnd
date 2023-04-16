@@ -22,33 +22,33 @@ Before running the tasks with Cake configuration, make sure you have the followi
 - Docker Compose installed on your machine
 - .NET 6.0 SDK installed on your machine
 
+### Additional Information
+
+- Everything can be launched via Cake or Visual Studio integration with Docker Compose, however environment has to be initiated either way.
+- By default, the app uses the dockerized MSSQL, and the user should change environment variables if they need to change that.
+- Users can ignore the 'init-kafka' container as the only purpose it serves is to initialize data in Kafka.
+
+
 ## Quickstart
 
 To quickly get started with building and running the .NET backend service, follow the steps below:
 
-1. Launch Kafka by running the following command:
+1. Initialize default environment variables with this commnd:
 
     ```sh
-    docker-compose up -d kafka
+    dotnet cake --target=InitializeEnvironment
     ```
 
-2. Launch the server by running the following command:
+2. You can use VS to attach to the default Docker Compose file, or alternatively, Launch the service by running the following command:
 
     ```sh
     dotnet cake --target=BuildAndRunApplication
     ```
 
-    This will build and run the application along with the Kafka and database services in detached mode using Docker Compose.
+    This will build and run the application along with the Kafka and database services in detached mode using the same Docker Compose.
 
-3. Build the app by running the following command:
 
-    ```sh
-    dotnet cake --target=Build
-    ```
-
-    This will build the .NET backend service application.
-
-After completing these steps, you should have the .NET backend service up and running, with Kafka and the database services started, and the application built and running.
+After completing these steps, you should have the .NET backend service up and running, along with Kafka and the database services started.
 
 Note: Make sure to update the paths and settings in the Cake configuration to match your specific environment and requirements.
 
@@ -77,7 +77,7 @@ This Cake configuration includes the following tasks:
 3. Open a terminal or command prompt and run the following command to restore NuGet packages for the application:
 
     ```sh
-    dotnet cake --target=RestoreNugets
+    dotnet cake --target=Restore
     ```
 
 4. Next, start the Kafka and database services using the following command:
@@ -117,6 +117,8 @@ This Cake configuration includes the following tasks:
     ```sh
     dotnet cake --target=StopAll
     ```
+
+Some tasks rerun others due to dependancy tree. If You want to attempt to launch explicit tasks, add ```--exclusive``` flag
 
 Note: Make sure to update the paths and settings in the Cake configuration to match your specific environment and requirements.
 
