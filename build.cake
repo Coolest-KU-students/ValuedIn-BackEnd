@@ -12,8 +12,8 @@ string dockerComposeDirectory = "./";
 string testingDirectory = "./tests";
 string envFileName = "./.env";
 string exampleAppEnvironment = ".env.example";
-string integrationTestProject = testingDirectory + "/ValuedInBEIntegrationTests/ValuedInBEIntegrationTests.csproj";
-string unitTestProject = testingDirectory + "/ValuedInBEUnitTests/ValuedInBEUnitTests.csproj";
+string integrationTestProject = testingDirectory + "/ValuedInBEIntegrationTests";
+string unitTestProject = testingDirectory + "/ValuedInBEUnitTests";
 
 string listTasksTask = "ListTasks";
 string restoreNugetsTask = "Restore";
@@ -75,6 +75,9 @@ Task(initAppEnvironmentTask)
 
             System.IO.File.WriteAllText( $"{appDirectory}/{envFileName}", adjustedEnvironment);
             System.IO.File.WriteAllText( $"{envFileName}", adjustedEnvironment);
+            System.IO.File.WriteAllText( $"{integrationTestProject}/{envFileName}", adjustedEnvironment);
+            System.IO.File.WriteAllText( $"{integrationTestProject}/bin/Debug/net6.0/{envFileName}", adjustedEnvironment); //TODO: Fix workaround with Docker
+            System.IO.File.WriteAllText( $"{unitTestProject}/{envFileName}", adjustedEnvironment);
         });
 
 //Testing
