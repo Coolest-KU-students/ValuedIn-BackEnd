@@ -1,0 +1,101 @@
+version: '3.4'
+
+services:
+  zookeeper:
+    restart: always
+    image: confluentinc/cp-zookeeper:7.3.0
+    hostname: zookeeper
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+    networks:
+      - kafkanetwork
+
+  kafka:
+    restart: always
+    image: confluentinc/cp-kafka:7.3.0
+    ports:
+      - '29092:29092'
+    expose:
+      - ${KAFKA_INTERNAL_PORT}
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT, PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:${KAFKA_INTERNAL_PORT}, PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    env_file:
+       .env
+    networks:
+     - kafkanetwork
+
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:$KAFKA_INTERNAL_PORT --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:$KAFKA_INTERNAL_PORT --create --if-not-exists --topic New-Chat-Message --replication-factor 1 --partitions 1
+      
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:$KAFKA_INTERNAL_PORT --list
+      "
+    env_file:
+       .env
+    networks:
+      - kafkanetwork
+
+  app:
+    image: valuedinbe
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - init-kafka
+    ports:
+      - '443:443'
+      - '80:80'
+    env_file:
+       app/.env
+    networks:
+      - sqlnetwork
+      - kafkanetwork
+
+  sql-db:
+    restart: always
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    user: root
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${MSSQL_PASSWORD}
+    ports:
+      - 1435:1433
+    volumes:
+      - type: volume
+        source: sql_data
+        target: /var/opt/mssql
+    networks:
+      - sqlnetwork
+    env_file:
+       .env
+
+volumes:
+  sql_data:
+networks:
+  sqlnetwork:
+  kafkanetwork:  
