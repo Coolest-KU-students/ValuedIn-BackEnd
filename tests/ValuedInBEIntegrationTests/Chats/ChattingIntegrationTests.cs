@@ -32,7 +32,7 @@ namespace ValuedInBETests.IntegrationTests.Chats
             _webSocketClient = factory.Server.CreateWebSocketClient();
         }
 
-        [Fact]
+        [Fact(Timeout=10000)]
         public async Task CreateChatAndThenTryToCreateTheSameChat()
         {
             AddLoginHeaderToHttpClient(senderLogin);

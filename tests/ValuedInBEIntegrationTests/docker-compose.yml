@@ -1,0 +1,91 @@
+version: '3.4'
+
+services:
+  zookeeper-test:
+    restart: always
+    image: confluentinc/cp-zookeeper:7.3.0
+    hostname: zookeeper-test
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafkatestingnetwork
+
+  kafka-test:
+    restart: always
+    image: confluentinc/cp-kafka:7.3.0
+    expose:
+      - ${KAFKA_TESTING_PORT}
+    depends_on:
+      - zookeeper-test
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-test:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT, PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-test:${KAFKA_TESTING_PORT}, PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    env_file:
+       .env
+    networks:
+     - kafkatestingnetwork
+
+
+  init-kafka-test:
+    image: confluentinc/cp-kafka:7.3.0
+    depends_on:
+      - kafka-test
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka-test:$KAFKA_TESTING_PORT --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka-test:$KAFKA_TESTING_PORT --create --if-not-exists --topic New-Chat-Message --replication-factor 1 --partitions 1
+      
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka-test:$KAFKA_TESTING_PORT --list
+      "
+    env_file:
+       .env
+    networks:
+      - kafkatestingnetwork
+
+  sql-db-test:
+    restart: always
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    user: root
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${MSSQL_PASSWORD}
+    ports:
+      - 1435:1433
+    volumes:
+      - type: volume
+        source: sql_data
+        target: /var/opt/mssql
+    networks:
+      - sqltestingnetwork
+    env_file:
+       .env
+
+  integrationtests:
+    image: valuedinbe-integrationtests
+    build:
+      context: ./../..
+      dockerfile: ./tests/ValuedInBEIntegrationTests/Dockerfile
+    env_file:
+       .env
+    networks:
+      - sqltestingnetwork
+      - kafkatestingnetwork
+
+volumes:
+  sql_data:
+networks:
+  sqltestingnetwork:
+  kafkatestingnetwork:  
