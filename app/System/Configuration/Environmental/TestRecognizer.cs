@@ -1,4 +1,4 @@
-﻿namespace ValuedInBE.System
+﻿namespace ValuedInBE.System.Configuration.Environmental
 {
     public static class TestRecognizer
     {

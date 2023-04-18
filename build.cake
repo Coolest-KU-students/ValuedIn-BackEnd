@@ -50,11 +50,22 @@ DockerComposeDownSettings dockerComposeDownSettings = new DockerComposeDownSetti
     ProjectDirectory = dockerComposeDirectory
 };
 
+DockerComposeUpSettings integrationTestDockerComposeUpSettings = new DockerComposeUpSettings {
+    ProjectName = integrationTestTask.ToLower(),
+    DetachedMode = true,
+    ProjectDirectory = integrationTestProject,
+    ForceRecreate = true
+};
+
+DockerComposeDownSettings integrationTestDockerComposeDownSettings = new DockerComposeDownSettings {
+    ProjectDirectory = integrationTestProject,
+   // Rmi = "all",
+    //Volumes = true
+};
 
 Task(listTasksTask)
     .Does((ctx)=>{
             string compiledTaskList = string.Join(", ", taskArray);
-
 	        Information("Runnable tasks: " + compiledTaskList);
         });
 
@@ -76,16 +87,22 @@ Task(initAppEnvironmentTask)
             System.IO.File.WriteAllText( $"{appDirectory}/{envFileName}", adjustedEnvironment);
             System.IO.File.WriteAllText( $"{envFileName}", adjustedEnvironment);
             System.IO.File.WriteAllText( $"{integrationTestProject}/{envFileName}", adjustedEnvironment);
-            System.IO.File.WriteAllText( $"{integrationTestProject}/bin/Debug/net6.0/{envFileName}", adjustedEnvironment); //TODO: Fix workaround with Docker
             System.IO.File.WriteAllText( $"{unitTestProject}/{envFileName}", adjustedEnvironment);
         });
 
 //Testing
 Task(integrationTestTask)
-    .IsDependentOn(kafkaTask)
     .IsDependentOn(initAppEnvironmentTask)
     .Does(() =>{
-            DotNetTest(integrationTestProject);
+            DockerComposeUp(integrationTestDockerComposeUpSettings);
+            Information("Waiting for testing environment to start up...");
+            System.Threading.Tasks.Task.Delay(30000).Wait(); //TODO: we could wait until init-kafka stops running
+            try{
+                DotNetTest(integrationTestProject);
+            }
+            finally{
+                DockerComposeDown(integrationTestDockerComposeDownSettings);
+            }
         });
 
 Task(unitTestTask)
