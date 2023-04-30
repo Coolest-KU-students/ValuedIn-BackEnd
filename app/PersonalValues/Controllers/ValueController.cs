@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ValuedInBE.PersonalValues.Models.DTOs.Requests;
 using ValuedInBE.PersonalValues.Models.Entities;
+using ValuedInBE.PersonalValues.Service;
 
 namespace ValuedInBE.PersonalValues.Controllers
 {
@@ -7,22 +9,31 @@ namespace ValuedInBE.PersonalValues.Controllers
     [ApiController]
     public class ValueController : ControllerBase
     {
-        [HttpGet]
-        public IEnumerable<PersonalValue> ListAllValues()
+        private readonly IPersonalValueService _personalValueService;
+
+        public ValueController(IPersonalValueService personalValueService)
         {
-            throw new NotImplementedException();
+            _personalValueService = personalValueService;
+        }
+
+        [HttpGet]
+        public async Task<IEnumerable<PersonalValue>> ListAllValues([FromQuery] string? search)
+        {
+            return await _personalValueService.GetAllValuesExceptUsers(search);
         }
 
         [HttpPost]
-        public void CreateValue(PersonalValue value)
+        public async Task CreateValue(NewValue value)
         {
-            throw new NotImplementedException();
+            await _personalValueService.CreateValue(value);
         }
 
         [HttpPut]
-        public void UpdateValue(PersonalValue value)
+        public async Task UpdateValue(UpdatedValue value)
         {
-            throw new NotImplementedException();
+            await _personalValueService.UpdateValue(value);
         }
+
+
     }
 }

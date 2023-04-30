@@ -7,6 +7,8 @@ using ValuedInBE.Chats.EventHandlers;
 using ValuedInBE.Chats.Repositories;
 using ValuedInBE.Chats.Services;
 using ValuedInBE.DataControls.Memory;
+using ValuedInBE.PersonalValues.Repositories;
+using ValuedInBE.PersonalValues.Service;
 using ValuedInBE.System.Configuration.Environmental;
 using ValuedInBE.System.External.Services.Kafka;
 using ValuedInBE.System.External.Tools.AutoMapperProfiles;
@@ -25,7 +27,6 @@ namespace ValuedInBE
 {
     public class Program
     {
-
         public static async Task Main(string[] args)
         {
             DotNetEnv.Env.TraversePath().Load();
@@ -47,6 +48,8 @@ namespace ValuedInBE
             builder.Services.AddScoped<IUserIDGenerationStrategy, CustomUserIDGenerationStrategyWithNameMerging>();
             builder.Services.AddScoped<IChatRepository, ChatRepository>();
             builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<IPersonalValueService, PersonalValueService>();
+            builder.Services.AddScoped<IPersonalValuesRepository, PersonalValuesRepository>();
             builder.Services.AddScoped<IUserContextAccessor, UserContextAccessor>();
             #endregion
 

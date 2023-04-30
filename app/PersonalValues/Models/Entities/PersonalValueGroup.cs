@@ -8,6 +8,7 @@ namespace ValuedInBE.PersonalValues.Models.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public long Id { get; set; }
+        public string Name { get; set; } = string.Empty; 
     
         public List<PersonalValue>? PersonalValues { get; set; }
     }

@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using ValuedInBE.System.PersistenceLayer.Entities;
+using ValuedInBE.Users.Models.Entities;
 
 namespace ValuedInBE.PersonalValues.Models.Entities
 {
@@ -17,5 +18,6 @@ namespace ValuedInBE.PersonalValues.Models.Entities
         public long GroupId { get; set; }
         public short Modifier { get; set; }
         public PersonalValueGroup? Group { get; set; }
+        public List<UserValue> UserValues { get; set; } = null!;
     }
 }
