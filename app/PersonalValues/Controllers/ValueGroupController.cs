@@ -29,7 +29,5 @@ namespace ValuedInBE.PersonalValues.Controllers
             _logger.LogDebug("Received request for values from group {id}", id);
             return await _personalValueService.GetValuesFromGroupAsync(id);
         }
-
-
     }
 }
