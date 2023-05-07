@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using ValuedInBE.System.PersistenceLayer.Entities;
 
 namespace ValuedInBE.PersonalValues.Models.Entities
 {
-    public class PersonalValueGroup
+    public class PersonalValueGroup : AuditCreatedBase
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]

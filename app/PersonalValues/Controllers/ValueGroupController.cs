@@ -15,7 +15,6 @@ namespace ValuedInBE.PersonalValues.Controllers
         private readonly IPersonalValueService _personalValueService;
         private readonly ILogger<ValueGroupController> _logger;
 
-
         public ValueGroupController(IPersonalValueService personalValueService, ILogger<ValueGroupController> logger)
         {
             _personalValueService = personalValueService;

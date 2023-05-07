@@ -10,6 +10,7 @@ using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.Security.Users;
 using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.Users.Services;
+using ValuedInBEIntegrationTests.Data;
 using ValuedInBETests.IntegrationTests.Data;
 
 namespace ValuedInBETests.IntegrationTests.Config
@@ -58,7 +59,8 @@ namespace ValuedInBETests.IntegrationTests.Config
 
                     IAuthenticationService authenticationService = scopedServices.GetRequiredService<IAuthenticationService>();
                     IUserContextAccessor userContextAccessor = scopedServices.GetRequiredService<IUserContextAccessor>();
-                    await TestDataInitializer.Initialize(authenticationService, userContextAccessor);
+                    await UserTestDataInitializer.Initialize(authenticationService, userContextAccessor);
+                    await PersonalValueTestDataInitializer.Initialize(context);
                     context.SaveChanges();
                 }
                 services.Configure<TestAuthHandlerOptions>(options => options.DefaultLogin = UserRoleExtended.SYS_ADMIN);

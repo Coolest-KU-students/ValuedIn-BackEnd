@@ -35,7 +35,7 @@ namespace ValuedInBE.PersonalValues.Service
             IEnumerable<PersonalValue> filteredValues = personalValues.Where(p => !userValues.Any(u => u.ValueId == p.Id));
 
             if (string.IsNullOrEmpty(search)) return filteredValues;
-            return filteredValues.Where(f => f.Name.Contains(search));
+            return filteredValues.Where(f => f.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task CreateValueAsync(NewValue newValue)
