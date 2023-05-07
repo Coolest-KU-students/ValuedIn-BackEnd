@@ -1,4 +1,5 @@
-﻿using ValuedInBE.PersonalValues.Exceptions;
+﻿using Microsoft.AspNetCore.Routing;
+using ValuedInBE.PersonalValues.Exceptions;
 using ValuedInBE.PersonalValues.Models.DTOs.Pocos;
 using ValuedInBE.PersonalValues.Models.DTOs.Requests;
 using ValuedInBE.PersonalValues.Models.DTOs.Response;
@@ -31,13 +32,13 @@ namespace ValuedInBE.PersonalValues.Service
             Task<IEnumerable<PersonalValue>> allPersonalValuesTask = _personalValuesRepository.GetAllPersonalValuesAsync();
             IEnumerable<PersonalValue> personalValues = await allPersonalValuesTask;
 
-            IEnumerable<PersonalValue> filteredValues = personalValues.Where(p => !userValues.Any(u => u.Value?.Id == p.Id));
+            IEnumerable<PersonalValue> filteredValues = personalValues.Where(p => !userValues.Any(u => u.ValueId == p.Id));
 
             if (string.IsNullOrEmpty(search)) return filteredValues;
             return filteredValues.Where(f => f.Name.Contains(search));
         }
 
-        public async Task CreateValue(NewValue newValue)
+        public async Task CreateValueAsync(NewValue newValue)
         {
             PersonalValue personalValue = new()
             {
@@ -49,13 +50,13 @@ namespace ValuedInBE.PersonalValues.Service
             await _personalValuesRepository.CreateValueAsync(personalValue);
         }
 
-        public async Task CreateValueGroup(string name)
+        public async Task CreateValueGroupAsync(string name)
         {
             PersonalValueGroup personalValueGroup = new() { Name = name };
             await _personalValuesRepository.CreateValueGroupAsync(personalValueGroup);
         }
 
-        public async Task UpdateValue(UpdatedValue updatedValue)
+        public async Task UpdateValueAsync(UpdatedValue updatedValue)
         {
             PersonalValue personalValue =
                 await _personalValuesRepository.GetPersonalValueByIdAsync(updatedValue.ValueId)
@@ -77,5 +78,6 @@ namespace ValuedInBE.PersonalValues.Service
                 Values = personalValueGroup.PersonalValues!.Select(value => new IdAndValue { Id = value.Id, Value = value.Name })
             };
         }
+
     }
 }

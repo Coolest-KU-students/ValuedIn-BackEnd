@@ -31,7 +31,7 @@ namespace ValuedInBE.PersonalValues.Controllers
         public async Task CreateValue(NewValue value)
         {
             _logger.LogTrace("Got a request to register value {ValueName}", value.Name);
-            await _personalValueService.CreateValue(value);
+            await _personalValueService.CreateValueAsync(value);
         }
 
         [Authorize(Roles = "SYS_ADMIN")]
@@ -39,7 +39,7 @@ namespace ValuedInBE.PersonalValues.Controllers
         public async Task UpdateValue(UpdatedValue value)
         {
             _logger.LogTrace("Got a request to update value with id {ValueId}", value.ValueId);
-            await _personalValueService.UpdateValue(value);
+            await _personalValueService.UpdateValueAsync(value);
         }
     }
 }
