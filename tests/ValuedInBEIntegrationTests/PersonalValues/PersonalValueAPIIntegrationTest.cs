@@ -25,7 +25,7 @@ namespace ValuedInBE.PersonalValues.Controllers
         private const string personalValueGroupRoute = "/api/values/groups/{id}";
         private const string sysAdminUserLogin = "SYS_ADMIN";
         private const string defaultUserLogin = "DEFAULT";
-        private List<string> usersWithRolesThatAreNotSysAdmin = new() { defaultUserLogin, "HR", "ORG_ADMIN" };
+        private readonly List<string> _usersWithRolesThatAreNotSysAdmin = new() { defaultUserLogin, "HR", "ORG_ADMIN" };
 
         public PersonalValueAPIIntegrationTest(IntegrationTestWebApplicationFactory<Program> factory) : base(factory)
         {
@@ -36,6 +36,7 @@ namespace ValuedInBE.PersonalValues.Controllers
         {
             AddLoginHeaderToHttpClient(defaultUserLogin);
             HttpResponseMessage response = await _client.GetAsync(personalValueRoute);
+            string response3 = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(response.Content);
             IEnumerable<PersonalValue>? personalValues =
@@ -66,11 +67,12 @@ namespace ValuedInBE.PersonalValues.Controllers
         {
             NewValue newValue = new() { GroupId = 1, Name = "test", Modifier = 0 };
             StringContent stringContent = SerializeIntoJsonHttpContent(newValue);
-            foreach(string user in usersWithRolesThatAreNotSysAdmin)
+            foreach(string user in _usersWithRolesThatAreNotSysAdmin)
             {
                 AddLoginHeaderToHttpClient(user);
                 HttpResponseMessage response = await _client.PostAsync(personalValueRoute, stringContent);
                 Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                RemoveLoginHeaderFromHttpClient();
             }
         }
 
@@ -99,11 +101,12 @@ namespace ValuedInBE.PersonalValues.Controllers
         {
             UpdatedValue newValue = new() { ValueId = 1, GroupId = 1, Name = "test", Modifier = 0 };
             StringContent stringContent = SerializeIntoJsonHttpContent(newValue);
-            foreach (string user in usersWithRolesThatAreNotSysAdmin)
+            foreach (string user in _usersWithRolesThatAreNotSysAdmin)
             {
                 AddLoginHeaderToHttpClient(user);
                 HttpResponseMessage response = await _client.PutAsync(personalValueRoute, stringContent);
                 Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                RemoveLoginHeaderFromHttpClient();
             }
         }
 

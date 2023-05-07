@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using System.Data.Common;
+using ValuedInBE.System.Configuration.Environmental;
 using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.Security.Users;
 using ValuedInBE.System.UserContexts.Accessors;
@@ -33,20 +35,18 @@ namespace ValuedInBETests.IntegrationTests.Config
 
                 services.Remove(dbConnectionDescriptor!);
 
-                var connection = new SqliteConnection("DataSource=myshareddb;mode=memory;");
-                connection.Open();
+                string connectionString = EnvironmentalConnectionStringBuilder.BuildConnectionString();
+                connectionString = connectionString.Replace("ValuedIn", "ValuedIn"+Guid.NewGuid().ToString()); //New DB for each test container
+                
 
-                // Create open SqliteConnection so EF won't automatically close it.
-                services.AddSingleton<DbConnection>(container =>
-                {
-                    return connection;
-                });
+                services.AddDbContext<ValuedInContext>(options => options.UseSqlServer(connectionString, providerOptions => { providerOptions.EnableRetryOnFailure(); }), ServiceLifetime.Transient);
 
-                services.AddDbContext<ValuedInContext>((container, options) =>
-                {
-                    DbConnection connection = container.GetRequiredService<DbConnection>();
-                    options.UseSqlite(connection);
-                });
+                services.Configure<TestAuthHandlerOptions>(options => options.DefaultLogin = UserRoleExtended.DEFAULT);
+
+                services.AddAuthentication(TestAuthHandler.authenticationScheme)
+                    .AddScheme<TestAuthHandlerOptions, TestAuthHandler>(TestAuthHandler.authenticationScheme, options => { });
+
+                services.AddAuthorization();
 
                 ServiceProvider provider = services.BuildServiceProvider();
                 using (IServiceScope scope = provider.CreateScope())
@@ -61,14 +61,7 @@ namespace ValuedInBETests.IntegrationTests.Config
                     IUserContextAccessor userContextAccessor = scopedServices.GetRequiredService<IUserContextAccessor>();
                     await UserTestDataInitializer.Initialize(authenticationService, userContextAccessor);
                     await PersonalValueTestDataInitializer.Initialize(context);
-                    context.SaveChanges();
                 }
-                services.Configure<TestAuthHandlerOptions>(options => options.DefaultLogin = UserRoleExtended.SYS_ADMIN);
-
-                services.AddAuthentication(TestAuthHandler.authenticationScheme)
-                    .AddScheme<TestAuthHandlerOptions, TestAuthHandler>(TestAuthHandler.authenticationScheme, options => { });
-
-                services.AddAuthorization();
             });
 
             builder.UseEnvironment("Development");

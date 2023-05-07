@@ -66,7 +66,7 @@ namespace ValuedInBE.PersonalValues.Repositories
                              select v;
 
             await userValues.LoadAsync();
-            return userValues;
+            return userValues.ToList();
         }
 
         public async Task UpdateValueAsync(PersonalValue value)
