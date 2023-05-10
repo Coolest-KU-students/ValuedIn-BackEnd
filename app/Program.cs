@@ -80,6 +80,13 @@ namespace ValuedInBE
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
+
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = "localhost:6379";
+                options.InstanceName = "MyRedisCache";
+            });
+
             #region JWT Configurer
 
 #if DEBUG   //Testing will add its own Authentication layer

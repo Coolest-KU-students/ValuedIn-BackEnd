@@ -75,6 +75,18 @@ services:
     env_file:
        .env
 
+    
+  redis-test:
+    image: redis
+    container_name: my-redis
+    restart: always
+    ports:
+      - ${TEST_REDIS_ACCESS_PORT}:${TEST_REDIS_INTERNAL_PORT}
+    env_file:
+       .env
+    environment:
+     - REDIS_PASSWORD = ${TEST_REDIS_PASSWORD}
+
 volumes:
   sql_data:
 networks:

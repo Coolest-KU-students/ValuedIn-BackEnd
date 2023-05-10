@@ -93,9 +93,20 @@ services:
       - sqlnetwork
     env_file:
        .env
+    
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - ${REDIS_ACCESS_PORT}:${REDIS_INTERNAL_PORT}
+    env_file:
+       .env
+    networks:
+      - redisnet
 
 volumes:
   sql_data:
 networks:
   sqlnetwork:
-  kafkanetwork:  
+  kafkanetwork:
+  redisnet:
