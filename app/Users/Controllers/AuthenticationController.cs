@@ -55,5 +55,13 @@ namespace ValuedInBE.Users.Controllers
             _logger.LogTrace("Got a request to check Authentication with token: {jwtToken}", jwtToken);
             return await _authenticationService.VerifyAndIssueNewTokenAsync(jwtToken);
         }
+        
+        [HttpPost("resetPassword")]
+        public Task<ActionResult> ResetPassword(NewPasswordRequest newPasswordRequest) 
+        {
+            throw new NotImplementedException();
+        }
+
+        
     }
 }

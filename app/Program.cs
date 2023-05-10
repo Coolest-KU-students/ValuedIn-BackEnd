@@ -7,11 +7,9 @@ using ValuedInBE.Chats.EventHandlers;
 using ValuedInBE.Chats.Repositories;
 using ValuedInBE.Chats.Services;
 using ValuedInBE.DataControls.Memory;
-using ValuedInBE.System;
-using ValuedInBE.System.Exceptions;
+using ValuedInBE.System.Configuration.Environmental;
 using ValuedInBE.System.External.Services.Kafka;
 using ValuedInBE.System.External.Tools.AutoMapperProfiles;
-using ValuedInBE.System.PersistenceLayer.Configuration;
 using ValuedInBE.System.PersistenceLayer.Contexts;
 using ValuedInBE.System.UserContexts.Accessors;
 using ValuedInBE.System.WebConfigs;
@@ -30,7 +28,7 @@ namespace ValuedInBE
 
         public static async Task Main(string[] args)
         {
-            DotNetEnv.Env.Load();
+            DotNetEnv.Env.TraversePath().Load();
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             JwtConfiguration jwtConfiguration = new(builder.Configuration);
             CorsConfig corsConfigugration = CorsConfig.LocalHostConfig;
