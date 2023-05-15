@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Extensions;
-using ValuedInBE.System.Security.Users;
-using ValuedInBE.System.WebConfigs.Middleware;
-using ValuedInBE.Users.Models;
 using ValuedInBE.Users.Models.DTOs.Request;
 using ValuedInBE.Users.Models.DTOs.Response;
 using ValuedInBE.Users.Services;

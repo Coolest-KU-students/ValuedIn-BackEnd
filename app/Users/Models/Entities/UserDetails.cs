@@ -20,5 +20,6 @@ namespace ValuedInBE.Users.Models.Entities
         [Required]
         public string Telephone { get; set; } = "";
         public IEnumerable<ChatParticipant>? ChatParticipants { get; set; }
+        public IEnumerable<UserValue>? UserValues { get; set; }
     }
 }

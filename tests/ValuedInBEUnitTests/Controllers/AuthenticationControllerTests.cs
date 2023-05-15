@@ -3,13 +3,12 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using ValuedInBE.System.Security.Users;
 using ValuedInBE.TestingConstants;
-using ValuedInBE.Users.Controllers;
 using ValuedInBE.Users.Models.DTOs.Request;
 using ValuedInBE.Users.Models.DTOs.Response;
 using ValuedInBE.Users.Services;
 using Xunit;
 
-namespace ValuedInBE.Controllers.Tests
+namespace ValuedInBE.Users.Controllers.Tests
 {
     public class AuthenticationControllerTests
     {

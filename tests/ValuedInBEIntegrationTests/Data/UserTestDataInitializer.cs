@@ -8,22 +8,21 @@ using ValuedInBE.Users.Services;
 
 namespace ValuedInBETests.IntegrationTests.Data
 {
-    public static class TestDataInitializer
+    public static class UserTestDataInitializer
     {
-
         public static async Task Initialize(IAuthenticationService authenticationService, IUserContextAccessor contextAccessor)
         {
-            MockUserContextInHttpRequest(contextAccessor);
+            MockUserContextInHttpRequestToRegisterTestUsers(contextAccessor);
             await RegisterAllTestingUsersAsync(authenticationService);
         }
 
-        private static void MockUserContextInHttpRequest(IUserContextAccessor accessor)
+        private static void MockUserContextInHttpRequestToRegisterTestUsers(IUserContextAccessor accessor)
         {
             UserContext userContext = new()
             {
-                Login = "TestingUser",
+                Login = "TestingUsers",
                 Role = UserRole.SYS_ADMIN,
-                UserID = "TestingUser"
+                UserID = "TestingUsers"
             };
 
             accessor.UserContext = userContext;
@@ -45,7 +44,6 @@ namespace ValuedInBETests.IntegrationTests.Data
             newUsers.AddRange(_usersForUserTesting);
             return newUsers;
         }
-
         private static readonly List<NewUser> _defaultUsers = new()
         {
             new()
@@ -125,5 +123,6 @@ namespace ValuedInBETests.IntegrationTests.Data
                     Role = UserRoleExtended.DEFAULT
                 }
         };
+    
     }
 }
