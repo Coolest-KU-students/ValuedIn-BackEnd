@@ -57,6 +57,15 @@ After completing these steps, you should have the .NET backend service up and ru
 
 Note: Make sure to update the paths and settings in the Cake configuration to match your specific environment and requirements.
 
+## Initial User
+
+Initial user in the system has `SYS_ADMIN` role, and these credentials:
+
+Login: *SetupUser*
+
+Password: *Password1*
+    
+
 ## Detailed Steps
 
 Follow the steps below to initialize the environment, run tests, and start the application:
